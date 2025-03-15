@@ -7,5 +7,5 @@ import java.util.List;
 public interface ImageService {
     void attachImage(Long listingId, MultipartFile image);
     Resource fetchImage(String path);
-    List<String> fetchListingImagesPath(Long listingId);
+    List<String> fetchListingImagesPaths(Long listingId);
 }

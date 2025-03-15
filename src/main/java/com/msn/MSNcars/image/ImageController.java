@@ -42,9 +42,9 @@ public class ImageController {
     }
 
     @GetMapping("listings/{id}/images")
-    public List<String> fetchListingImagesPath(@PathVariable("id") Long listingId) {
+    public List<String> fetchListingImagesPaths(@PathVariable("id") Long listingId) {
         logger.info("Getting paths for listingId: {}", listingId);
-        return imageService.fetchListingImagesPath(listingId);
+        return imageService.fetchListingImagesPaths(listingId);
     }
 
     @ExceptionHandler(NotSupportedFileExtensionException.class)

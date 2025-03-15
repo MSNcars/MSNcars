@@ -80,7 +80,7 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public List<String> fetchListingImagesPath(Long listingId) {
+    public List<String> fetchListingImagesPaths(Long listingId) {
         List<String> imagePaths = new LinkedList<>();
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
