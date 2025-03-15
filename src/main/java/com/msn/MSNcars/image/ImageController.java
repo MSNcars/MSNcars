@@ -1,9 +1,13 @@
 package com.msn.MSNcars.image;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 public class ImageController {
@@ -13,8 +17,22 @@ public class ImageController {
         this.imageService = imageService;
     }
 
-    @PostMapping("images/upload")
-    public void uploadImage(@RequestParam("image") MultipartFile image) {
-        imageService.uploadImage("abcd", image);
+    @PostMapping("images")
+    public void attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image) {
+        imageService.attachImage(listingId, image);
+    }
+
+    @GetMapping("images")
+    public ResponseEntity<?> fetchImage(@RequestBody ImageRequest imageRequest) {
+        Resource resource = imageService.fetchImage(imageRequest.path());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
+    }
+
+    @GetMapping("listings/{id}/images")
+    public List<String> fetchListingImagesPath(@PathVariable("id") Long listingId) {
+        return imageService.fetchListingImagesPath(listingId);
     }
 }
