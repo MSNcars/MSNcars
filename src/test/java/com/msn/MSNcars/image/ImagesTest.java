@@ -104,4 +104,6 @@ class ImagesTest {
     }
      */
 
+    //TODO: remove all data after each test with @AfterEach annotation
+
 }
