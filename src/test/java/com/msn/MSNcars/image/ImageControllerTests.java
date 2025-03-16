@@ -45,6 +45,8 @@ class ImageControllerTests {
     @Autowired
     private MinioClient minioClient;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Container
     private final static MinIOContainer container = new MinIOContainer("minio/minio")
             .withUserName("minioadmintest")
@@ -75,7 +77,7 @@ class ImageControllerTests {
         var fetchResult = mockMvc.perform(
             MockMvcRequestBuilders.get("/images")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(new ImageRequest("/listing33/jpegTestPhoto.jpg")))
+                .content(objectMapper.writeValueAsString(new ImageRequest("/listing33/jpegTestPhoto.jpg")))
         ).andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG))
             .andReturn()
@@ -122,7 +124,7 @@ class ImageControllerTests {
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("/listings/{id}/images", 35)
-        ).andExpect(content().json(new ObjectMapper().writeValueAsString(
+        ).andExpect(content().json(objectMapper.writeValueAsString(
             List.of("listing35/jpegTestPhoto.jpg", "listing35/pngTestPhoto.png")
         )));
     }
