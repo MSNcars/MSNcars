@@ -36,7 +36,7 @@ public class ImageServiceImpl implements ImageService {
         String fileExtension = getFileExtension(image);
         if(!allowedContentTypes.contains(fileExtension)){
             logger.error("File extension {} not allowed", fileExtension);
-            throw new NotSupportedFileExtensionException("File extenstion " + fileExtension + " not allowed");
+            throw new NotSupportedFileExtensionException(String.format("File extension %s not allowed", fileExtension));
         }
 
         try{
