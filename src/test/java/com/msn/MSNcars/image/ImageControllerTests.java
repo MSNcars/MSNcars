@@ -12,9 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -45,32 +42,22 @@ class ImageControllerTests {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private MinioClient minioClient;
+
     @Container
     private final static MinIOContainer container = new MinIOContainer("minio/minio")
-        .withCreateContainerCmdModifier(cmd ->
-            //do port binding manually, so that I know endpoint for minioclient, even before container starts
-            cmd.withHostConfig(
-                new HostConfig().withPortBindings(
-                    new PortBinding(Ports.Binding.bindPort(9000), new ExposedPort(9000)),
-                    new PortBinding(Ports.Binding.bindPort(9001), new ExposedPort(9001))
+            .withUserName("minioadmintest")
+            .withPassword("minioadmintest")
+            .withCreateContainerCmdModifier(cmd ->
+                //do port binding manually, so that I know endpoint for minioclient, even before container starts
+                cmd.withHostConfig(
+                    new HostConfig().withPortBindings(
+                        new PortBinding(Ports.Binding.bindPort(9000), new ExposedPort(9000)),
+                        new PortBinding(Ports.Binding.bindPort(9001), new ExposedPort(9001))
+                    )
                 )
-            )
         );
-
-    private final static MinioClient minioClient = MinioClient.builder()
-            .endpoint("http://localhost:9000")
-            .credentials("minioadmin", "minioadmin")
-            .build();
-
-    /* Override minioClient bean so that it connects to test container */
-    @TestConfiguration
-    static class ImageConfig {
-        @Bean
-        @Profile("test")
-        MinioClient minioClient(){
-            return minioClient;
-        }
-    }
 
     @Test
     public void testThatAfterSavingImageYouCanFetchIt() throws Exception {

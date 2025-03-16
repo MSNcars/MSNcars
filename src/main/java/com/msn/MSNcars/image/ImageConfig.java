@@ -19,7 +19,7 @@ public class ImageConfig {
     private String minioPassword;
 
     @Bean
-    @Profile("default")
+//    @Profile("default")
     MinioClient minioClient(){
         return MinioClient.builder()
                 .endpoint(minioEndpoint)
