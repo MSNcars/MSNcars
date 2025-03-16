@@ -19,7 +19,7 @@ import java.util.List;
 public class ImageServiceImpl implements ImageService {
 
     private final MinioClient minioClient;
-    private final String bucketName = "images";
+    public static final String bucketName = "images";
     private final List<String> allowedContentTypes = List.of(".jpg", ".jpeg", ".png");
     private final Logger logger = LoggerFactory.getLogger(ImageServiceImpl.class);
 
@@ -83,15 +83,15 @@ public class ImageServiceImpl implements ImageService {
     public List<String> fetchListingImagesPaths(Long listingId) {
         List<String> imagePaths = new LinkedList<>();
         try {
-            Iterable<Result<Item>> results = minioClient.listObjects(
+            Iterable<Result<Item>> objects = minioClient.listObjects(
                 ListObjectsArgs.builder()
                     .bucket(bucketName)
                     .prefix("listing" + listingId + "/")
                     .build()
             );
 
-            for (var result : results) {
-                imagePaths.add(result.get().objectName());
+            for (var object : objects) {
+                imagePaths.add(object.get().objectName());
             }
 
             return imagePaths;
