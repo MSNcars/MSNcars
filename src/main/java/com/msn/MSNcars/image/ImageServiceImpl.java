@@ -30,7 +30,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public void attachImage(Long listingId, MultipartFile image) {
         //Bucket structure is flat, prefix is used to create hierarchy
-        String prefix = "listing" + listingId + "/" + image.getOriginalFilename();
+        String prefix = createPrefix(listingId, image.getOriginalFilename());
         logger.info("Created prefix for image: {}", prefix);
 
         String fileExtension = getFileExtension(image);
@@ -86,7 +86,7 @@ public class ImageServiceImpl implements ImageService {
             Iterable<Result<Item>> objects = minioClient.listObjects(
                 ListObjectsArgs.builder()
                     .bucket(bucketName)
-                    .prefix("listing" + listingId + "/")
+                    .prefix(createPrefix(listingId))
                     .build()
             );
 
@@ -108,6 +108,14 @@ public class ImageServiceImpl implements ImageService {
     private static String getFileExtension(MultipartFile multipartFile){
         String filename = multipartFile.getOriginalFilename();
         return filename.substring(filename.lastIndexOf("."));
+    }
+
+    private static String createPrefix(Long listingId){
+        return createPrefix(listingId, "");
+    }
+
+    private static String createPrefix(Long listingId, String filename){
+        return String.format("listing%d/%s", listingId, filename);
     }
 
     @PostConstruct
