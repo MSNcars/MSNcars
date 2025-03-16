@@ -52,14 +52,14 @@ class ImageControllerTests {
             .withUserName("minioadmintest")
             .withPassword("minioadmintest")
             .withCreateContainerCmdModifier(cmd ->
-                //do port binding manually, so that I know endpoint for minioclient, even before container starts
+                //do port binding manually, so that I know endpoint for minioclient without having to call container.getS3URL()
                 cmd.withHostConfig(
                     new HostConfig().withPortBindings(
                         new PortBinding(Ports.Binding.bindPort(9000), new ExposedPort(9000)),
                         new PortBinding(Ports.Binding.bindPort(9001), new ExposedPort(9001))
                     )
                 )
-        );
+            );
 
     @Test
     public void testThatAfterSavingImageYouCanFetchIt() throws Exception {
