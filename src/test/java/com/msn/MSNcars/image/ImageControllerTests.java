@@ -1,5 +1,12 @@
 package com.msn.MSNcars.image;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
+import io.minio.*;
+import io.minio.messages.Item;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,26 +15,51 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.core.io.Resource;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static com.msn.MSNcars.image.ImageServiceImpl.bucketName;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
-class ImagesTest {
+@Testcontainers
+@ActiveProfiles("test")
+class ImageControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private MinioClient minioClient;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Container
+    private final static MinIOContainer container = new MinIOContainer("minio/minio")
+            .withUserName("minioadmintest")
+            .withPassword("minioadmintest")
+            .withCreateContainerCmdModifier(cmd ->
+                //do port binding manually, so that I know endpoint for minioclient without having to call container.getS3URL()
+                cmd.withHostConfig(
+                    new HostConfig().withPortBindings(
+                        new PortBinding(Ports.Binding.bindPort(9000), new ExposedPort(9000)),
+                        new PortBinding(Ports.Binding.bindPort(9001), new ExposedPort(9001))
+                    )
+                )
+            );
 
     @Test
     public void testThatAfterSavingImageYouCanFetchIt() throws Exception {
@@ -45,7 +77,7 @@ class ImagesTest {
         var fetchResult = mockMvc.perform(
             MockMvcRequestBuilders.get("/images")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(new ImageRequest("/listing33/jpegTestPhoto.jpg")))
+                .content(objectMapper.writeValueAsString(new ImageRequest("/listing33/jpegTestPhoto.jpg")))
         ).andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG))
             .andReturn()
@@ -85,15 +117,15 @@ class ImagesTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                MockMvcRequestBuilders.multipart("/images")
-                        .file(mockPngPhoto)
-                        .param("listingId", "35")
+            MockMvcRequestBuilders.multipart("/images")
+                .file(mockPngPhoto)
+                .param("listingId", "35")
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/listings/{id}/images", 35)
-        ).andExpect(content().json(new ObjectMapper().writeValueAsString(
-                List.of("listing35/jpegTestPhoto.jpg", "listing35/pngTestPhoto.png")
+            MockMvcRequestBuilders.get("/listings/{id}/images", 35)
+        ).andExpect(content().json(objectMapper.writeValueAsString(
+            List.of("listing35/jpegTestPhoto.jpg", "listing35/pngTestPhoto.png")
         )));
     }
 
@@ -104,6 +136,17 @@ class ImagesTest {
     }
      */
 
-    //TODO: remove all data after each test with @AfterEach annotation
+    @AfterEach
+    public void tearDown() throws Exception{
+        Iterable<Result<Item>> objects = minioClient.listObjects(
+                ListObjectsArgs.builder().bucket(bucketName).recursive(true).build()
+        );
+
+        for(var object: objects){
+            minioClient.removeObject(
+                RemoveObjectArgs.builder().bucket(bucketName).object(object.get().objectName()).build()
+            );
+        }
+    }
 
 }

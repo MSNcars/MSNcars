@@ -24,11 +24,10 @@ public class ImageController {
         TODO: Check if user owns the listing he is trying to add images to (after setting up authentication)
     */
     @PostMapping("images")
-    public ResponseEntity<Void> attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public void attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image) {
         logger.info("Attaching image to listing id: {}", listingId);
         imageService.attachImage(listingId, image);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("images")
