@@ -31,6 +31,8 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KEYCLOAK_DATABASE_HOST: postgres
+      KEYCLOAK_EXTRA_ARGS: --import-realm
     depends_on:
       - postgres
-    #TODO: Add volume mount with keycloak configuration
+    volumes: # Mount configuration file
+      - ./src/main/resources/keycloak:/opt/bitnami/keycloak/data/import
