@@ -21,7 +21,10 @@ public class ImageController {
     }
 
     /*
-        TODO: Check if user owns the listing he is trying to add images to (after setting up authentication)
+        TODO for attach image:
+            - Check if user owns the listing he is trying to add images to (after setting up authentication)
+            - Check if listing can be modified (e.g you cannot change images of listing that is already expired)
+            - Check if listing doesn't have too much images (e.g. set limit to 40 images per listing)
     */
     @PostMapping("images")
     @ResponseStatus(HttpStatus.CREATED)
@@ -33,11 +36,11 @@ public class ImageController {
     @GetMapping("images")
     public ResponseEntity<?> fetchImage(@RequestBody ImageRequest imageRequest) {
         logger.info("Fetching image with path: {}", imageRequest.path());
-        Resource resource = imageService.fetchImage(imageRequest.path());
+        Image image = imageService.fetchImage(imageRequest.path());
 
         return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(resource);
+                .contentType(MediaType.valueOf(image.metadata().contentType()))
+                .body(image.data());
     }
 
     @GetMapping("listings/{id}/images")

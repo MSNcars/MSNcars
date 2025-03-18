@@ -6,7 +6,6 @@ import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,21 +58,26 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public Resource fetchImage(String path){
+    public Image fetchImage(String path){
         try{
-            InputStream imageStream = minioClient.getObject(
-                GetObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(path)
-                    .build()
+            logger.info("Trying to retrieve image metadata from object storage");
+            StatObjectResponse imageMetadata = minioClient.statObject(
+                    StatObjectArgs.builder().bucket(bucketName).object(path).build()
             );
-            logger.info("Image successfully retrieved from database");
-            return new InputStreamResource(imageStream);
+            logger.info("Image metadata successfully retrieved from object storage");
+
+            logger.info("Trying to retrieve image from object storage.");
+            InputStream imageStream = minioClient.getObject(
+                GetObjectArgs.builder().bucket(bucketName).object(path).build()
+            );
+            logger.info("Image successfully retrieved from object storage");
+
+            return new Image(imageMetadata, new InputStreamResource(imageStream));
         } catch (MinioException e) {
-            logger.error("Minio error occurred when trying to read image: {}", String.valueOf(e));
+            logger.error("Minio error occurred when trying to fetch image: {}", String.valueOf(e));
             logger.error("HTTP trace: {}", e.httpTrace());
         }catch (Exception e){
-            logger.error("Exception occurred when trying to read image", e);
+            logger.error("Exception occurred when trying to fetch image", e);
         }
 
         return null;
