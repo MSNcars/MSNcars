@@ -1,5 +1,7 @@
 package com.msn.MSNcars.auth;
 
+import org.keycloak.admin.client.Keycloak;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,14 +16,25 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class AuthConfig {
+
+    @Value("${keycloak.server.url}")
+    private String keycloakServerUrl;
+
+    @Value("${keycloak.credentials.username}")
+    private String keycloakUsername;
+
+    @Value("${keycloak.credentials.password}")
+    private String keycloakPassword;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers(HttpMethod.GET, "/api/products", "listings/{id}/images")
+                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images")
+                                .permitAll()
+                                .requestMatchers("/auth/register")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
@@ -33,5 +46,16 @@ public class SecurityConfig {
                 .csrf(CsrfConfigurer::disable)
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
         return http.build();
+    }
+
+    @Bean
+    Keycloak keycloakAPI() {
+        return Keycloak.getInstance(
+                keycloakServerUrl,
+                "master",
+                keycloakUsername,
+                keycloakPassword,
+                "admin-cli"
+        );
     }
 }
