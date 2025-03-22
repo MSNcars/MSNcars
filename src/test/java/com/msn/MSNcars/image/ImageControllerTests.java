@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -72,6 +73,7 @@ class ImageControllerTests {
             MockMvcRequestBuilders.multipart("/images")
                 .file(mockJpegPhoto)
                 .param("listingId", "33")
+                .with(SecurityMockMvcRequestPostProcessors.jwt())
         ).andExpect(status().isCreated());
 
         var fetchResult = mockMvc.perform(
@@ -97,6 +99,7 @@ class ImageControllerTests {
             MockMvcRequestBuilders.multipart("/images")
                 .file(mockJpegPhoto)
                 .param("listingId", "34")
+                .with(SecurityMockMvcRequestPostProcessors.jwt())
         ).andExpect(status().isBadRequest());
     }
 
@@ -114,12 +117,14 @@ class ImageControllerTests {
             MockMvcRequestBuilders.multipart("/images")
                 .file(mockJpegPhoto)
                 .param("listingId", "35")
+                .with(SecurityMockMvcRequestPostProcessors.jwt())
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
             MockMvcRequestBuilders.multipart("/images")
                 .file(mockPngPhoto)
                 .param("listingId", "35")
+                .with(SecurityMockMvcRequestPostProcessors.jwt())
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
