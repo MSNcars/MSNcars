@@ -36,3 +36,11 @@ services:
       - postgres
     volumes: # Mount configuration file
       - ./src/main/resources/keycloak:/opt/bitnami/keycloak/data/import
+  nginx: # Reverse proxy
+    image: 'nginx'
+    ports:
+      - '80:80'
+    volumes:
+      - ./src/main/resources/nginx/NginxConfiguration.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - keycloak
