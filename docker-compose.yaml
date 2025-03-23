@@ -40,6 +40,8 @@ services:
     image: 'nginx'
     ports:
       - '80:80'
+    extra_hosts: # needed for ubuntu, to be able to use docker.internal in nginx.conf
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./src/main/resources/containers/NginxConfig.conf:/etc/nginx/nginx.conf
     depends_on:
