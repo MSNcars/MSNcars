@@ -51,8 +51,8 @@ class AuthTest {
                         .when()
                         .post("/auth/login")
                         .then()
-                        .statusCode(200) // Ensure login is successful
-                        .body("access_token", notNullValue()) // Ensure token is returned
+                        .statusCode(200)
+                        .body("access_token", notNullValue())
                         .extract()
                         .response();
 
