@@ -32,7 +32,7 @@ public class AuthConfig {
         http
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images")
+                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images", "/public")
                                 .permitAll()
                                 .requestMatchers("/auth/register")
                                 .permitAll()

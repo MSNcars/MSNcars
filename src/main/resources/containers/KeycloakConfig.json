@@ -1,6 +1,30 @@
 {
   "id" : "932d0da2-deee-4921-9710-767a1a6468cf",
   "realm" : "MSNcars",
+  "users" : [ {
+    "id" : "a84b72d8-1a28-4efb-8b60-8d695ac466fd",
+    "username" : "user",
+    "firstName" : "John",
+    "lastName" : "Doe",
+    "email" : "user@mamwdoamwg.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1742735723610,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "6c27fcb3-dd1a-4a1f-bd00-064a111f40bc",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1742735733137,
+      "secretData" : "{\"value\":\"F8qVV2jnx4sYYh92GyyDoqBVfp9kvcVY18Gazfu7qEs=\",\"salt\":\"tZrZW5Sv2EQPuycre/tGfQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-msncars" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ],
   "notBefore" : 0,
   "defaultSignatureAlgorithm" : "RS256",
   "revokeRefreshToken" : false,
