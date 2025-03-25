@@ -1,5 +1,5 @@
 services:
-  minio:
+  minio: # Object storage
     image: 'minio/minio'
     ports:
       - '9000:9000'
@@ -8,3 +8,39 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     command: server /data --console-address ":9001"
+  postgres: # Main database
+    image: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: MSNcars
+  keycloak: # Authorization server
+    image: 'bitnami/keycloak'
+    ports:
+      - '8081:8081'
+    environment:
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_USER: admin
+      KEYCLOAK_DATABASE_PASSWORD: admin
+      KEYCLOAK_DATABASE_NAME: MSNcars
+      KEYCLOAK_HTTP_PORT: 8081
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_DATABASE_HOST: postgres
+      KEYCLOAK_EXTRA_ARGS: --import-realm
+    depends_on:
+      - postgres
+    volumes: # Mount configuration file
+      - ./src/main/resources/containers/KeycloakConfig.json:/opt/bitnami/keycloak/data/import/KeycloakConfig.json
+  nginx: # Reverse proxy
+    image: 'nginx'
+    ports:
+      - '80:80'
+    extra_hosts: # needed for ubuntu, to be able to use docker.internal in nginx.conf
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./src/main/resources/containers/NginxConfig.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - keycloak
