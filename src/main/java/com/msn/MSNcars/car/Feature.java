@@ -10,13 +10,13 @@ public class Feature {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String featureName;
+    private String name;
 
     public Feature() {}
 
-    public Feature(Long id, String featureName) {
+    public Feature(Long id, String name) {
         this.id = id;
-        this.featureName = featureName;
+        this.name = name;
     }
 
     public Long getId() {
@@ -27,11 +27,11 @@ public class Feature {
         this.id = id;
     }
 
-    public String getFeatureName() {
-        return featureName;
+    public String getName() {
+        return name;
     }
 
-    public void setFeatureName(String featureName) {
-        this.featureName = featureName;
+    public void setName(String name) {
+        this.name = name;
     }
 }

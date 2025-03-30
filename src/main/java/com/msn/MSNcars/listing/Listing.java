@@ -1,23 +1,25 @@
 package com.msn.MSNcars.listing;
 
-import com.msn.MSNcars.account.Firm;
+import com.msn.MSNcars.account.Company;
 import com.msn.MSNcars.car.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long ownerId;
+    private String ownerId;
 
     @ManyToOne
-    @JoinColumn(name = "firm_id")
-    private Firm firm;
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @ManyToOne
     @JoinColumn(name = "make_id")
@@ -27,33 +29,44 @@ public class Listing {
     @JoinColumn(name = "model_id")
     private Model model;
 
+    @ManyToOne
+    @JoinColumn(name = "car_type")
+    private Type type;
+
+    @ManyToMany
+    @JoinTable(name="listing_feature")
+    private List<Feature> features;
+
     private LocalDate createdAt;
     private LocalDate expiresAt;
 
     @Enumerated(EnumType.STRING)
     private ListingStatus listingStatus;
 
+    @Min(value = 0)
     private BigDecimal price;
-    private Integer productionYear;
-    private Integer mileage;
-    private Fuel fuel;
 
-    @ManyToOne
-    @JoinColumn(name = "car_type")
-    private Type type;
+    @Min(value = 1900)
+    private Integer productionYear;
+
+    @Min(value = 0)
+    private Integer mileage;
+
+    @Enumerated(EnumType.STRING)
+    private Fuel fuel;
 
     @Enumerated(EnumType.STRING)
     private CarCondition carCondition;
 
-    @Size(max = 1000)
+    @Size(max = 500)
     private String description;
 
     public Listing() {}
 
     public Listing(
             Long id,
-            Long ownerId,
-            Firm firm,
+            String ownerId,
+            Company company,
             Make make,
             Model model,
             LocalDate createdAt,
@@ -64,11 +77,12 @@ public class Listing {
             Integer mileage,
             Fuel fuel,
             Type type,
+            List<Feature> features,
             CarCondition carCondition,
             String description) {
         this.id = id;
         this.ownerId = ownerId;
-        this.firm = firm;
+        this.company = company;
         this.make = make;
         this.model = model;
         this.createdAt = createdAt;
@@ -79,6 +93,7 @@ public class Listing {
         this.mileage = mileage;
         this.fuel = fuel;
         this.type = type;
+        this.features = features;
         this.carCondition = carCondition;
         this.description = description;
     }
@@ -91,20 +106,28 @@ public class Listing {
         this.id = id;
     }
 
-    public Long getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
-    public Firm getFirm() {
-        return firm;
+    public Company getCompany() {
+        return company;
     }
 
-    public void setFirm(Firm firm) {
-        this.firm = firm;
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+
+    public List<Feature> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<Feature> features) {
+        this.features = features;
     }
 
     public Make getMake() {

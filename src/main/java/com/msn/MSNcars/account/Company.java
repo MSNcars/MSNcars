@@ -1,31 +1,37 @@
 package com.msn.MSNcars.account;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-public class Firm {
+public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long ownerId;
+    private String ownerId;
     private String name;
     private String address;
     private String phone;
     private String email;
 
-    public Firm() {}
+    @ElementCollection
+    @CollectionTable(name = "company_user")
+    @Column(name = "user_id")
+    private Set<String> usersId = new HashSet<>();
 
-    public Firm(Long id, Long ownerId, String name, String address, String phone, String email) {
+    public Company() {}
+
+    public Company(Long id, String ownerId, String name, String address, String phone, String email, Set<String> usersId) {
         this.id = id;
         this.ownerId = ownerId;
         this.name = name;
         this.address = address;
         this.phone = phone;
         this.email = email;
+        this.usersId = usersId;
     }
 
     public Long getId() {
@@ -36,11 +42,11 @@ public class Firm {
         this.id = id;
     }
 
-    public Long getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -74,5 +80,13 @@ public class Firm {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Set<String> getUsersId() {
+        return usersId;
+    }
+
+    public void setUsersId(Set<String> usersId) {
+        this.usersId = usersId;
     }
 }
