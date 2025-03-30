@@ -8,14 +8,16 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     command: server /data --console-address ":9001"
-  postgres: # Main database
+  postgres: # app and keycloak database
     image: postgres
     ports:
       - '5432:5432'
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: MSNcars
+      POSTGRES_DB: app_db
+    volumes:
+      - ./src/main/resources/init-scripts:/docker-entrypoint-initdb.d # creates keycloak db
   keycloak: # Authorization server
     image: 'bitnami/keycloak'
     ports:
@@ -24,7 +26,7 @@ services:
       KEYCLOAK_DATABASE_PORT: 5432
       KEYCLOAK_DATABASE_USER: admin
       KEYCLOAK_DATABASE_PASSWORD: admin
-      KEYCLOAK_DATABASE_NAME: MSNcars
+      KEYCLOAK_DATABASE_NAME: keycloak_db
       KEYCLOAK_HTTP_PORT: 8081
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
