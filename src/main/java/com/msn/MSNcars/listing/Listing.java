@@ -18,8 +18,8 @@ public class Listing {
     private String ownerId;
 
     @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
+    @JoinColumn(name = "selling_company_id")
+    private Company sellingCompany;
 
     @ManyToOne
     @JoinColumn(name = "make_id")
@@ -29,10 +29,6 @@ public class Listing {
     @JoinColumn(name = "model_id")
     private Model model;
 
-    @ManyToOne
-    @JoinColumn(name = "car_type")
-    private Type type;
-
     @ManyToMany
     @JoinTable(name="listing_feature")
     private List<Feature> features;
@@ -40,8 +36,7 @@ public class Listing {
     private LocalDate createdAt;
     private LocalDate expiresAt;
 
-    @Enumerated(EnumType.STRING)
-    private ListingStatus listingStatus;
+    private Boolean revoked;
 
     @Min(value = 0)
     private BigDecimal price;
@@ -56,46 +51,45 @@ public class Listing {
     private Fuel fuel;
 
     @Enumerated(EnumType.STRING)
-    private CarCondition carCondition;
+    private CarUsage carCondition;
+
+    @Enumerated(EnumType.STRING)
+    private CarOperationalStatus carOperationalStatus;
+
+    @Enumerated(EnumType.STRING)
+    private CarType carType;
 
     @Size(max = 500)
     private String description;
 
     public Listing() {}
 
-    public Listing(
-            Long id,
-            String ownerId,
-            Company company,
-            Make make,
-            Model model,
-            LocalDate createdAt,
-            LocalDate expiresAt,
-            ListingStatus listingStatus,
-            BigDecimal price,
-            Integer productionYear,
-            Integer mileage,
-            Fuel fuel,
-            Type type,
-            List<Feature> features,
-            CarCondition carCondition,
-            String description) {
+    public Listing(Long id, String ownerId, Company sellingCompany, Make make, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carCondition, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
         this.id = id;
         this.ownerId = ownerId;
-        this.company = company;
+        this.sellingCompany = sellingCompany;
         this.make = make;
         this.model = model;
+        this.features = features;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
-        this.listingStatus = listingStatus;
+        this.revoked = revoked;
         this.price = price;
         this.productionYear = productionYear;
         this.mileage = mileage;
         this.fuel = fuel;
-        this.type = type;
-        this.features = features;
         this.carCondition = carCondition;
+        this.carOperationalStatus = carOperationalStatus;
+        this.carType = carType;
         this.description = description;
+    }
+
+    public Boolean getRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(Boolean revoked) {
+        this.revoked = revoked;
     }
 
     public Long getId() {
@@ -114,20 +108,12 @@ public class Listing {
         this.ownerId = ownerId;
     }
 
-    public Company getCompany() {
-        return company;
+    public Company getSellingCompany() {
+        return sellingCompany;
     }
 
-    public void setCompany(Company company) {
-        this.company = company;
-    }
-
-    public List<Feature> getFeatures() {
-        return features;
-    }
-
-    public void setFeatures(List<Feature> features) {
-        this.features = features;
+    public void setSellingCompany(Company sellingCompany) {
+        this.sellingCompany = sellingCompany;
     }
 
     public Make getMake() {
@@ -146,6 +132,22 @@ public class Listing {
         this.model = model;
     }
 
+    public CarType getCarType() {
+        return carType;
+    }
+
+    public void setCarType(CarType carType) {
+        this.carType = carType;
+    }
+
+    public List<Feature> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<Feature> features) {
+        this.features = features;
+    }
+
     public LocalDate getCreatedAt() {
         return createdAt;
     }
@@ -160,14 +162,6 @@ public class Listing {
 
     public void setExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
-    }
-
-    public ListingStatus getListingStatus() {
-        return listingStatus;
-    }
-
-    public void setListingStatus(ListingStatus listingStatus) {
-        this.listingStatus = listingStatus;
     }
 
     public BigDecimal getPrice() {
@@ -194,20 +188,28 @@ public class Listing {
         this.mileage = mileage;
     }
 
-    public Type getType() {
-        return type;
+    public Fuel getFuel() {
+        return fuel;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setFuel(Fuel fuel) {
+        this.fuel = fuel;
     }
 
-    public CarCondition getCarCondition() {
+    public CarUsage getCarCondition() {
         return carCondition;
     }
 
-    public void setCarCondition(CarCondition carCondition) {
+    public void setCarCondition(CarUsage carCondition) {
         this.carCondition = carCondition;
+    }
+
+    public CarOperationalStatus getCarOperationalStatus() {
+        return carOperationalStatus;
+    }
+
+    public void setCarOperationalStatus(CarOperationalStatus carOperationalStatus) {
+        this.carOperationalStatus = carOperationalStatus;
     }
 
     public String getDescription() {
@@ -216,13 +218,5 @@ public class Listing {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Fuel getFuel() {
-        return fuel;
-    }
-
-    public void setFuel(Fuel fuel) {
-        this.fuel = fuel;
     }
 }
