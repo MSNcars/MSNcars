@@ -1,0 +1,16 @@
+CREATE TABLE make (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE model (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    make_id BIGINT,
+    FOREIGN KEY (make_id) REFERENCES make(id) ON DELETE CASCADE
+);
+
+CREATE TABLE feature (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+)
