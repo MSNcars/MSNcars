@@ -51,7 +51,7 @@ public class Listing {
     private Fuel fuel;
 
     @Enumerated(EnumType.STRING)
-    private CarUsage carCondition;
+    private CarUsage carUsage;
 
     @Enumerated(EnumType.STRING)
     private CarOperationalStatus carOperationalStatus;
@@ -64,7 +64,7 @@ public class Listing {
 
     public Listing() {}
 
-    public Listing(Long id, String ownerId, Company sellingCompany, Make make, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carCondition, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
+    public Listing(Long id, String ownerId, Company sellingCompany, Make make, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
         this.id = id;
         this.ownerId = ownerId;
         this.sellingCompany = sellingCompany;
@@ -78,7 +78,7 @@ public class Listing {
         this.productionYear = productionYear;
         this.mileage = mileage;
         this.fuel = fuel;
-        this.carCondition = carCondition;
+        this.carUsage = carUsage;
         this.carOperationalStatus = carOperationalStatus;
         this.carType = carType;
         this.description = description;
@@ -196,12 +196,12 @@ public class Listing {
         this.fuel = fuel;
     }
 
-    public CarUsage getCarCondition() {
-        return carCondition;
+    public CarUsage getCarUsage() {
+        return carUsage;
     }
 
-    public void setCarCondition(CarUsage carCondition) {
-        this.carCondition = carCondition;
+    public void setCarUsage(CarUsage carUsage) {
+        this.carUsage = carUsage;
     }
 
     public CarOperationalStatus getCarOperationalStatus() {
