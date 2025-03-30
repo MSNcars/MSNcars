@@ -1,9 +1,7 @@
 package com.msn.MSNcars.car;
 
-public enum CarCondition {
-    NEW,
-    USED,
-    NEEDS_REPAIR,
+public enum CarOperationalStatus {
+    WORKING,
     DAMAGED,
     NON_OPERATIONAL
 }
