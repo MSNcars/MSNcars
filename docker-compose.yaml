@@ -8,7 +8,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     command: server /data --console-address ":9001"
-  postgres:
+  postgres: # app and keycloak database
     image: postgres
     ports:
       - '5432:5432'
@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: app_db
     volumes:
-      - ./init-scripts:/docker-entrypoint-initdb.d # creates keycloak db
+      - ./src/main/resources/init-scripts:/docker-entrypoint-initdb.d # creates keycloak db
   keycloak: # Authorization server
     image: 'bitnami/keycloak'
     ports:
