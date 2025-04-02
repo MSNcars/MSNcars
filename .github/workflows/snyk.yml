@@ -1,0 +1,15 @@
+name: Snyk security scan
+on: push
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Grant execute permission to Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven-3-jdk-21@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
