@@ -12,8 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class AuthConfig {
@@ -27,6 +25,12 @@ public class AuthConfig {
     @Value("${keycloak.credentials.password}")
     private String keycloakPassword;
 
+    private final KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter;
+
+    public AuthConfig(KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter) {
+        this.keycloakJwtAuthenticationConverter = keycloakJwtAuthenticationConverter;
+    }
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -36,6 +40,12 @@ public class AuthConfig {
                                 .permitAll()
                                 .requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
+                                .requestMatchers("/user")
+                                .hasRole("user")
+                                .requestMatchers("/company")
+                                .hasRole("company")
+                                .requestMatchers("/admin")
+                                .hasRole("admin")
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -44,7 +54,9 @@ public class AuthConfig {
                 )
                 .cors(CorsConfigurer::disable)
                 .csrf(CsrfConfigurer::disable)
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                        jwt -> jwt.jwtAuthenticationConverter(keycloakJwtAuthenticationConverter))
+                );
         return http.build();
     }
 
