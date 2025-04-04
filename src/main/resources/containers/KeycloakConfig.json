@@ -1,30 +1,6 @@
 {
   "id" : "932d0da2-deee-4921-9710-767a1a6468cf",
   "realm" : "MSNcars",
-  "users" : [ {
-    "id" : "a84b72d8-1a28-4efb-8b60-8d695ac466fd",
-    "username" : "user",
-    "firstName" : "John",
-    "lastName" : "Doe",
-    "email" : "user@mamwdoamwg.com",
-    "emailVerified" : true,
-    "createdTimestamp" : 1742735723610,
-    "enabled" : true,
-    "totp" : false,
-    "credentials" : [ {
-      "id" : "6c27fcb3-dd1a-4a1f-bd00-064a111f40bc",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1742735733137,
-      "secretData" : "{\"value\":\"F8qVV2jnx4sYYh92GyyDoqBVfp9kvcVY18Gazfu7qEs=\",\"salt\":\"tZrZW5Sv2EQPuycre/tGfQ==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-msncars" ],
-    "notBefore" : 0,
-    "groups" : [ ]
-  } ],
   "notBefore" : 0,
   "defaultSignatureAlgorithm" : "RS256",
   "revokeRefreshToken" : false,
@@ -157,7 +133,7 @@
         "composite" : true,
         "composites" : {
           "client" : {
-            "realm-management" : [ "manage-authorization", "view-authorization", "query-groups", "manage-realm", "create-client", "manage-events", "view-events", "query-clients", "view-realm", "query-users", "view-clients", "manage-clients", "impersonation", "view-users", "manage-identity-providers", "manage-users", "view-identity-providers", "query-realms" ]
+            "realm-management" : [ "manage-authorization", "view-authorization", "query-groups", "manage-realm", "create-client", "manage-events", "view-events", "query-clients", "query-users", "view-realm", "manage-clients", "view-clients", "impersonation", "view-users", "manage-identity-providers", "manage-users", "query-realms", "view-identity-providers" ]
           }
         },
         "clientRole" : true,
@@ -282,7 +258,31 @@
         "containerId" : "f9946d00-49f6-4a8b-b8f3-9273c16c50d6",
         "attributes" : { }
       } ],
-      "MSNcars" : [ ],
+      "MSNcars" : [ {
+        "id" : "54741bd2-e83d-4adf-83bb-33caef431245",
+        "name" : "admin",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "3bec24c8-07dd-4e68-80ac-52ac6799ac85",
+        "attributes" : { }
+      }, {
+        "id" : "48bec8ba-6b44-49d3-a6ef-7ca7017ad5af",
+        "name" : "user",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "3bec24c8-07dd-4e68-80ac-52ac6799ac85",
+        "attributes" : { }
+      }, {
+        "id" : "a59edcc3-72f8-41b2-9f5e-6504439f3f07",
+        "name" : "company",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "3bec24c8-07dd-4e68-80ac-52ac6799ac85",
+        "attributes" : { }
+      } ],
       "account" : [ {
         "id" : "57689eb1-642d-4d58-8dca-f4b74b378329",
         "name" : "view-profile",
@@ -401,6 +401,85 @@
   "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister" : false,
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
+  "users" : [ {
+    "id" : "d5e322ee-ce73-494f-b136-f74f1552de17",
+    "username" : "admin",
+    "firstName" : "Matt",
+    "lastName" : "Knows",
+    "email" : "admin@maomwd.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1743714811302,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "dacea02d-f533-438b-9755-ee6cfd0e683a",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1743714825911,
+      "secretData" : "{\"value\":\"+g4QDfWFd7zCxsLfvrysDSTzEr26YFHpVMgO07Aojqg=\",\"salt\":\"gFpV5le0SBJsfwY2WQqVjQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-msncars" ],
+    "clientRoles" : {
+      "MSNcars" : [ "admin", "user", "company" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "4b0850ec-fd83-4341-a1c4-ad59961179b4",
+    "username" : "company",
+    "firstName" : "Pat",
+    "lastName" : "Mat",
+    "email" : "company@nianwdi.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1743720410080,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "7d449edf-28ba-4a9a-b2b8-1cdaa0efb063",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1743720426537,
+      "secretData" : "{\"value\":\"5sXiANuV9QIRsTYZXmz/GUW074Fvl06JPOHWvUuyWVQ=\",\"salt\":\"j44jDYX4LI9b+HXXxUDShg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-msncars" ],
+    "clientRoles" : {
+      "MSNcars" : [ "company" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "a84b72d8-1a28-4efb-8b60-8d695ac466fd",
+    "username" : "user",
+    "firstName" : "John",
+    "lastName" : "Doe",
+    "email" : "user@mamwdoamwg.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1742735723610,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "6c27fcb3-dd1a-4a1f-bd00-064a111f40bc",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1742735733137,
+      "secretData" : "{\"value\":\"F8qVV2jnx4sYYh92GyyDoqBVfp9kvcVY18Gazfu7qEs=\",\"salt\":\"tZrZW5Sv2EQPuycre/tGfQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-msncars" ],
+    "clientRoles" : {
+      "MSNcars" : [ "user" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ],
   "scopeMappings" : [ {
     "clientScope" : "offline_access",
     "roles" : [ "offline_access" ]
@@ -504,7 +583,8 @@
     "protocol" : "openid-connect",
     "attributes" : {
       "realm_client" : "false",
-      "client.use.lightweight.access.token.enabled" : "true"
+      "client.use.lightweight.access.token.enabled" : "true",
+      "post.logout.redirect.uris" : "+"
     },
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : true,
@@ -532,7 +612,8 @@
     "frontchannelLogout" : false,
     "protocol" : "openid-connect",
     "attributes" : {
-      "realm_client" : "true"
+      "realm_client" : "true",
+      "post.logout.redirect.uris" : "+"
     },
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
@@ -567,6 +648,7 @@
       "realm_client" : "false",
       "oidc.ciba.grant.enabled" : "false",
       "backchannel.logout.session.required" : "true",
+      "post.logout.redirect.uris" : "+",
       "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
@@ -596,7 +678,8 @@
     "frontchannelLogout" : false,
     "protocol" : "openid-connect",
     "attributes" : {
-      "realm_client" : "true"
+      "realm_client" : "true",
+      "post.logout.redirect.uris" : "+"
     },
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
@@ -680,8 +763,9 @@
       "consentRequired" : false,
       "config" : {
         "user.session.note" : "AUTH_TIME",
-        "id.token.claim" : "true",
         "introspection.token.claim" : "true",
+        "userinfo.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "auth_time",
         "jsonType.label" : "long"
@@ -767,6 +851,7 @@
       "config" : {
         "introspection.token.claim" : "true",
         "multivalued" : "true",
+        "userinfo.token.claim" : "true",
         "user.attribute" : "foo",
         "id.token.claim" : "true",
         "access.token.claim" : "true",
@@ -806,12 +891,13 @@
       "protocolMapper" : "oidc-organization-membership-mapper",
       "consentRequired" : false,
       "config" : {
-        "id.token.claim" : "true",
         "introspection.token.claim" : "true",
+        "multivalued" : "true",
+        "userinfo.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "organization",
-        "jsonType.label" : "String",
-        "multivalued" : "true"
+        "jsonType.label" : "String"
       }
     } ]
   }, {
@@ -966,8 +1052,9 @@
       "consentRequired" : false,
       "config" : {
         "user.session.note" : "clientHost",
-        "id.token.claim" : "true",
         "introspection.token.claim" : "true",
+        "userinfo.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "clientHost",
         "jsonType.label" : "String"
@@ -980,8 +1067,9 @@
       "consentRequired" : false,
       "config" : {
         "user.session.note" : "client_id",
-        "id.token.claim" : "true",
         "introspection.token.claim" : "true",
+        "userinfo.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "client_id",
         "jsonType.label" : "String"
@@ -994,8 +1082,9 @@
       "consentRequired" : false,
       "config" : {
         "user.session.note" : "clientAddress",
-        "id.token.claim" : "true",
         "introspection.token.claim" : "true",
+        "userinfo.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "clientAddress",
         "jsonType.label" : "String"
@@ -1246,7 +1335,8 @@
       "config" : {
         "id.token.claim" : "true",
         "introspection.token.claim" : "true",
-        "access.token.claim" : "true"
+        "access.token.claim" : "true",
+        "userinfo.token.claim" : "true"
       }
     } ]
   }, {
@@ -1308,7 +1398,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper" ]
       }
     }, {
       "id" : "424cb2c6-77ee-44f3-9c43-f928efaeccc3",
@@ -1317,7 +1407,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "d324ab08-7b47-4bc6-839e-402a70598152",
@@ -2038,8 +2128,12 @@
     "cibaExpiresIn" : "120",
     "cibaAuthRequestedUserHint" : "login_hint",
     "oauth2DeviceCodeLifespan" : "600",
+    "clientOfflineSessionMaxLifespan" : "0",
     "oauth2DevicePollingInterval" : "5",
+    "clientSessionIdleTimeout" : "0",
     "parRequestUriLifespan" : "60",
+    "clientSessionMaxLifespan" : "0",
+    "clientOfflineSessionIdleTimeout" : "0",
     "cibaInterval" : "5",
     "realmReusableOtpCode" : "false"
   },
