@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ListingService {
@@ -24,5 +25,12 @@ public class ListingService {
         }
 
         return listingResponses;
+    }
+
+    public ListingResponse getListingById(Long listingId) {
+        Optional<Listing> listing = listingRepository.findById(listingId);
+
+        return listingMapper.fromListing(
+                listing.orElseThrow(() -> new IllegalArgumentException("There is no listing with that id.")));
     }
 }
