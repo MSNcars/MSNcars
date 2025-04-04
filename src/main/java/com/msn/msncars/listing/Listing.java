@@ -30,7 +30,11 @@ public class Listing {
     private Model model;
 
     @ManyToMany
-    @JoinTable(name="listing_feature")
+    @JoinTable(
+        name="listing_feature",
+        joinColumns = @JoinColumn(name = "listing_id"),
+        inverseJoinColumns = @JoinColumn(name = "feature_id")
+    )
     private List<Feature> features;
 
     private LocalDate createdAt;
