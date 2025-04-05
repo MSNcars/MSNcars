@@ -1,6 +1,6 @@
 package com.msn.msncars.listing;
 
-import com.msn.msncars.account.Company;
+import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
