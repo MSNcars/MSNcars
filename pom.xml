@@ -13,12 +13,6 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>MSNcars</name>
 	<description>Car selling platform</description>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
