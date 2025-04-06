@@ -1,15 +1,13 @@
 package com.msn.msncars.user;
 
 import org.keycloak.representations.idm.UserRepresentation;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
-public class UserMapper {
-    private UserMapper() {}
-    public static UserDTO toDTO(UserRepresentation userRepresentation) {
-        return new UserDTO(
-                userRepresentation.getId(),
-                userRepresentation.getFirstName(),
-                userRepresentation.getLastName(),
-                userRepresentation.getUsername()
-        );
-    }
+@Mapper
+public interface UserMapper {
+
+    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+
+    UserDTO toDTO(UserRepresentation userRepresentation);
 }
