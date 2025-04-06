@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class KeycloakBean {
+public class KeycloakApiClient {
 
     private final KeycloakConfig keycloakConfig;
 
-    public KeycloakBean(KeycloakConfig keycloakConfig) {
+    public KeycloakApiClient(KeycloakConfig keycloakConfig) {
         this.keycloakConfig = keycloakConfig;
     }
 
