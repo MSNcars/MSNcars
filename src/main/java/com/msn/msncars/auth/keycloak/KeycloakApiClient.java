@@ -1,4 +1,4 @@
-package com.msn.msncars.keycloak;
+package com.msn.msncars.auth.keycloak;
 
 import org.keycloak.admin.client.Keycloak;
 import org.springframework.context.annotation.Bean;
