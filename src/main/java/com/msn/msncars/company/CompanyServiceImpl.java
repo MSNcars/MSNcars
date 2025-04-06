@@ -1,11 +1,10 @@
 package com.msn.msncars.company;
 
-import com.msn.msncars.keycloak.KeycloakConfig;
 import com.msn.msncars.user.UserDTO;
 import com.msn.msncars.user.UserMapper;
+import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
-import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +15,11 @@ import java.util.Optional;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final Keycloak keycloakAPI;
-    private final KeycloakConfig keycloakConfig;
+    private final UserService userService;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, Keycloak keycloakAPI, KeycloakConfig keycloakConfig) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService) {
         this.companyRepository = companyRepository;
-        this.keycloakAPI = keycloakAPI;
-        this.keycloakConfig = keycloakConfig;
+        this.userService = userService;
     }
 
     @Override
@@ -53,21 +50,18 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         List<UserRepresentation> userRepresentations = company.getUsersId()
                 .stream()
-                .map(userId -> keycloakAPI.realm(keycloakConfig.getRealm()).users().get(userId).toRepresentation())
+                .map(userService::getUserRepresentationById)
                 .toList();
 
-        return userRepresentations.stream().map(UserMapper::toDTO).toList();
+        return userRepresentations.stream().map(UserMapper.INSTANCE::toDTO).toList();
     }
 
     @Override
     public UserDTO getCompanyOwner(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         String ownerId = company.getOwnerId();
-        UserRepresentation ownerRepresentation = keycloakAPI.realm(keycloakConfig.getRealm())
-                .users()
-                .get(ownerId)
-                .toRepresentation();
-        return UserMapper.toDTO(ownerRepresentation);
+        UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId);
+        return UserMapper.INSTANCE.toDTO(ownerRepresentation);
     }
 
     @Override
