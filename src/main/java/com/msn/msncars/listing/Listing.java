@@ -1,6 +1,6 @@
 package com.msn.msncars.listing;
 
-import com.msn.msncars.account.Company;
+import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -30,7 +30,11 @@ public class Listing {
     private Model model;
 
     @ManyToMany
-    @JoinTable(name="listing_feature")
+    @JoinTable(
+        name="listing_feature",
+        joinColumns = @JoinColumn(name = "listing_id"),
+        inverseJoinColumns = @JoinColumn(name = "feature_id")
+    )
     private List<Feature> features;
 
     private LocalDate createdAt;
