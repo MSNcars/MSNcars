@@ -1,7 +1,6 @@
 package com.msn.msncars.company;
 
 import com.msn.msncars.user.UserDTO;
-import jakarta.ws.rs.ForbiddenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,15 +45,5 @@ public class CompanyController {
     public ResponseEntity<String> deleteCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {
         companyService.deleteCompany(companyId, jwt.getSubject());
         return ResponseEntity.ok("Company successfully deleted");
-    }
-
-    @ExceptionHandler(CompanyNotFoundException.class)
-    public ResponseEntity<String> handleCompanyNotFoundException(CompanyNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-    }
-
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<String> handleForbiddenException(ForbiddenException e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
 }

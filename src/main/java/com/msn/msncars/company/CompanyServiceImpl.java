@@ -4,6 +4,7 @@ import com.msn.msncars.keycloak.KeycloakConfig;
 import com.msn.msncars.user.UserDTO;
 import com.msn.msncars.user.UserMapper;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public List<UserDTO> getCompanyMembers(Long companyId) {
-        Company company = companyRepository.findById(companyId).orElseThrow(() -> new CompanyNotFoundException("Company not found"));
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         List<UserRepresentation> userRepresentations = company.getUsersId()
                 .stream()
                 .map(userId -> keycloakAPI.realm(keycloakConfig.getRealm()).users().get(userId).toRepresentation())
@@ -60,7 +61,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public UserDTO getCompanyOwner(Long companyId) {
-        Company company = companyRepository.findById(companyId).orElseThrow(() -> new CompanyNotFoundException("Company not found"));
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         String ownerId = company.getOwnerId();
         UserRepresentation ownerRepresentation = keycloakAPI.realm(keycloakConfig.getRealm())
                 .users()
@@ -72,7 +73,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public void deleteCompany(Long companyId, String userId) {
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() ->  new CompanyNotFoundException("This company cannot be deleted because it does not exist"));
+                .orElseThrow(() ->  new NotFoundException("This company cannot be deleted because it does not exist"));
 
         String ownerId = company.getOwnerId();
         if (!ownerId.equals(userId))
