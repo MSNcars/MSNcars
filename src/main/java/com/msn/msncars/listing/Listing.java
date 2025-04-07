@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+//TODO change name feature back to features but Hibernate needs to generate feature_id instead of features_id
 @Entity
 public class Listing {
     @Id
@@ -74,7 +75,7 @@ public class Listing {
         this.sellingCompany = sellingCompany;
         this.make = make;
         this.model = model;
-        this.features = features;
+        this.feature = features;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
         this.revoked = revoked;
@@ -145,11 +146,11 @@ public class Listing {
     }
 
     public List<Feature> getFeatures() {
-        return features;
+        return feature;
     }
 
     public void setFeatures(List<Feature> features) {
-        this.features = features;
+        this.feature = features;
     }
 
     public LocalDate getCreatedAt() {

@@ -25,7 +25,16 @@ public class AuthConfig {
         http
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images", "/public")
+                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images", "/public", "/listings"
+                                , "listings/{listing-id}")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.POST, "/listings")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/listings/{listing-id}")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/listings/{listing-id}/extend")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/listings/{listing-id}")
                                 .permitAll()
                                 .requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
