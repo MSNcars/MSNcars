@@ -44,6 +44,31 @@ public class ListingMapper {
                 listingRequest.description()
         );
     }
+
+    public Listing toListing (UpdateListingRequest updateListingRequest) {
+        return new Listing(
+                updateListingRequest.id(),
+                updateListingRequest.ownerId(),
+                getCompanyById(updateListingRequest.sellingCompanyId()),
+                getMakeById(updateListingRequest.makeId()),
+                getModelById(updateListingRequest.modelId()),
+                getFeaturesByIds(updateListingRequest.featuresIds()),
+                LocalDate.now(),
+                updateListingRequest.expiresAt(),
+                updateListingRequest.revoked(),
+                updateListingRequest.price(),
+                updateListingRequest.productionYear(),
+                updateListingRequest.mileage(),
+                updateListingRequest.fuel(),
+                updateListingRequest.carUsage(),
+                updateListingRequest.carOperationalStatus(),
+                updateListingRequest.carType(),
+                updateListingRequest.description()
+        );
+    }
+
+
+
     public ListingResponse fromListing (Listing listing) {
         return new ListingResponse(
                 listing.getId(),
