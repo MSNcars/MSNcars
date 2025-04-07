@@ -1,7 +1,7 @@
 package com.msn.msncars.listing;
 
-import com.msn.msncars.account.Company;
-import com.msn.msncars.account.CompanyRepository;
+import com.msn.msncars.company.Company;
+import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.car.*;
 import org.springframework.stereotype.Service;
 
