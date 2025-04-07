@@ -36,7 +36,7 @@ public class ListingService {
         Optional<Listing> listing = listingRepository.findById(listingId);
 
         return listingMapper.fromListing(
-                listing.orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId)));
+                listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId)));
     }
 
     public Long createListing(ListingRequest listingRequest) {
@@ -50,7 +50,7 @@ public class ListingService {
 
     public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {
         Listing existingListing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
         Listing updatedListing = listingMapper.toListing(listingRequest);
         updatedListing.setId(listingId);
@@ -62,7 +62,7 @@ public class ListingService {
 
     public ListingResponse extendExpirationDate(Long listingId, LocalDate newExpirationDate) {
         Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
         if (newExpirationDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("New expiration date cannot be in the past");
@@ -76,7 +76,7 @@ public class ListingService {
 
     public void deleteListing(Long listingId) {
         Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
         listingRepository.delete(listing);
     }
