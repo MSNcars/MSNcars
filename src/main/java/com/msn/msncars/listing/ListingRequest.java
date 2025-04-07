@@ -6,15 +6,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-//This response DTO can be edited according to needs!
-public record ListingResponse (
+//This request DTO can be edited according to needs!
+public record ListingRequest(
         Long id,
         String ownerId,
         Long sellingCompanyId,
         Long makeId,
         Long modelId,
         List<Feature> features,
-        LocalDate createdAt,
         LocalDate expiresAt,
         Boolean revoked,
         BigDecimal price,
@@ -25,7 +24,5 @@ public record ListingResponse (
         CarOperationalStatus carOperationalStatus,
         CarType carType,
         String description
-
 ) {
-
 }

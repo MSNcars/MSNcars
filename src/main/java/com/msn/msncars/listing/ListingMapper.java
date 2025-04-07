@@ -4,6 +4,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ListingMapper {
+
+    public Listing toListing (ListingRequest listingRequest) {
+        return null;
+    }
     public ListingResponse fromListing (Listing listing) {
         return new ListingResponse(
                 listing.getId(),
