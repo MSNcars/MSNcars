@@ -33,4 +33,9 @@ public class ListingService {
         return listingMapper.fromListing(
                 listing.orElseThrow(() -> new IllegalArgumentException("There is no listing with that id.")));
     }
+
+    public Long createListing(ListingRequest listingRequest) {
+        var listing = listingRepository.save(listingMapper.toListing(listingRequest));
+        return listing.getId();
+    }
 }
