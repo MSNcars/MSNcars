@@ -53,4 +53,10 @@ public class ListingController {
         ListingResponse listingResponse= listingService.extendExpirationDate(listingId, newExpirationDate);
         return ResponseEntity.ok(listingResponse);
     }
+
+    @DeleteMapping("/{listing-id}")
+    public ResponseEntity<Void> deleteListing(@PathVariable("listing-id") Long listingId) {
+        listingService.deleteListing(listingId);
+        return ResponseEntity.noContent().build();
+    }
 }

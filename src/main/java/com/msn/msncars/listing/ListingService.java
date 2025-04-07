@@ -73,4 +73,11 @@ public class ListingService {
 
         return listingMapper.fromListing(updatedListing);
     }
+
+    public void deleteListing(Long listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId));
+
+        listingRepository.delete(listing);
+    }
 }
