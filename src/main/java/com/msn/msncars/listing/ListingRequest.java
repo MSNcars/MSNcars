@@ -13,7 +13,7 @@ public record ListingRequest(
         Long sellingCompanyId,
         Long makeId,
         Long modelId,
-        List<Feature> features,
+        List<Feature> featuresIds,
         LocalDate expiresAt,
         Boolean revoked,
         BigDecimal price,
