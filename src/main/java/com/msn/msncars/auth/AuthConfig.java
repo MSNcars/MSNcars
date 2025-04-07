@@ -1,7 +1,5 @@
 package com.msn.msncars.auth;
 
-import org.keycloak.admin.client.Keycloak;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,20 +10,15 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class AuthConfig {
+  
+    private final KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter;
 
-    @Value("${keycloak.server.url}")
-    private String keycloakServerUrl;
-
-    @Value("${keycloak.credentials.username}")
-    private String keycloakUsername;
-
-    @Value("${keycloak.credentials.password}")
-    private String keycloakPassword;
+    public AuthConfig(KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter) {
+        this.keycloakJwtAuthenticationConverter = keycloakJwtAuthenticationConverter;
+    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,6 +38,14 @@ public class AuthConfig {
                                 .permitAll()
                                 .requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
+                                .requestMatchers("/company/**")
+                                .permitAll()
+                                .requestMatchers("/user")
+                                .hasRole("user")
+                                .requestMatchers("/company")
+                                .hasRole("company")
+                                .requestMatchers("/admin")
+                                .hasRole("admin")
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -53,18 +54,9 @@ public class AuthConfig {
                 )
                 .cors(CorsConfigurer::disable)
                 .csrf(CsrfConfigurer::disable)
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                        jwt -> jwt.jwtAuthenticationConverter(keycloakJwtAuthenticationConverter))
+                );
         return http.build();
-    }
-
-    @Bean
-    Keycloak keycloakAPI() {
-        return Keycloak.getInstance(
-                keycloakServerUrl,
-                "master",
-                keycloakUsername,
-                keycloakPassword,
-                "admin-cli"
-        );
     }
 }
