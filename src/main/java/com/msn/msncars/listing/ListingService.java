@@ -1,6 +1,9 @@
 package com.msn.msncars.listing;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +30,7 @@ public class ListingService {
         return listingResponses;
     }
 
-    public ListingResponse getListingById(Long listingId) {
+    public ListingResponse getListingResponseById(Long listingId) {
         Optional<Listing> listing = listingRepository.findById(listingId);
 
         return listingMapper.fromListing(
@@ -37,5 +40,21 @@ public class ListingService {
     public Long createListing(ListingRequest listingRequest) {
         var listing = listingRepository.save(listingMapper.toListing(listingRequest));
         return listing.getId();
+    }
+
+    public Optional<Listing> getListingById(Long listingId) {
+        return listingRepository.findById(listingId);
+    }
+
+    public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {
+        Listing existingListing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new IllegalArgumentException("Listing not found with id: " + listingId));
+
+        Listing updatedListing = listingMapper.toListing(listingRequest);
+        updatedListing.setId(listingId);
+
+        Listing savedListing = listingRepository.save(updatedListing);
+
+        return listingMapper.fromListing(savedListing);
     }
 }
