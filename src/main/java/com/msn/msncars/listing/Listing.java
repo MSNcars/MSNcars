@@ -75,7 +75,7 @@ public class Listing {
         this.sellingCompany = sellingCompany;
         this.make = make;
         this.model = model;
-        this.feature = features;
+        this.features = features;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
         this.revoked = revoked;
@@ -146,11 +146,11 @@ public class Listing {
     }
 
     public List<Feature> getFeatures() {
-        return feature;
+        return features;
     }
 
     public void setFeatures(List<Feature> features) {
-        this.feature = features;
+        this.features = features;
     }
 
     public LocalDate getCreatedAt() {
