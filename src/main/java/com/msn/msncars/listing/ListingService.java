@@ -1,10 +1,12 @@
 package com.msn.msncars.listing;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +36,7 @@ public class ListingService {
         Optional<Listing> listing = listingRepository.findById(listingId);
 
         return listingMapper.fromListing(
-                listing.orElseThrow(() -> new IllegalArgumentException("There is no listing with that id.")));
+                listing.orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId)));
     }
 
     public Long createListing(ListingRequest listingRequest) {
@@ -48,7 +50,7 @@ public class ListingService {
 
     public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {
         Listing existingListing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new IllegalArgumentException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId));
 
         Listing updatedListing = listingMapper.toListing(listingRequest);
         updatedListing.setId(listingId);
@@ -56,5 +58,19 @@ public class ListingService {
         Listing savedListing = listingRepository.save(updatedListing);
 
         return listingMapper.fromListing(savedListing);
+    }
+
+    public ListingResponse extendExpirationDate(Long listingId, LocalDate newExpirationDate) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new EntityNotFoundException("Listing not found with id: " + listingId));
+
+        if (newExpirationDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("New expiration date cannot be in the past");
+        }
+
+        listing.setExpiresAt(newExpirationDate);
+        Listing updatedListing = listingRepository.save(listing);
+
+        return listingMapper.fromListing(updatedListing);
     }
 }

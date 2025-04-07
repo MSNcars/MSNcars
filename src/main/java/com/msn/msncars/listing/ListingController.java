@@ -4,8 +4,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/listings")
@@ -42,5 +43,14 @@ public class ListingController {
             @RequestBody @Valid ListingRequest listingRequest) {
         ListingResponse updatedListing = listingService.updateListing(listingId, listingRequest);
         return ResponseEntity.ok(updatedListing);
+    }
+
+    @PatchMapping("/{listing-id}/extend")
+    public ResponseEntity<ListingResponse> extendExpirationDate(
+            @PathVariable("listing-id") Long listingId,
+            @RequestBody LocalDate newExpirationDate
+    ) {
+        ListingResponse listingResponse= listingService.extendExpirationDate(listingId, newExpirationDate);
+        return ResponseEntity.ok(listingResponse);
     }
 }

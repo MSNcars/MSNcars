@@ -39,6 +39,8 @@ public class AuthConfig {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/listings/{listing-id}")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/listings/{listing-id}/extend")
+                                .permitAll()
                                 .requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
                                 .anyRequest()
