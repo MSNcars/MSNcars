@@ -8,7 +8,6 @@ import java.util.List;
 
 //This request DTO can be edited according to needs!
 public record ListingRequest(
-        Long id,
         String ownerId,
         Long sellingCompanyId,
         Long makeId,

@@ -25,7 +25,7 @@ public class ListingMapper {
 
     public Listing toListing (ListingRequest listingRequest) {
         return new Listing(
-                listingRequest.id(),
+                null,
                 listingRequest.ownerId(),
                 getCompanyById(listingRequest.sellingCompanyId()),
                 getMakeById(listingRequest.makeId()),
