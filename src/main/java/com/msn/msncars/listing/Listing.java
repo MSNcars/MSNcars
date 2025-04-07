@@ -9,8 +9,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
-//TODO change name feature back to features but Hibernate needs to generate feature_id instead of features_id
 @Entity
 public class Listing {
     @Id
