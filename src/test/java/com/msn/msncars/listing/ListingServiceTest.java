@@ -98,7 +98,7 @@ public class ListingServiceTest {
         Listing listing3 = new Listing(
                 3L,
                 "3",
-                new Company(),
+                null,
                 new Make(2L, "Ford"),
                 new Model(3L, "Focus"),
                 new ArrayList<>(Arrays.asList(
@@ -205,7 +205,7 @@ public class ListingServiceTest {
         assertEquals(listing1.getDescription(), listingResponses.getFirst().description());
         assertEquals(listing2.getMake().getName(), listingResponses.get(1).makeName());
         assertEquals(listing2.getSellingCompany().getName(), listingResponses.get(1).sellingCompanyName());
-        assertEquals(listing3.getSellingCompany().getName(), listingResponses.get(2).sellingCompanyName());
+        assertNull(listingResponses.get(2).sellingCompanyName());
         assertEquals(listing3.getMileage(), listingResponses.get(2).mileage());
 
     }
@@ -296,4 +296,6 @@ public class ListingServiceTest {
             listingService.getListingById(listingId);
         });
     }
+
+
 }

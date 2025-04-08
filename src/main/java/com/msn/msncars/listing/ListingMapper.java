@@ -44,12 +44,13 @@ public class ListingMapper {
                 listingRequest.description()
         );
     }
-    
+
+    // in this method we have to consider all Listing attributes that can be null!
     public ListingResponse fromListing (Listing listing) {
         return new ListingResponse(
                 listing.getId(),
                 listing.getOwnerId(),
-                listing.getSellingCompany().getName(),
+                listing.getSellingCompany() != null ? listing.getSellingCompany().getName() : null,
                 listing.getMake().getName(),
                 listing.getModel().getName(),
                 listing.getFeatures(),
