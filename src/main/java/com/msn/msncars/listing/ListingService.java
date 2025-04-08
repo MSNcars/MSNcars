@@ -1,10 +1,6 @@
 package com.msn.msncars.listing;
 
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,7 +28,7 @@ public class ListingService {
         return listingResponses;
     }
 
-    public ListingResponse getListingResponseById(Long listingId) {
+    public ListingResponse getListingById(Long listingId) {
         Optional<Listing> listing = listingRepository.findById(listingId);
 
         return listingMapper.fromListing(
@@ -42,10 +38,6 @@ public class ListingService {
     public Long createListing(ListingRequest listingRequest) {
         var listing = listingRepository.save(listingMapper.toListing(listingRequest));
         return listing.getId();
-    }
-
-    public Optional<Listing> getListingById(Long listingId) {
-        return listingRepository.findById(listingId);
     }
 
     public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {

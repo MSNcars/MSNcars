@@ -49,9 +49,9 @@ public class ListingMapper {
         return new ListingResponse(
                 listing.getId(),
                 listing.getOwnerId(),
-                listing.getSellingCompany().getId(),
-                listing.getMake().getId(),
-                listing.getModel().getId(),
+                listing.getSellingCompany().getName(),
+                listing.getMake().getName(),
+                listing.getModel().getName(),
                 listing.getFeatures(),
                 listing.getCreatedAt(),
                 listing.getExpiresAt(),

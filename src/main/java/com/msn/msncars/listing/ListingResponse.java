@@ -10,9 +10,9 @@ import java.util.List;
 public record ListingResponse (
         Long id,
         String ownerId,
-        Long sellingCompanyId,
-        Long makeId,
-        Long modelId,
+        String sellingCompanyName,
+        String makeName,
+        String modelName,
         List<Feature> features,
         LocalDate createdAt,
         LocalDate expiresAt,

@@ -27,7 +27,7 @@ public class ListingController {
 
     @GetMapping(path="{listing-id}")
     public ResponseEntity<ListingResponse> getListingById(@PathVariable("listing-id") Long listingId) {
-        ListingResponse listing = listingService.getListingResponseById(listingId);
+        ListingResponse listing = listingService.getListingById(listingId);
 
         return ResponseEntity.ok(listing);
     }
