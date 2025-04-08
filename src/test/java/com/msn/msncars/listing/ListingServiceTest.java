@@ -19,12 +19,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ListingServiceTest {
@@ -213,4 +210,90 @@ public class ListingServiceTest {
 
     }
 
+    @Test
+    public void getListingById_WhenRequestedListingExists_ShouldReturnIt_AsCorrectListingResponseDTO() {
+        // given
+
+        Listing listing1 = new Listing(
+                1L,
+                "1",
+                new Company(
+                        1L,
+                        "1",
+                        "company1",
+                        "address1",
+                        "phone1",
+                        "email1"
+                ),
+                new Make(1L, "Toyota"),
+                new Model(1L, "Corolla"),
+                new ArrayList<>(Arrays.asList(
+                        new Feature(1L, "feature1"),
+                        new Feature(2L, "feature2")
+                )),
+                LocalDate.now().minusDays(5),
+                LocalDate.now().plusDays(30),
+                false,
+                new BigDecimal("45000.00"),
+                2020,
+                15000,
+                Fuel.PETROL,
+                CarUsage.NEW,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "desc1"
+        );
+
+        Mockito.when(listingRepository.findById(1L)).thenReturn(Optional.of(listing1));
+
+        ListingResponse listingResponse1 = new ListingResponse(
+                1L,
+                "1",
+                "company1",
+                "Toyota",
+                "Corolla",
+                new ArrayList<>(Arrays.asList(
+                        new Feature(1L, "feature1"),
+                        new Feature(2L, "feature2")
+                )),
+                LocalDate.now().minusDays(5),
+                LocalDate.now().plusDays(30),
+                false,
+                new BigDecimal("45000.00"),
+                2020,
+                15000,
+                Fuel.PETROL,
+                CarUsage.NEW,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "desc1"
+        );
+
+        Mockito.when(listingMapper.fromListing(listing1)).thenReturn(listingResponse1);
+
+        // when
+
+        ListingResponse listingResponse = listingService.getListingById(1L);
+
+        // then
+
+        assertNotNull(listingResponse);
+        assertEquals(listing1.getId(), listingResponse.id());
+        assertEquals(listing1.getSellingCompany().getName(), listingResponse.sellingCompanyName());
+        assertEquals(listing1.getFeatures().getFirst().getName(), listingResponse.features().getFirst().getName());
+    }
+
+    @Test
+    public void getListingById_WhenRequestedListingDoesNotExist_ShouldThrowException() {
+        // given
+        Long listingId = 1L;
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
+
+        // when and then
+
+        assertThrows(ListingNotFoundException.class, () -> {
+            listingService.getListingById(listingId);
+        });
+    }
 }
