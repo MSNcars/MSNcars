@@ -32,6 +32,15 @@ public class Company {
         this.email = email;
     }
 
+    public Company(Long id, String ownerId, String name, String address, String phone, String email) {
+        this.id = id;
+        this.ownerId = ownerId;
+        this.name = name;
+        this.address = address;
+        this.phone = phone;
+        this.email = email;
+    }
+
     public Long getId() {
         return id;
     }
