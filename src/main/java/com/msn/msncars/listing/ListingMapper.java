@@ -23,11 +23,12 @@ public class ListingMapper {
         this.featureRepository = featureRepository;
     }
 
+    // in this method we have to consider all Listing attributes that can be null!
     public Listing toListing (ListingRequest listingRequest) {
         return new Listing(
                 null,
                 listingRequest.ownerId(),
-                getCompanyById(listingRequest.sellingCompanyId()),
+                listingRequest.sellingCompanyId() != null ? getCompanyById(listingRequest.sellingCompanyId()) : null,
                 getMakeById(listingRequest.makeId()),
                 getModelById(listingRequest.modelId()),
                 getFeaturesByIds(listingRequest.featuresIds()),

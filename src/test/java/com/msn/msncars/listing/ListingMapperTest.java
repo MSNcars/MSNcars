@@ -7,12 +7,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -144,5 +147,160 @@ public class ListingMapperTest {
 
     @Test
     public void toListing_ShouldCorrectlyConvert_ListingRequestDTOToListing() {
+        // given
+        ListingRequest listingRequest = new ListingRequest(
+            "1",
+                1L,
+                1L,
+                1L,
+                new ArrayList<>(Arrays.asList(1L, 2L)),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(makeRepository.findById(1L)).thenReturn(Optional.of(new Make(1L, "Toyota")));
+        Mockito.when(modelRepository.findById(1L)).thenReturn(Optional.of(new Model(1L, "Corolla")));
+        Mockito.when(companyRepository.findById(1L)).thenReturn(Optional.of(
+                new Company(
+                        1L,
+                        "1",
+                        "company1",
+                        "address1",
+                        "phone1",
+                        "email1"
+                )
+        ));
+        List<Long> featureIds = new ArrayList<>(Arrays.asList(1L, 2L));
+        List<Feature> featureList = new ArrayList<>(Arrays.asList(
+                new Feature(1L, "feature1"),
+                new Feature(2L, "feature2")
+        ));
+        Mockito.when(featureRepository.findAllById(featureIds)).thenReturn(featureList);
+
+        // when
+
+        Listing listing = listingMapper.toListing(listingRequest);
+
+        // then
+
+        assertNotNull(listing);
+        assertNull(listing.getId());
+        assertEquals(listingRequest.ownerId(), listing.getOwnerId());
+        assertEquals("company1", listing.getSellingCompany().getName());
+        assertEquals("Toyota", listing.getMake().getName());
+        assertEquals("Corolla", listing.getModel().getName());
+        assertEquals("feature1", listing.getFeatures().getFirst().getName());
+        assertEquals(LocalDate.now(), listing.getCreatedAt());
+        assertEquals(listingRequest.expiresAt(), listing.getExpiresAt());
+        assertEquals(listingRequest.revoked(), listing.getRevoked());
+        assertEquals(listingRequest.price(), listing.getPrice());
+        assertEquals(listingRequest.productionYear(), listing.getProductionYear());
+        assertEquals(listingRequest.mileage(), listing.getMileage());
+        assertEquals(listingRequest.fuel(), listing.getFuel());
+        assertEquals(listingRequest.carUsage(), listing.getCarUsage());
+        assertEquals(listingRequest.carOperationalStatus(), listing.getCarOperationalStatus());
+        assertEquals(listingRequest.carType(), listing.getCarType());
+        assertEquals(listingRequest.description(), listing.getDescription());
     }
+
+    @Test
+    public void toListing_ShouldCorrectlyConvert_ListingRequestDTOWithNulls_ToListing() {
+        // given
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                new ArrayList<>(Arrays.asList(1L, 2L)),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(makeRepository.findById(1L)).thenReturn(Optional.of(new Make(1L, "Toyota")));
+        Mockito.when(modelRepository.findById(1L)).thenReturn(Optional.of(new Model(1L, "Corolla")));
+        List<Long> featureIds = new ArrayList<>(Arrays.asList(1L, 2L));
+        List<Feature> featureList = new ArrayList<>(Arrays.asList(
+                new Feature(1L, "feature1"),
+                new Feature(2L, "feature2")
+        ));
+        Mockito.when(featureRepository.findAllById(featureIds)).thenReturn(featureList);
+
+        // when
+
+        Listing listing = listingMapper.toListing(listingRequest);
+
+        // then
+
+        assertNotNull(listing);
+        assertNull(listing.getId());
+        assertEquals(listingRequest.ownerId(), listing.getOwnerId());
+        assertNull(listing.getSellingCompany());
+        assertEquals("Toyota", listing.getMake().getName());
+        assertEquals("Corolla", listing.getModel().getName());
+        assertEquals("feature1", listing.getFeatures().getFirst().getName());
+        assertEquals(LocalDate.now(), listing.getCreatedAt());
+        assertEquals(listingRequest.expiresAt(), listing.getExpiresAt());
+        assertEquals(listingRequest.revoked(), listing.getRevoked());
+        assertEquals(listingRequest.price(), listing.getPrice());
+        assertEquals(listingRequest.productionYear(), listing.getProductionYear());
+        assertEquals(listingRequest.mileage(), listing.getMileage());
+        assertEquals(listingRequest.fuel(), listing.getFuel());
+        assertEquals(listingRequest.carUsage(), listing.getCarUsage());
+        assertEquals(listingRequest.carOperationalStatus(), listing.getCarOperationalStatus());
+        assertEquals(listingRequest.carType(), listing.getCarType());
+        assertEquals(listingRequest.description(), listing.getDescription());
+    }
+
+    @Test
+    public void toListing_ShouldThrowException_WhenWrongIdIsGiven() {
+        // given
+
+        Long makeId = 1L;
+        Long modelId = 1L;
+        Long companyId = 1L;
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                companyId,
+                makeId,
+                modelId,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+        
+        Mockito.when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
+
+        // when & then
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            listingMapper.toListing(listingRequest);
+        });
+    }
+
 }
