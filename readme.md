@@ -1,13 +1,29 @@
 # Endpoints
 
-### Auth
-To create account use localhost:80/auth/register endpoint (for now only supports accounts with user role),
-there are also 3 default account that you can log into to test our application:
-a) account with user role with username: "user" and password: "user"
-b) account with company role with username: "company" and password: "company"
-c) account with admin role with username: "admin" and password: "admin"
+### 🔐 Auth
+##### To create account use localhost:80/auth/register endpoint (for now only supports accounts with user role).
 
-To log into the account use localhost:80/auth/login endpoint with x-www-form-urlencoded:
+### 👤 Default Accounts for Testing
+
+If you don't want to register you can use one of the following preconfigured accounts to test the application:
+
+- 🧍 **User Account**
+  - Username: `user`
+  - Password: `user`
+
+- 🏢 **Company Account**
+  - Username: `company`
+  - Password: `company`
+
+- 🛡️ **Admin Account**
+  - Username: `admin`
+  - Password: `admin`
+
+---
+
+### 🔓 Login
+
+To log into an account, send a `POST` request to the following endpoint with `x-www-form-urlencoded` data:
 ```bash
 curl --location 'localhost:80/auth/login' \
 --header 'Content-Type: application/x-www-form-urlencoded' \
@@ -17,5 +33,5 @@ curl --location 'localhost:80/auth/login' \
 --data-urlencode 'password=user'
 ```
 
-All other endpoints are described here:
+### 📘 All other endpoints are described on (after launching application):
 http://localhost:8080/swagger-ui/index.html
