@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AuthServiceImpl implements AuthService{
@@ -44,7 +43,7 @@ public class AuthServiceImpl implements AuthService{
                         .roles().get("user")
                         .toRepresentation();
 
-                //Add user role
+                //Add role to user
                 keycloakAPI.realm(keycloakConfig.getRealm())
                         .users().get(CreatedResponseUtil.getCreatedId(registerResponse))
                         .roles().clientLevel(clientRepresentation.getId()).add(List.of(roleRepresentation));
