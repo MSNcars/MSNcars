@@ -33,5 +33,11 @@ curl --location 'localhost:80/auth/login' \
 --data-urlencode 'password=user'
 ```
 
-### 📘 All other endpoints are described on (after launching application):
+You will then receive access_token (that expires after 5 minutes) in response. Use it for all consecutive requests by passing it as bearer token:
+```bash
+curl --location 'localhost:80/user' \
+--header 'Authorization: Bearer *your-access-token*'
+```
+
+### 📘 All other endpoints are described on swagger (after launching application):
 http://localhost:8080/swagger-ui/index.html
