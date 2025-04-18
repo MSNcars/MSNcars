@@ -33,7 +33,7 @@ public class ListingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long createListing(@RequestBody @Valid ListingRequest listingRequest, HttpServletResponse response) {
+    public Long createListing(@RequestBody ListingRequest listingRequest, HttpServletResponse response) {
         Long id = listingService.createListing(listingRequest);
 
         response.setHeader("Location", "/listings/" + id);

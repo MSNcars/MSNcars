@@ -2,6 +2,8 @@ package com.msn.msncars.exception;
 
 import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -60,6 +63,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ValidationErrorResponse response = new ValidationErrorResponse(validationErrors);
 
         return handleExceptionInternal(e, response, headers, HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException e, WebRequest request) {
+        Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
+        List<ValidationError> validationErrors = new ArrayList<>();
+
+        for (ConstraintViolation<?> violation : constraintViolations) {
+            validationErrors.add(new ValidationError(violation.getPropertyPath().toString(), violation.getMessage()));
+        }
+
+        ValidationErrorResponse response = new ValidationErrorResponse(validationErrors);
+
+        return handleExceptionInternal(e, response, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(Exception.class)
