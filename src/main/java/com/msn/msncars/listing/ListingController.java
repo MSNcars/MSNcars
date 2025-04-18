@@ -41,25 +41,23 @@ public class ListingController {
     }
 
     @PutMapping("/{listing-id}")
-    public ResponseEntity<ListingResponse> updateListing(
+    public ListingResponse updateListing(
             @PathVariable("listing-id") Long listingId,
             @RequestBody @Valid ListingRequest listingRequest) {
-        ListingResponse updatedListing = listingService.updateListing(listingId, listingRequest);
-        return ResponseEntity.ok(updatedListing);
+        return listingService.updateListing(listingId, listingRequest);
     }
 
     @PatchMapping("/{listing-id}/extend")
-    public ResponseEntity<ListingResponse> extendExpirationDate(
+    public ListingResponse extendExpirationDate(
             @PathVariable("listing-id") Long listingId,
             @RequestBody LocalDate newExpirationDate
     ) {
-        ListingResponse listingResponse = listingService.extendExpirationDate(listingId, newExpirationDate);
-        return ResponseEntity.ok(listingResponse);
+        return listingService.extendExpirationDate(listingId, newExpirationDate);
     }
 
     @DeleteMapping("/{listing-id}")
-    public ResponseEntity<Void> deleteListing(@PathVariable("listing-id") Long listingId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteListing(@PathVariable("listing-id") Long listingId) {
         listingService.deleteListing(listingId);
-        return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +60,7 @@ public class ListingService {
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
         if (newExpirationDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("New expiration date cannot be in the past");
+            throw new ListingExpirationDateException("New expiration date cannot be in the past");
         }
 
         listing.setExpiresAt(newExpirationDate);
