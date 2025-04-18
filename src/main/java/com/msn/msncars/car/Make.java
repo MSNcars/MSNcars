@@ -1,6 +1,7 @@
 package com.msn.msncars.car;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 
 import java.util.List;
 
@@ -9,6 +10,8 @@ public class Make {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotEmpty
     private String name;
 
     @OneToMany(mappedBy = "make")

@@ -4,6 +4,8 @@ import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -14,6 +16,8 @@ public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotEmpty
     private String ownerId;
 
     @ManyToOne
@@ -22,10 +26,12 @@ public class Listing {
 
     @ManyToOne
     @JoinColumn(name = "make_id")
+    @NotNull
     private Make make;
 
     @ManyToOne
     @JoinColumn(name = "model_id")
+    @NotNull
     private Model model;
 
     @ManyToMany

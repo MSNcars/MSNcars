@@ -37,7 +37,8 @@ public class ListingService {
     }
 
     public Long createListing(ListingRequest listingRequest) {
-        var listing = listingRepository.save(listingMapper.toListing(listingRequest));
+        Listing listing = listingRepository.save(listingMapper.toListing(listingRequest));
+
         return listing.getId();
     }
 

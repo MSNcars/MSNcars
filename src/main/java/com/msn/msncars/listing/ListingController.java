@@ -1,6 +1,8 @@
 package com.msn.msncars.listing;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +31,13 @@ public class ListingController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> createListing(@RequestBody @Valid ListingRequest listingRequest) {
-        return ResponseEntity.ok(listingService.createListing(listingRequest));
+    @ResponseStatus(HttpStatus.CREATED)
+    public Long createListing(@RequestBody @Valid ListingRequest listingRequest, HttpServletResponse response) {
+        Long id = listingService.createListing(listingRequest);
+
+        response.setHeader("Location", "/listings/" + id);
+
+        return id;
     }
 
     @PutMapping("/{listing-id}")

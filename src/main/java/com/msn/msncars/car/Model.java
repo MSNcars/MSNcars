@@ -1,16 +1,19 @@
 package com.msn.msncars.car;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Model {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
 
     @ManyToOne
     @JoinColumn(name = "make_id")
+    @NotNull
     private Make make;
 
     public Model() {}
