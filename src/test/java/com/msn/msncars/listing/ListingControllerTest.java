@@ -1,19 +1,21 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.*;
+import com.msn.msncars.exception.GlobalExceptionHandler;
 import com.msn.msncars.listing.DTO.ListingResponse;
-import org.junit.jupiter.api.BeforeEach;
+import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -23,32 +25,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(ListingController.class)
+@Import(GlobalExceptionHandler.class)
 public class ListingControllerTest {
+    @Autowired
     private MockMvc mockMvc;
 
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectWriter objectWriter = objectMapper.writer();
 
-    @Mock
+    @MockitoBean
     private ListingService listingService;
-
-    @InjectMocks
-    private ListingController listingController;
-
-    @BeforeEach
-    public void setUp() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(listingController).build();
-    }
 
     @Test
     public void getAllListings_ShouldReturnAllListings() throws Exception {
-        //given
+        // given
 
         ListingResponse listingResponse1 = new ListingResponse(
                 1L,
@@ -121,13 +116,14 @@ public class ListingControllerTest {
 
         Mockito.when(listingService.getAllListings()).thenReturn(listings);
 
-        //when & then
+        // when & then
 
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get("/listings")
+                .with(jwt())
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mockMvc.perform(mockRequest)
+        mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].modelName", is("Corolla")))
@@ -135,4 +131,71 @@ public class ListingControllerTest {
                 .andExpect(jsonPath("$[2].fuel", is("DIESEL")));
 
     }
+
+    @Test
+    public void getListingById_ShouldReturnListing_WhenListingExists() throws Exception {
+        // given
+
+        Long listingId = 1L;
+
+        ListingResponse listingResponse = new ListingResponse(
+                listingId,
+                "1",
+                "company1",
+                "Toyota",
+                "Corolla",
+                new ArrayList<>(Arrays.asList(
+                        new Feature(1L, "feature1"),
+                        new Feature(2L, "feature2")
+                )),
+                LocalDate.now().minusDays(5),
+                LocalDate.now().plusDays(30),
+                false,
+                new BigDecimal("45000.00"),
+                2020,
+                15000,
+                Fuel.PETROL,
+                CarUsage.NEW,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "desc1"
+        );
+
+        Mockito.when(listingService.getListingById(listingId)).thenReturn(listingResponse);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get("/listings/" + listingId)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$.sellingCompanyName", is("company1")))
+                .andExpect(jsonPath("$.productionYear", is(2020)))
+                .andExpect(jsonPath("$.carType", is("SEDAN")));
+    }
+
+    @Test
+    public void getListingById_ShouldReturnNotFoundStatus_WhenListingDoesNotExist() throws Exception {
+        // given
+        Long listingId = 2L;
+
+        Mockito.when(listingService.getListingById(listingId))
+                .thenThrow(new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get("/listings/" + listingId)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 2"));
+    }
+
 }
