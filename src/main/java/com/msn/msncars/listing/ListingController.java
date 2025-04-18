@@ -19,17 +19,13 @@ public class ListingController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ListingResponse>> getAllListings() {
-        List<ListingResponse> listings = listingService.getAllListings();
-
-        return ResponseEntity.ok(listings);
+    public List<ListingResponse> getAllListings() {
+        return listingService.getAllListings();
     }
 
     @GetMapping(path="{listing-id}")
-    public ResponseEntity<ListingResponse> getListingById(@PathVariable("listing-id") Long listingId) {
-        ListingResponse listing = listingService.getListingById(listingId);
-
-        return ResponseEntity.ok(listing);
+    public ListingResponse getListingById(@PathVariable("listing-id") Long listingId) {
+        return listingService.getListingById(listingId);
     }
 
     @PostMapping
@@ -50,7 +46,7 @@ public class ListingController {
             @PathVariable("listing-id") Long listingId,
             @RequestBody LocalDate newExpirationDate
     ) {
-        ListingResponse listingResponse= listingService.extendExpirationDate(listingId, newExpirationDate);
+        ListingResponse listingResponse = listingService.extendExpirationDate(listingId, newExpirationDate);
         return ResponseEntity.ok(listingResponse);
     }
 

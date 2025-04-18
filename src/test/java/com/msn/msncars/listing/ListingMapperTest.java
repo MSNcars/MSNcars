@@ -293,7 +293,7 @@ public class ListingMapperTest {
                 CarType.COUPE,
                 "desc2"
         );
-        
+
         Mockito.when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
 
         // when & then
