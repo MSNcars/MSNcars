@@ -270,7 +270,10 @@ public class ListingControllerTest {
                 .content(requestJson);
 
         mockMvc.perform(request)
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(greaterThan(0))))
+                .andExpect(jsonPath("$.errors[0].field", is("productionYear")))
+                .andExpect(jsonPath("$.errors[0].message", is("must be greater than or equal to 1900")));
     }
 
 
