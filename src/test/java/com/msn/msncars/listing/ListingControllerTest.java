@@ -237,7 +237,41 @@ public class ListingControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/listings/" + expectedId))
                 .andExpect(content().string(expectedId.toString()));
-
     }
+
+    @Test
+    public void createListing_ShouldReturnErrorStatus_WhenRequestIsInvalid() throws Exception {
+        // given
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                new ArrayList<>(Arrays.asList(1L, 2L)),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                1021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        String requestJson = objectMapper.writeValueAsString(listingRequest);
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .post("/listings")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
+    }
+
 
 }

@@ -14,7 +14,6 @@ import java.util.List;
 public record ListingRequest(
         @NotEmpty
         String ownerId,
-        @NotNull
         Long sellingCompanyId,
         @NotNull
         Long makeId,
