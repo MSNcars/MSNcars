@@ -1,13 +1,13 @@
 package com.msn.msncars.listing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msn.msncars.car.*;
 import com.msn.msncars.exception.GlobalExceptionHandler;
+import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -16,8 +16,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectWriter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,8 +33,8 @@ public class ListingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    ObjectWriter objectWriter = objectMapper.writer();
+    @Autowired
+    ObjectMapper objectMapper;
 
     @MockitoBean
     private ListingService listingService;
@@ -121,7 +119,7 @@ public class ListingControllerTest {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get("/listings")
                 .with(jwt())
-                .contentType(MediaType.APPLICATION_JSON);
+                .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -168,7 +166,7 @@ public class ListingControllerTest {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get("/listings/" + listingId)
                 .with(jwt())
-                .contentType(MediaType.APPLICATION_JSON);
+                .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -181,6 +179,7 @@ public class ListingControllerTest {
     @Test
     public void getListingById_ShouldReturnNotFoundStatus_WhenListingDoesNotExist() throws Exception {
         // given
+
         Long listingId = 2L;
 
         Mockito.when(listingService.getListingById(listingId))
@@ -191,11 +190,54 @@ public class ListingControllerTest {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get("/listings/" + listingId)
                 .with(jwt())
-                .contentType(MediaType.APPLICATION_JSON);
+                .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Listing not found with id: 2"));
+    }
+
+    @Test
+    public void createListing_ShouldReturnWantedResponse_WhenRequestIsValid() throws Exception {
+        // given
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                new ArrayList<>(Arrays.asList(1L, 2L)),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Long expectedId = 1L;
+
+        Mockito.when(listingService.createListing(listingRequest)).thenReturn(expectedId);
+
+        String requestJson = objectMapper.writeValueAsString(listingRequest);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .post("/listings")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/listings/" + expectedId))
+                .andExpect(content().string(expectedId.toString()));
+
     }
 
 }
