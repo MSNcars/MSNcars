@@ -3,6 +3,8 @@ package com.msn.msncars.listing;
 import com.msn.msncars.car.*;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
+import com.msn.msncars.listing.DTO.ListingRequest;
+import com.msn.msncars.listing.DTO.ListingResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

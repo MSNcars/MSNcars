@@ -2,6 +2,7 @@ package com.msn.msncars.listing;
 
 import com.msn.msncars.car.*;
 import com.msn.msncars.company.Company;
+import com.msn.msncars.listing.DTO.ListingResponse;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package com.msn.msncars.listing;
+package com.msn.msncars.listing.DTO;
 
 import com.msn.msncars.car.*;
 
