@@ -4,13 +4,20 @@ import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -35,6 +42,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST , request);
     }
 
+    @NotNull
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException e,
+            @NotNull HttpHeaders headers,
+            @NotNull HttpStatusCode status,
+            @NotNull WebRequest request) {
+
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        List<ValidationError> validationErrors = new ArrayList<>();
+
+        for (FieldError fieldError : fieldErrors) {
+            validationErrors.add(new ValidationError(fieldError.getField(), fieldError.getDefaultMessage()));
+        }
+
+        ValidationErrorResponse response = new ValidationErrorResponse(validationErrors);
+
+        return handleExceptionInternal(e, response, headers, HttpStatus.BAD_REQUEST, request);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
@@ -42,3 +68,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 }
+
+
