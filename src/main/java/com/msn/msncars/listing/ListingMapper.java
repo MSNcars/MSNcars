@@ -31,18 +31,18 @@ public class ListingMapper {
                 listingRequest.sellingCompanyId() != null ? getCompanyById(listingRequest.sellingCompanyId()) : null,
                 getMakeById(listingRequest.makeId()),
                 getModelById(listingRequest.modelId()),
-                getFeaturesByIds(listingRequest.featuresIds()),
+                listingRequest.featuresIds() != null ? getFeaturesByIds(listingRequest.featuresIds()) : null,
                 LocalDate.now(),
-                listingRequest.expiresAt(),
-                listingRequest.revoked(),
-                listingRequest.price(),
-                listingRequest.productionYear(),
-                listingRequest.mileage(),
-                listingRequest.fuel(),
-                listingRequest.carUsage(),
-                listingRequest.carOperationalStatus(),
-                listingRequest.carType(),
-                listingRequest.description()
+                listingRequest.expiresAt() != null ? listingRequest.expiresAt() : null,
+                listingRequest.revoked() != null ? listingRequest.revoked() : null,
+                listingRequest.price() != null ? listingRequest.price() : null,
+                listingRequest.productionYear() != null ? listingRequest.productionYear() : null,
+                listingRequest.mileage() != null ? listingRequest.mileage() : null,
+                listingRequest.fuel() != null ? listingRequest.fuel() : null,
+                listingRequest.carUsage() != null ? listingRequest.carUsage() : null,
+                listingRequest.carOperationalStatus() != null ? listingRequest.carOperationalStatus() : null,
+                listingRequest.carType() != null ? listingRequest.carType() : null,
+                listingRequest.description() != null ? listingRequest.description() : null
         );
     }
 
@@ -53,19 +53,19 @@ public class ListingMapper {
                 listing.getOwnerId(),
                 listing.getSellingCompany() != null ? listing.getSellingCompany().getName() : null,
                 listing.getMake().getName(),
-                listing.getModel().getName(),
-                listing.getFeatures(),
-                listing.getCreatedAt(),
-                listing.getExpiresAt(),
-                listing.getRevoked(),
-                listing.getPrice(),
-                listing.getProductionYear(),
-                listing.getMileage(),
-                listing.getFuel(),
-                listing.getCarUsage(),
-                listing.getCarOperationalStatus(),
-                listing.getCarType(),
-                listing.getDescription()
+                listing.getModel().getName() != null ? listing.getModel().getName() : null,
+                listing.getFeatures() != null ? listing.getFeatures() : null,
+                listing.getCreatedAt() != null ? listing.getCreatedAt() : null,
+                listing.getExpiresAt() != null ? listing.getExpiresAt() : null,
+                listing.getRevoked() != null ? listing.getRevoked() : null,
+                listing.getPrice() != null ? listing.getPrice() : null,
+                listing.getProductionYear() != null ? listing.getProductionYear() : null,
+                listing.getMileage() != null ? listing.getMileage() : null,
+                listing.getFuel() != null ? listing.getFuel() : null,
+                listing.getCarUsage() != null ? listing.getCarUsage() : null,
+                listing.getCarOperationalStatus() != null ? listing.getCarOperationalStatus() : null,
+                listing.getCarType() != null ? listing.getCarType() : null,
+                listing.getDescription() != null ? listing.getDescription() : null
         );
     }
 
