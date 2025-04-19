@@ -526,5 +526,43 @@ public class ListingControllerTest {
                 .andExpect(content().string("New expiration date cannot be in the past"));
     }
 
+    @Test
+    public void deleteListing_ShouldReturn200Code_WhenListingExists() throws Exception {
+        // given
+
+        Long listingId = 1L;
+
+        Mockito.doNothing().when(listingService).deleteListing(listingId);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete("/listings/" + listingId)
+                .with(jwt());
+
+        mockMvc.perform(request)
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    public void deleteListing_ShouldReturn404Code_WhenListingDoesNotExist() throws Exception {
+        // given
+
+        Long listingId = 1L;
+
+        Mockito.doThrow(new ListingNotFoundException("Listing not found with id: " + listingId)).when(listingService)
+                        .deleteListing(listingId);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete("/listings/" + listingId)
+                .with(jwt());
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 1"));
+    }
 
 }
