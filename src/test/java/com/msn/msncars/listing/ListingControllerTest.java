@@ -5,6 +5,7 @@ import com.msn.msncars.car.*;
 import com.msn.msncars.exception.GlobalExceptionHandler;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
+import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -131,7 +132,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void getListingById_WhenListingExists_ShouldReturnListing_And200Code() throws Exception {
+    public void getListingById_ShouldReturnListing_And200Code_WhenListingExists() throws Exception {
         // given
 
         Long listingId = 1L;
@@ -177,7 +178,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void getListingById_WhenListingDoesNotExist_ShouldReturn404Code_AndAccordingMessage() throws Exception {
+    public void getListingById_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
 
         Long listingId = 2L;
@@ -198,7 +199,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void createListing_WhenRequestIsValid_ShouldReturn201Code_CorrectLocationHeader_AndIdOfCreatedResource()
+    public void createListing_ShouldReturn201Code_CorrectLocationHeader_AndIdOfCreatedResource_WhenRequestIsValid()
             throws Exception {
         // given
 
@@ -241,7 +242,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void createListing_WhenRequestIsInvalid_ShouldReturn400Code_AndAccordingMessage() throws Exception {
+    public void createListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
 
         ListingRequest listingRequest = new ListingRequest(
@@ -278,7 +279,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void updateListing_WhenRequestIsValid_ShouldReturnUpdatedListing_And200Code() throws Exception {
+    public void updateListing_ShouldReturnUpdatedListing_And200Code_WhenRequestIsValid() throws Exception {
         // given
 
         Long listingId = 1L;
@@ -301,7 +302,7 @@ public class ListingControllerTest {
                 "desc2"
         );
 
-        ListingResponse listingResponse = new ListingResponse(
+        ListingResponse updatedListing = new ListingResponse(
                 listingId,
                 "1",
                 null,
@@ -321,7 +322,7 @@ public class ListingControllerTest {
                 "desc2"
         );
 
-        Mockito.when(listingService.updateListing(listingId, listingUpdateRequest)).thenReturn(listingResponse);
+        Mockito.when(listingService.updateListing(listingId, listingUpdateRequest)).thenReturn(updatedListing);
 
         String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
 
@@ -340,7 +341,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void updateListing_WhenRequestIsInvalid_ShouldReturn400Code_AndAccordingMessage() throws Exception {
+    public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
 
         Long listingId = 1L;
@@ -381,7 +382,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void updateListing_WhenListingDoesNotExist_ShouldReturn404Code_AndAccordingMessage() throws Exception {
+    public void updateListing_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
 
         Long listingId = 2L;
@@ -422,6 +423,108 @@ public class ListingControllerTest {
                 .andExpect(content().string("Listing not found with id: 2"));
     }
 
+    @Test
+    public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_WhenDateIsValid () throws Exception {
+        // given
+
+        Long listingId = 1L;
+
+        LocalDate newExpirationDate = LocalDate.now().plusDays(35);
+
+        ListingResponse updatedListing = new ListingResponse(
+                listingId,
+                "1",
+                null,
+                "Toyota",
+                "Corolla",
+                null,
+                LocalDate.now(),
+                newExpirationDate,
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                35000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingService.extendExpirationDate(listingId, newExpirationDate)).thenReturn(updatedListing);
+
+        String newDate = objectMapper.writeValueAsString(newExpirationDate);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .patch("/listings/" + listingId + "/extend")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(newDate);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.makeName", is("Toyota")))
+                .andExpect(jsonPath("$.expiresAt", is(newExpirationDate.toString())));
+    }
+
+    @Test
+    public void extendExpirationDate_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
+        // given
+
+        Long listingId = 2L;
+
+        LocalDate newExpirationDate = LocalDate.now().plusDays(35);
+
+        Mockito.when(listingService.extendExpirationDate(listingId, newExpirationDate))
+                .thenThrow(new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        // when & then
+
+        String newDate = objectMapper.writeValueAsString(newExpirationDate);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .patch("/listings/" + listingId + "/extend")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(newDate);
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 2"));
+    }
+
+    @Test
+    public void extendExpirationDate_ShouldReturn400Code_AndAccordingMessage_WhenGivenDateIsInvalid() throws Exception {
+        // given
+
+        Long listingId = 2L;
+
+        LocalDate newExpirationDate = LocalDate.now().minusDays(35);
+
+        Mockito.when(listingService.extendExpirationDate(listingId, newExpirationDate))
+                .thenThrow(new ListingExpirationDateException("New expiration date cannot be in the past"));
+
+        // when & then
+
+        String newDate = objectMapper.writeValueAsString(newExpirationDate);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .patch("/listings/" + listingId + "/extend")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(newDate);
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("New expiration date cannot be in the past"));
+    }
 
 
 }
