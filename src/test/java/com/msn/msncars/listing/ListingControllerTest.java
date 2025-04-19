@@ -40,7 +40,7 @@ public class ListingControllerTest {
     private ListingService listingService;
 
     @Test
-    public void getAllListings_ShouldReturnAllListings() throws Exception {
+    public void getAllListings_ShouldReturnAllListings_And200Code() throws Exception {
         // given
 
         ListingResponse listingResponse1 = new ListingResponse(
@@ -131,7 +131,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void getListingById_ShouldReturnListing_WhenListingExists() throws Exception {
+    public void getListingById_WhenListingExists_ShouldReturnListing_And200Code() throws Exception {
         // given
 
         Long listingId = 1L;
@@ -177,7 +177,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void getListingById_ShouldReturnNotFoundStatus_WhenListingDoesNotExist() throws Exception {
+    public void getListingById_WhenListingDoesNotExist_ShouldReturn404Code_AndAccordingMessage() throws Exception {
         // given
 
         Long listingId = 2L;
@@ -198,7 +198,8 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void createListing_ShouldReturnWantedResponse_WhenRequestIsValid() throws Exception {
+    public void createListing_WhenRequestIsValid_ShouldReturn201Code_CorrectLocationHeader_AndIdOfCreatedResource()
+            throws Exception {
         // given
 
         ListingRequest listingRequest = new ListingRequest(
@@ -240,7 +241,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void createListing_ShouldReturnErrorStatus_WhenRequestIsInvalid() throws Exception {
+    public void createListing_WhenRequestIsInvalid_ShouldReturn400Code_AndAccordingMessage() throws Exception {
         // given
 
         ListingRequest listingRequest = new ListingRequest(
@@ -276,7 +277,151 @@ public class ListingControllerTest {
                 .andExpect(jsonPath("$.errors[0].message", is("must be greater than or equal to 1900")));
     }
 
-    
+    @Test
+    public void updateListing_WhenRequestIsValid_ShouldReturnUpdatedListing_And200Code() throws Exception {
+        // given
+
+        Long listingId = 1L;
+
+        ListingRequest listingUpdateRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                35000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        ListingResponse listingResponse = new ListingResponse(
+                listingId,
+                "1",
+                null,
+                "Toyota",
+                "Corolla",
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                35000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingService.updateListing(listingId, listingUpdateRequest)).thenReturn(listingResponse);
+
+        String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put("/listings/" + listingId)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.mileage", is(35000)));
+    }
+
+    @Test
+    public void updateListing_WhenRequestIsInvalid_ShouldReturn400Code_AndAccordingMessage() throws Exception {
+        // given
+
+        Long listingId = 1L;
+
+        ListingRequest listingUpdateRequest = new ListingRequest(
+                "1",
+                null,
+                null,
+                1L,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                35000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put("/listings/" + listingId)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(greaterThan(0))))
+                .andExpect(jsonPath("$.errors[0].field", is("makeId")))
+                .andExpect(jsonPath("$.errors[0].message", is("must not be null")));
+    }
+
+    @Test
+    public void updateListing_WhenListingDoesNotExist_ShouldReturn404Code_AndAccordingMessage() throws Exception {
+        // given
+
+        Long listingId = 2L;
+
+        ListingRequest listingUpdateRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                35000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingService.updateListing(listingId, listingUpdateRequest))
+                .thenThrow(new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
+
+        // when & then
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put("/listings/" + listingId)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 2"));
+    }
+
 
 
 }
