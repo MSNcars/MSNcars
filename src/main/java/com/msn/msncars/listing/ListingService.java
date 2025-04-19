@@ -1,10 +1,10 @@
 package com.msn.msncars.listing;
 
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.ResponseEntity;
+import com.msn.msncars.listing.DTO.ListingRequest;
+import com.msn.msncars.listing.DTO.ListingResponse;
+import com.msn.msncars.listing.exception.ListingExpirationDateException;
+import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,20 +32,30 @@ public class ListingService {
         return listingResponses;
     }
 
-    public ListingResponse getListingResponseById(Long listingId) {
+    public ListingResponse getListingById(Long listingId) {
         Optional<Listing> listing = listingRepository.findById(listingId);
 
         return listingMapper.fromListing(
                 listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId)));
     }
 
-    public Long createListing(ListingRequest listingRequest) {
-        var listing = listingRepository.save(listingMapper.toListing(listingRequest));
-        return listing.getId();
-    }
+    /*
+    public List<ListingResponse> getAllListingFromUser(String userId) {
+        List<Listing> listings = listingRepository.findAllByOwnerId(userId);
+        List<ListingResponse> listingResponses = new ArrayList<>();
 
-    public Optional<Listing> getListingById(Long listingId) {
-        return listingRepository.findById(listingId);
+        for (Listing listing : listings) {
+            listingResponses.add(listingMapper.fromListing(listing));
+        }
+
+        return listingResponses;
+    }
+     */
+
+    public Long createListing(ListingRequest listingRequest) {
+        Listing listing = listingRepository.save(listingMapper.toListing(listingRequest));
+
+        return listing.getId();
     }
 
     public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {
@@ -65,7 +75,7 @@ public class ListingService {
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
         if (newExpirationDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("New expiration date cannot be in the past");
+            throw new ListingExpirationDateException("New expiration date cannot be in the past");
         }
 
         listing.setExpiresAt(newExpirationDate);

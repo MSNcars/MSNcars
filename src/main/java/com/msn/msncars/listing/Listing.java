@@ -4,6 +4,8 @@ import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -14,6 +16,8 @@ public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotEmpty
     private String ownerId;
 
     @ManyToOne
@@ -22,10 +26,12 @@ public class Listing {
 
     @ManyToOne
     @JoinColumn(name = "make_id")
+    @NotNull
     private Make make;
 
     @ManyToOne
     @JoinColumn(name = "model_id")
+    @NotNull
     private Model model;
 
     @ManyToMany
@@ -85,6 +91,26 @@ public class Listing {
         this.carOperationalStatus = carOperationalStatus;
         this.carType = carType;
         this.description = description;
+    }
+
+    public Listing(Listing other) {
+        this.id = other.id;
+        this.ownerId = other.ownerId;
+        this.sellingCompany = other.sellingCompany;
+        this.make = other.make;
+        this.model = other.model;
+        this.features = other.features;
+        this.createdAt = other.createdAt;
+        this.expiresAt = other.expiresAt;
+        this.revoked = other.revoked;
+        this.price = other.price;
+        this.productionYear = other.productionYear;
+        this.mileage = other.mileage;
+        this.fuel = other.fuel;
+        this.carUsage = other.carUsage;
+        this.carOperationalStatus = other.carOperationalStatus;
+        this.carType = other.carType;
+        this.description = other.description;
     }
 
     public Boolean getRevoked() {
@@ -222,4 +248,6 @@ public class Listing {
     public void setDescription(String description) {
         this.description = description;
     }
+
+
 }
