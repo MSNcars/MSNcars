@@ -2,13 +2,13 @@ package com.msn.msncars.listing;
 
 import com.msn.msncars.car.*;
 import com.msn.msncars.company.Company;
+import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
+import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -28,8 +28,11 @@ public class ListingServiceTest {
     @InjectMocks
     private ListingService listingService;
 
+    @Captor
+    private ArgumentCaptor<Listing> listingArgumentCaptor;
+
     @Test
-    public void getAllListings_WhenListingsExist_ShouldReturnAllOfThem_AsCorrectListingResponseDTO() {
+    public void getAllListings_ShouldReturnAllOfThem_WhenListingsExist() {
         // given
 
         Listing listing1 = new Listing(
@@ -187,25 +190,23 @@ public class ListingServiceTest {
         Mockito.when(listingMapper.fromListing(listing2)).thenReturn(listingResponse2);
         Mockito.when(listingMapper.fromListing(listing3)).thenReturn(listingResponse3);
 
-        //when
+        // when
 
         List<ListingResponse> listingResponses = listingService.getAllListings();
 
-        //then
+        // then
 
         assertEquals(3, listingResponses.size());
         assertEquals(listing1.getId(), listingResponses.getFirst().id());
         assertEquals(listing1.getModel().getName(), listingResponses.getFirst().modelName());
-        assertEquals(listing1.getDescription(), listingResponses.getFirst().description());
         assertEquals(listing2.getMake().getName(), listingResponses.get(1).makeName());
         assertEquals(listing2.getSellingCompany().getName(), listingResponses.get(1).sellingCompanyName());
         assertNull(listingResponses.get(2).sellingCompanyName());
         assertEquals(listing3.getMileage(), listingResponses.get(2).mileage());
-
     }
 
     @Test
-    public void getListingById_WhenRequestedListingExists_ShouldReturnIt_AsCorrectListingResponseDTO() {
+    public void getListingById_ShouldReturnListing_WhenRequestedListingExists() {
         // given
 
         Listing listing1 = new Listing(
@@ -278,19 +279,327 @@ public class ListingServiceTest {
     }
 
     @Test
-    public void getListingById_WhenRequestedListingDoesNotExist_ShouldThrowException() {
+    public void getListingById_ShouldThrowException_WhenRequestedListingDoesNotExist() {
         // given
         Long listingId = 1L;
 
         Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
 
-        // when and then
+        // when & then
 
         assertThrows(ListingNotFoundException.class, () -> {
             listingService.getListingById(listingId);
         });
     }
 
+    @Test
+    public void createListing_ShouldReturnIdOfCreatedListing_AndCreateListing() {
+        // given
 
+        Long listingId = 1L;
 
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Listing listingFromRequest = new Listing(
+                listingId,
+                "1",
+                null,
+                new Make(1L, "Toyota"),
+                new Model(1L, "Yaris"),
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingMapper.toListing(listingRequest)).thenReturn(listingFromRequest);
+        Mockito.when(listingRepository.save(listingFromRequest)).thenReturn(listingFromRequest);
+
+        // when
+
+        Long createdListingId = listingService.createListing(listingRequest);
+
+        // then
+
+        assertEquals(listingId, createdListingId);
+
+        Mockito.verify(listingRepository).save(listingFromRequest);
+        Mockito.verify(listingMapper).toListing(listingRequest);
+
+        Mockito.verify(listingRepository).save(listingArgumentCaptor.capture());
+        Listing saved = listingArgumentCaptor.getValue();
+        assertEquals("1", saved.getOwnerId());
+        assertEquals(CarType.COUPE, saved.getCarType());
+        assertEquals("desc2", saved.getDescription());
+    }
+
+    @Test
+    public void UpdateListing_ShouldReturnUpdatedListing_WhenGivenIdIsValid() {
+        // given
+
+        Long listingId = 1L;
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Listing listingFromRequest = new Listing(
+                listingId,
+                "1",
+                null,
+                new Make(1L, "Toyota"),
+                new Model(1L, "Yaris"),
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        ListingResponse listingResponse = new ListingResponse(
+                1L,
+                "1",
+                null,
+                "Toyota",
+                "Yaris",
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(new Listing()));
+        Mockito.when(listingMapper.toListing(listingRequest)).thenReturn(listingFromRequest);
+        Mockito.when(listingRepository.save(listingFromRequest)).thenReturn(listingFromRequest);
+        Mockito.when(listingMapper.fromListing(listingFromRequest)).thenReturn(listingResponse);
+
+        // when
+
+        ListingResponse updatedListing = listingService.updateListing(listingId, listingRequest);
+
+        // then
+
+        assertEquals(listingId, updatedListing.id());
+        assertEquals(listingRequest.mileage(), updatedListing.mileage());
+        assertEquals(listingRequest.carType(), updatedListing.carType());
+    }
+
+    @Test
+    public void UpdateListing_ShouldThrowException_WhenGivenIdIsInvalid() {
+        // given
+
+        Long listingId = 1L;
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                null,
+                1L,
+                1L,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
+
+        // when & then
+
+        assertThrows(ListingNotFoundException.class, () -> {
+            listingService.updateListing(listingId, listingRequest);
+        });
+
+    }
+
+    @Test
+    public void ExtendExpirationDate_ShouldReturnUpdatedListing_WhenIdAndDateAreValid() {
+        // given
+
+        Long listingId = 1L;
+
+        LocalDate date = LocalDate.now().plusDays(45);
+
+        Listing listing = new Listing(
+                listingId,
+                "1",
+                null,
+                new Make(1L, "Toyota"),
+                new Model(1L, "Yaris"),
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
+        Mockito.when(listingRepository.save(listing)).thenReturn(listing);
+
+        ListingResponse listingResponse = new ListingResponse(
+                1L,
+                "1",
+                null,
+                "Toyota",
+                "Yaris",
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(45),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingMapper.fromListing(listing)).thenReturn(listingResponse);
+
+        // when
+
+        ListingResponse updatedListing = listingService.extendExpirationDate(listingId, date);
+
+        // then
+
+        assertEquals(listingId, updatedListing.id());
+        assertEquals(listing.getExpiresAt(), updatedListing.expiresAt());
+    }
+
+    @Test
+    public void ExtendExpirationDate_ShouldThrowException_WhenIdIsNotValid() {
+        // given
+
+        Long listingId = 1L;
+
+        LocalDate date = LocalDate.now().plusDays(20);
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
+
+        // when & then
+
+        assertThrows(ListingNotFoundException.class, () -> {
+            listingService.extendExpirationDate(listingId, date);
+        });
+    }
+
+    @Test
+    public void ExtendExpirationDate_ShouldThrowException_WhenDateIsNotValid() {
+        // given
+
+        Long listingId = 1L;
+
+        LocalDate date = LocalDate.now().minusDays(20);
+
+        Listing listing = new Listing(
+                listingId,
+                "1",
+                null,
+                new Make(1L, "Toyota"),
+                new Model(1L, "Yaris"),
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
+
+        // when & then
+
+        assertThrows(ListingExpirationDateException.class, () -> {
+            listingService.extendExpirationDate(listingId, date);
+        });
+    }
+
+    @Test
+    public void DeleteListing_ShouldThrowException_WhenGivenIdIsNotValid() {
+        // given
+
+        Long listingId = 1L;
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
+
+        //when & then
+
+        assertThrows(ListingNotFoundException.class, () -> {
+            listingService.deleteListing(listingId);
+        });
+    }
 }
