@@ -1,8 +1,10 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.*;
+import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
+import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 import org.junit.jupiter.api.Test;
@@ -76,7 +78,8 @@ public class ListingMapperTest {
 
         ListingResponse listingResponse = listingMapper.fromListing(listing);
 
-        //then
+        // then
+
         assertNotNull(listingResponse);
         assertEquals(listing.getId(), listingResponse.id());
         assertEquals(listing.getOwnerId(), listingResponse.ownerId());
@@ -113,12 +116,12 @@ public class ListingMapperTest {
                 false,
                 new BigDecimal("35000.00"),
                 2021,
-                15000,
+                null,
                 Fuel.PETROL,
                 CarUsage.USED,
                 CarOperationalStatus.WORKING,
                 CarType.COUPE,
-                "desc2"
+                null
         );
 
         // when
@@ -139,12 +142,12 @@ public class ListingMapperTest {
         assertEquals(listing.getRevoked(), listingResponse.revoked());
         assertEquals(listing.getPrice(), listingResponse.price());
         assertEquals(listing.getProductionYear(), listingResponse.productionYear());
-        assertEquals(listing.getMileage(), listingResponse.mileage());
+        assertNull(listingResponse.mileage());
         assertEquals(listing.getFuel(), listingResponse.fuel());
         assertEquals(listing.getCarUsage(), listingResponse.carUsage());
         assertEquals(listing.getCarOperationalStatus(), listingResponse.carOperationalStatus());
         assertEquals(listing.getCarType(), listingResponse.carType());
-        assertEquals(listing.getDescription(), listingResponse.description());
+        assertNull(listingResponse.description());
     }
 
     @Test
@@ -229,10 +232,10 @@ public class ListingMapperTest {
                 2021,
                 15000,
                 Fuel.PETROL,
-                CarUsage.USED,
+                null,
                 CarOperationalStatus.WORKING,
                 CarType.COUPE,
-                "desc2"
+                null
         );
 
         Mockito.when(makeRepository.findById(1L)).thenReturn(Optional.of(new Make(1L, "Toyota")));
@@ -264,10 +267,10 @@ public class ListingMapperTest {
         assertEquals(listingRequest.productionYear(), listing.getProductionYear());
         assertEquals(listingRequest.mileage(), listing.getMileage());
         assertEquals(listingRequest.fuel(), listing.getFuel());
-        assertEquals(listingRequest.carUsage(), listing.getCarUsage());
+        assertNull(listing.getCarUsage());
         assertEquals(listingRequest.carOperationalStatus(), listing.getCarOperationalStatus());
         assertEquals(listingRequest.carType(), listing.getCarType());
-        assertEquals(listingRequest.description(), listing.getDescription());
+        assertNull(listing.getDescription());
     }
 
     @Test
@@ -300,7 +303,53 @@ public class ListingMapperTest {
 
         // when & then
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CompanyNotFoundException.class, () -> {
+            listingMapper.toListing(listingRequest);
+        });
+    }
+
+    @Test
+    public void toListing_ShouldThrowException_WhenWrongIdIsGiven_2() {
+        // given
+
+        Long makeId = 1L;
+        Long modelId = 1L;
+        Long companyId = 1L;
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                companyId,
+                makeId,
+                modelId,
+                null,
+                LocalDate.now().plusDays(35),
+                false,
+                new BigDecimal("35000.00"),
+                2021,
+                15000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.COUPE,
+                "desc2"
+        );
+
+        Mockito.when(companyRepository.findById(1L)).thenReturn(Optional.of(
+                new Company(
+                        1L,
+                        "1",
+                        "company1",
+                        "address1",
+                        "phone1",
+                        "email1"
+                )
+        ));
+        Mockito.when(makeRepository.findById(1L)).thenReturn(Optional.of(new Make(1L, "Toyota")));
+        Mockito.when(modelRepository.findById(modelId)).thenReturn(Optional.empty());
+
+        // when & then
+
+        assertThrows(ModelNotFoundException.class, () -> {
             listingMapper.toListing(listingRequest);
         });
     }

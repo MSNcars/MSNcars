@@ -39,6 +39,19 @@ public class ListingService {
                 listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId)));
     }
 
+    /*
+    public List<ListingResponse> getAllListingFromUser(String userId) {
+        List<Listing> listings = listingRepository.findAllByOwnerId(userId);
+        List<ListingResponse> listingResponses = new ArrayList<>();
+
+        for (Listing listing : listings) {
+            listingResponses.add(listingMapper.fromListing(listing));
+        }
+
+        return listingResponses;
+    }
+     */
+
     public Long createListing(ListingRequest listingRequest) {
         Listing listing = listingRepository.save(listingMapper.toListing(listingRequest));
 

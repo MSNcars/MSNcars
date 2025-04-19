@@ -1,5 +1,8 @@
 package com.msn.msncars.exception;
 
+import com.msn.msncars.car.exception.MakeNotFoundException;
+import com.msn.msncars.car.exception.ModelNotFoundException;
+import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import jakarta.validation.ConstraintViolation;
@@ -79,9 +82,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, response, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + ex.getMessage());
+    @ExceptionHandler(CompanyNotFoundException.class)
+    protected ResponseEntity<Object> handleCompanyNotFoundException(CompanyNotFoundException e, WebRequest request) {
+        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(MakeNotFoundException.class)
+    protected ResponseEntity<Object> handleMakeNotFoundException(MakeNotFoundException e, WebRequest request) {
+        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(ModelNotFoundException.class)
+    protected ResponseEntity<Object> handleModelNotFoundException(ModelNotFoundException e, WebRequest request) {
+        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
 }

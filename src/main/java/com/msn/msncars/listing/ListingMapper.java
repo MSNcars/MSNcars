@@ -1,8 +1,11 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.exception.MakeNotFoundException;
+import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.car.*;
+import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 import org.springframework.stereotype.Service;
@@ -73,17 +76,17 @@ public class ListingMapper {
 
     private Make getMakeById(Long id) {
         return makeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Make not found with id: " + id));
+                .orElseThrow(() -> new MakeNotFoundException("Make not found with id: " + id));
     }
 
     private Model getModelById(Long id) {
         return modelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Model not found with id: " + id));
+                .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + id));
     }
 
     private Company getCompanyById(Long id) {
         return companyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Company not found with id: " + id));
+                .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + id));
     }
 
     private List<Feature> getFeaturesByIds(List<Long> featuresIds) {

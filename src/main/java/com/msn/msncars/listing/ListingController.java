@@ -5,6 +5,8 @@ import com.msn.msncars.listing.DTO.ListingResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,10 +28,17 @@ public class ListingController {
         return listingService.getAllListings();
     }
 
-    @GetMapping(path="{listing-id}")
+    @GetMapping(path="/{listing-id}")
     public ListingResponse getListingById(@PathVariable("listing-id") Long listingId) {
         return listingService.getListingById(listingId);
     }
+
+    /*
+    @GetMapping(path="/me")
+    public List<ListingResponse> getListingsOfRequestingUser(@AuthenticationPrincipal Jwt principal) {
+        return listingService.getAllListingFromUser(principal.getSubject());
+    }
+    */
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
