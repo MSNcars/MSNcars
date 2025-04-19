@@ -1,6 +1,7 @@
 package com.msn.msncars.listing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.msn.msncars.auth.keycloak.KeycloakConfig;
 import com.msn.msncars.car.*;
 import com.msn.msncars.exception.GlobalExceptionHandler;
 import com.msn.msncars.listing.DTO.ListingRequest;
@@ -39,6 +40,9 @@ public class ListingControllerTest {
 
     @MockitoBean
     private ListingService listingService;
+
+    @MockitoBean
+    private KeycloakConfig keycloakConfig;
 
     @Test
     public void getAllListings_ShouldReturnAllListings_And200Code() throws Exception {
