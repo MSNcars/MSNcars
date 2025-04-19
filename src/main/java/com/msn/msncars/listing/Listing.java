@@ -93,6 +93,26 @@ public class Listing {
         this.description = description;
     }
 
+    public Listing(Listing other) {
+        this.id = other.id;
+        this.ownerId = other.ownerId;
+        this.sellingCompany = other.sellingCompany;
+        this.make = other.make;
+        this.model = other.model;
+        this.features = other.features;
+        this.createdAt = other.createdAt;
+        this.expiresAt = other.expiresAt;
+        this.revoked = other.revoked;
+        this.price = other.price;
+        this.productionYear = other.productionYear;
+        this.mileage = other.mileage;
+        this.fuel = other.fuel;
+        this.carUsage = other.carUsage;
+        this.carOperationalStatus = other.carOperationalStatus;
+        this.carType = other.carType;
+        this.description = other.description;
+    }
+
     public Boolean getRevoked() {
         return revoked;
     }
@@ -228,4 +248,6 @@ public class Listing {
     public void setDescription(String description) {
         this.description = description;
     }
+
+
 }

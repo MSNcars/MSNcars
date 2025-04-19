@@ -287,9 +287,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingNotFoundException.class, () -> {
-            listingService.getListingById(listingId);
-        });
+        assertThrows(ListingNotFoundException.class, () -> listingService.getListingById(listingId));
     }
 
     @Test
@@ -358,7 +356,7 @@ public class ListingServiceTest {
     }
 
     @Test
-    public void UpdateListing_ShouldReturnUpdatedListing_WhenGivenIdIsValid() {
+    public void UpdateListing_ShouldUpdateListing_AndReturnUpdatedListing_WhenGivenIdIsValid() {
         // given
 
         Long listingId = 1L;
@@ -428,13 +426,24 @@ public class ListingServiceTest {
 
         // when
 
-        ListingResponse updatedListing = listingService.updateListing(listingId, listingRequest);
+        ListingResponse response = listingService.updateListing(listingId, listingRequest);
 
         // then
 
-        assertEquals(listingId, updatedListing.id());
-        assertEquals(listingRequest.mileage(), updatedListing.mileage());
-        assertEquals(listingRequest.carType(), updatedListing.carType());
+        assertNotNull(response);
+        assertEquals(listingId, response.id());
+        assertEquals(listingRequest.mileage(), response.mileage());
+        assertEquals(listingRequest.carType(), response.carType());
+
+        Mockito.verify(listingRepository).findById(listingId);
+        Mockito.verify(listingMapper).toListing(listingRequest);
+        Mockito.verify(listingRepository).save(listingFromRequest);
+        Mockito.verify(listingMapper).fromListing(listingFromRequest);
+
+        Mockito.verify(listingRepository).save(listingArgumentCaptor.capture());
+        Listing saved = listingArgumentCaptor.getValue();
+        assertEquals(listingId, saved.getId());
+        assertEquals(listingRequest.price(), saved.getPrice());
     }
 
     @Test
@@ -465,9 +474,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingNotFoundException.class, () -> {
-            listingService.updateListing(listingId, listingRequest);
-        });
+        assertThrows(ListingNotFoundException.class, () -> listingService.updateListing(listingId, listingRequest));
 
     }
 
@@ -477,7 +484,7 @@ public class ListingServiceTest {
 
         Long listingId = 1L;
 
-        LocalDate date = LocalDate.now().plusDays(45);
+        LocalDate newExpirationDate = LocalDate.now().plusDays(45);
 
         Listing listing = new Listing(
                 listingId,
@@ -499,11 +506,11 @@ public class ListingServiceTest {
                 "desc2"
         );
 
-        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
-        Mockito.when(listingRepository.save(listing)).thenReturn(listing);
+        Listing updatedListing = new Listing(listing);
+        updatedListing.setExpiresAt(newExpirationDate);
 
         ListingResponse listingResponse = new ListingResponse(
-                1L,
+                listingId,
                 "1",
                 null,
                 "Toyota",
@@ -522,16 +529,28 @@ public class ListingServiceTest {
                 "desc2"
         );
 
-        Mockito.when(listingMapper.fromListing(listing)).thenReturn(listingResponse);
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
+        Mockito.when(listingRepository.save(Mockito.any(Listing.class))).thenReturn(updatedListing);
+        Mockito.when(listingMapper.fromListing(updatedListing)).thenReturn(listingResponse);
 
         // when
 
-        ListingResponse updatedListing = listingService.extendExpirationDate(listingId, date);
+        ListingResponse response = listingService.extendExpirationDate(listingId, newExpirationDate);
 
         // then
 
-        assertEquals(listingId, updatedListing.id());
-        assertEquals(listing.getExpiresAt(), updatedListing.expiresAt());
+        assertNotNull(response);
+        assertEquals(listingId, response.id());
+        assertEquals(newExpirationDate, response.expiresAt());
+
+        Mockito.verify(listingRepository).findById(listingId);
+        Mockito.verify(listingRepository).save(Mockito.any(Listing.class));
+        Mockito.verify(listingMapper).fromListing(updatedListing);
+
+        Mockito.verify(listingRepository).save(listingArgumentCaptor.capture());
+        Listing saved = listingArgumentCaptor.getValue();
+        assertEquals(newExpirationDate, saved.getExpiresAt());
+        assertEquals(listingId, saved.getId());
     }
 
     @Test
@@ -546,9 +565,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingNotFoundException.class, () -> {
-            listingService.extendExpirationDate(listingId, date);
-        });
+        assertThrows(ListingNotFoundException.class, () -> listingService.extendExpirationDate(listingId, date));
     }
 
     @Test
@@ -559,33 +576,34 @@ public class ListingServiceTest {
 
         LocalDate date = LocalDate.now().minusDays(20);
 
-        Listing listing = new Listing(
-                listingId,
-                "1",
-                null,
-                new Make(1L, "Toyota"),
-                new Model(1L, "Yaris"),
-                null,
-                LocalDate.now(),
-                LocalDate.now().plusDays(35),
-                false,
-                new BigDecimal("35000.00"),
-                2021,
-                15000,
-                Fuel.PETROL,
-                CarUsage.USED,
-                CarOperationalStatus.WORKING,
-                CarType.COUPE,
-                "desc2"
-        );
+        Listing listing = new Listing();
+        listing.setId(listingId);
 
         Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
 
         // when & then
 
-        assertThrows(ListingExpirationDateException.class, () -> {
-            listingService.extendExpirationDate(listingId, date);
-        });
+        assertThrows(ListingExpirationDateException.class, () -> listingService.extendExpirationDate(listingId, date));
+    }
+
+    @Test
+    public void deleteListing_ShouldDeleteListing_WhenListingExists() {
+        // given
+
+        Long listingId = 1L;
+        Listing listing = new Listing();
+        listing.setId(listingId);
+
+        Mockito.when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
+
+        // when
+
+        listingService.deleteListing(listingId);
+
+        // then
+
+        Mockito.verify(listingRepository).findById(listingId);
+        Mockito.verify(listingRepository).delete(listing);
     }
 
     @Test
@@ -598,8 +616,6 @@ public class ListingServiceTest {
 
         //when & then
 
-        assertThrows(ListingNotFoundException.class, () -> {
-            listingService.deleteListing(listingId);
-        });
+        assertThrows(ListingNotFoundException.class, () -> listingService.deleteListing(listingId));
     }
 }

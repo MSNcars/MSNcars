@@ -303,9 +303,7 @@ public class ListingMapperTest {
 
         // when & then
 
-        assertThrows(CompanyNotFoundException.class, () -> {
-            listingMapper.toListing(listingRequest);
-        });
+        assertThrows(CompanyNotFoundException.class, () -> listingMapper.toListing(listingRequest));
     }
 
     @Test
@@ -349,9 +347,7 @@ public class ListingMapperTest {
 
         // when & then
 
-        assertThrows(ModelNotFoundException.class, () -> {
-            listingMapper.toListing(listingRequest);
-        });
+        assertThrows(ModelNotFoundException.class, () -> listingMapper.toListing(listingRequest));
     }
 
 }
