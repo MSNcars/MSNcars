@@ -16,8 +16,6 @@ public record ListingRequest(
         String ownerId,
         Long sellingCompanyId,
         @NotNull
-        Long makeId,
-        @NotNull
         Long modelId,
         List<Long> featuresIds,
         LocalDate expiresAt,

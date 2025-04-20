@@ -25,11 +25,6 @@ public class Listing {
     private Company sellingCompany;
 
     @ManyToOne
-    @JoinColumn(name = "make_id")
-    @NotNull
-    private Make make;
-
-    @ManyToOne
     @JoinColumn(name = "model_id")
     @NotNull
     private Model model;
@@ -73,11 +68,10 @@ public class Listing {
 
     public Listing() {}
 
-    public Listing(Long id, String ownerId, Company sellingCompany, Make make, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
+    public Listing(Long id, String ownerId, Company sellingCompany, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
         this.id = id;
         this.ownerId = ownerId;
         this.sellingCompany = sellingCompany;
-        this.make = make;
         this.model = model;
         this.features = features;
         this.createdAt = createdAt;
@@ -97,7 +91,6 @@ public class Listing {
         this.id = other.id;
         this.ownerId = other.ownerId;
         this.sellingCompany = other.sellingCompany;
-        this.make = other.make;
         this.model = other.model;
         this.features = other.features;
         this.createdAt = other.createdAt;
@@ -143,14 +136,6 @@ public class Listing {
 
     public void setSellingCompany(Company sellingCompany) {
         this.sellingCompany = sellingCompany;
-    }
-
-    public Make getMake() {
-        return make;
-    }
-
-    public void setMake(Make make) {
-        this.make = make;
     }
 
     public Model getModel() {
@@ -248,6 +233,5 @@ public class Listing {
     public void setDescription(String description) {
         this.description = description;
     }
-
 
 }
