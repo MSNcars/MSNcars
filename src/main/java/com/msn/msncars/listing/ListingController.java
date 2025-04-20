@@ -5,9 +5,6 @@ import com.msn.msncars.listing.DTO.ListingResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -19,7 +16,7 @@ public class ListingController {
 
     private final ListingService listingService;
 
-    public ListingController(ListingService listingService) {
+    public ListingController(ListingServiceImpl listingService) {
         this.listingService = listingService;
     }
 

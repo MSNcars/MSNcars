@@ -18,7 +18,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ListingServiceTest {
+public class ListingServiceImplTest {
     @Mock
     private ListingRepository listingRepository;
 
@@ -26,7 +26,7 @@ public class ListingServiceTest {
     private ListingMapper listingMapper;
 
     @InjectMocks
-    private ListingService listingService;
+    private ListingServiceImpl listingServiceImpl;
 
     @Captor
     private ArgumentCaptor<Listing> listingArgumentCaptor;
@@ -192,7 +192,7 @@ public class ListingServiceTest {
 
         // when
 
-        List<ListingResponse> listingResponses = listingService.getAllListings();
+        List<ListingResponse> listingResponses = listingServiceImpl.getAllListings();
 
         // then
 
@@ -268,7 +268,7 @@ public class ListingServiceTest {
 
         // when
 
-        ListingResponse listingResponse = listingService.getListingById(1L);
+        ListingResponse listingResponse = listingServiceImpl.getListingById(1L);
 
         // then
 
@@ -287,7 +287,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingNotFoundException.class, () -> listingService.getListingById(listingId));
+        assertThrows(ListingNotFoundException.class, () -> listingServiceImpl.getListingById(listingId));
     }
 
     @Test
@@ -339,7 +339,7 @@ public class ListingServiceTest {
 
         // when
 
-        Long createdListingId = listingService.createListing(listingRequest);
+        Long createdListingId = listingServiceImpl.createListing(listingRequest);
 
         // then
 
@@ -426,7 +426,7 @@ public class ListingServiceTest {
 
         // when
 
-        ListingResponse response = listingService.updateListing(listingId, listingRequest);
+        ListingResponse response = listingServiceImpl.updateListing(listingId, listingRequest);
 
         // then
 
@@ -474,7 +474,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingNotFoundException.class, () -> listingService.updateListing(listingId, listingRequest));
+        assertThrows(ListingNotFoundException.class, () -> listingServiceImpl.updateListing(listingId, listingRequest));
 
     }
 
@@ -535,7 +535,7 @@ public class ListingServiceTest {
 
         // when
 
-        ListingResponse response = listingService.extendExpirationDate(listingId, newExpirationDate);
+        ListingResponse response = listingServiceImpl.extendExpirationDate(listingId, newExpirationDate);
 
         // then
 
@@ -565,7 +565,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingNotFoundException.class, () -> listingService.extendExpirationDate(listingId, date));
+        assertThrows(ListingNotFoundException.class, () -> listingServiceImpl.extendExpirationDate(listingId, date));
     }
 
     @Test
@@ -583,7 +583,7 @@ public class ListingServiceTest {
 
         // when & then
 
-        assertThrows(ListingExpirationDateException.class, () -> listingService.extendExpirationDate(listingId, date));
+        assertThrows(ListingExpirationDateException.class, () -> listingServiceImpl.extendExpirationDate(listingId, date));
     }
 
     @Test
@@ -598,7 +598,7 @@ public class ListingServiceTest {
 
         // when
 
-        listingService.deleteListing(listingId);
+        listingServiceImpl.deleteListing(listingId);
 
         // then
 
@@ -616,6 +616,6 @@ public class ListingServiceTest {
 
         //when & then
 
-        assertThrows(ListingNotFoundException.class, () -> listingService.deleteListing(listingId));
+        assertThrows(ListingNotFoundException.class, () -> listingServiceImpl.deleteListing(listingId));
     }
 }

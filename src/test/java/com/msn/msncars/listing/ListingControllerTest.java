@@ -39,7 +39,7 @@ public class ListingControllerTest {
     ObjectMapper objectMapper;
 
     @MockitoBean
-    private ListingService listingService;
+    private ListingServiceImpl listingServiceImpl;
 
     @MockitoBean
     private KeycloakConfig keycloakConfig;
@@ -117,7 +117,7 @@ public class ListingControllerTest {
 
         List<ListingResponse> listings = new ArrayList<>(Arrays.asList(listingResponse1, listingResponse2, listingResponse3));
 
-        Mockito.when(listingService.getAllListings()).thenReturn(listings);
+        Mockito.when(listingServiceImpl.getAllListings()).thenReturn(listings);
 
         // when & then
 
@@ -164,7 +164,7 @@ public class ListingControllerTest {
                 "desc1"
         );
 
-        Mockito.when(listingService.getListingById(listingId)).thenReturn(listingResponse);
+        Mockito.when(listingServiceImpl.getListingById(listingId)).thenReturn(listingResponse);
 
         // when & then
 
@@ -187,7 +187,7 @@ public class ListingControllerTest {
 
         Long listingId = 2L;
 
-        Mockito.when(listingService.getListingById(listingId))
+        Mockito.when(listingServiceImpl.getListingById(listingId))
                 .thenThrow(new ListingNotFoundException("Listing not found with id: " + listingId));
 
         // when & then
@@ -227,7 +227,7 @@ public class ListingControllerTest {
 
         Long expectedId = 1L;
 
-        Mockito.when(listingService.createListing(listingRequest)).thenReturn(expectedId);
+        Mockito.when(listingServiceImpl.createListing(listingRequest)).thenReturn(expectedId);
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
 
@@ -326,7 +326,7 @@ public class ListingControllerTest {
                 "desc2"
         );
 
-        Mockito.when(listingService.updateListing(listingId, listingUpdateRequest)).thenReturn(updatedListing);
+        Mockito.when(listingServiceImpl.updateListing(listingId, listingUpdateRequest)).thenReturn(updatedListing);
 
         String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
 
@@ -409,7 +409,7 @@ public class ListingControllerTest {
                 "desc2"
         );
 
-        Mockito.when(listingService.updateListing(listingId, listingUpdateRequest))
+        Mockito.when(listingServiceImpl.updateListing(listingId, listingUpdateRequest))
                 .thenThrow(new ListingNotFoundException("Listing not found with id: " + listingId));
 
         String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
@@ -455,7 +455,7 @@ public class ListingControllerTest {
                 "desc2"
         );
 
-        Mockito.when(listingService.extendExpirationDate(listingId, newExpirationDate)).thenReturn(updatedListing);
+        Mockito.when(listingServiceImpl.extendExpirationDate(listingId, newExpirationDate)).thenReturn(updatedListing);
 
         String newDate = objectMapper.writeValueAsString(newExpirationDate);
 
@@ -482,7 +482,7 @@ public class ListingControllerTest {
 
         LocalDate newExpirationDate = LocalDate.now().plusDays(35);
 
-        Mockito.when(listingService.extendExpirationDate(listingId, newExpirationDate))
+        Mockito.when(listingServiceImpl.extendExpirationDate(listingId, newExpirationDate))
                 .thenThrow(new ListingNotFoundException("Listing not found with id: " + listingId));
 
         // when & then
@@ -510,7 +510,7 @@ public class ListingControllerTest {
 
         LocalDate newExpirationDate = LocalDate.now().minusDays(35);
 
-        Mockito.when(listingService.extendExpirationDate(listingId, newExpirationDate))
+        Mockito.when(listingServiceImpl.extendExpirationDate(listingId, newExpirationDate))
                 .thenThrow(new ListingExpirationDateException("New expiration date cannot be in the past"));
 
         // when & then
@@ -536,7 +536,7 @@ public class ListingControllerTest {
 
         Long listingId = 1L;
 
-        Mockito.doNothing().when(listingService).deleteListing(listingId);
+        Mockito.doNothing().when(listingServiceImpl).deleteListing(listingId);
 
         // when & then
 
@@ -555,7 +555,7 @@ public class ListingControllerTest {
 
         Long listingId = 1L;
 
-        Mockito.doThrow(new ListingNotFoundException("Listing not found with id: " + listingId)).when(listingService)
+        Mockito.doThrow(new ListingNotFoundException("Listing not found with id: " + listingId)).when(listingServiceImpl)
                         .deleteListing(listingId);
 
         // when & then
