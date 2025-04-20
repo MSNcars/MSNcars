@@ -3,7 +3,6 @@ package com.msn.msncars.exception;
 import com.msn.msncars.car.exception.MakeNotFoundException;
 import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
-import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -41,11 +40,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ListingNotFoundException.class)
     protected ResponseEntity<Object> handleListingNotFoundException(ListingNotFoundException e, WebRequest request) {
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler(ListingExpirationDateException.class)
-    protected ResponseEntity<Object> handleListingExpirationDateException(ListingExpirationDateException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST , request);
     }
 
     @NotNull

@@ -1,12 +1,16 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.FeatureRepository;
+import com.msn.msncars.car.ModelRepository;
+import com.msn.msncars.car.exception.ModelNotFoundException;
+import com.msn.msncars.company.CompanyRepository;
+import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
-import com.msn.msncars.listing.exception.ListingExpirationDateException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +20,16 @@ public class ListingServiceImpl implements ListingService{
     private final ListingRepository listingRepository;
     private final ListingMapper listingMapper;
 
-    public ListingServiceImpl(ListingRepository listingRepository, ListingMapper listingMapper) {
+    private final ModelRepository modelRepository;
+    private final CompanyRepository companyRepository;
+    private final FeatureRepository featureRepository;
+
+    public ListingServiceImpl(ListingRepository listingRepository, ListingMapper listingMapper, ModelRepository modelRepository, CompanyRepository companyRepository, FeatureRepository featureRepository) {
         this.listingRepository = listingRepository;
         this.listingMapper = listingMapper;
+        this.modelRepository = modelRepository;
+        this.companyRepository = companyRepository;
+        this.featureRepository = featureRepository;
     }
 
     public List<ListingResponse> getAllListings() {
@@ -26,7 +37,7 @@ public class ListingServiceImpl implements ListingService{
         List<ListingResponse> listingResponses = new ArrayList<>();
 
         for (Listing listing : listings) {
-            listingResponses.add(listingMapper.fromListing(listing));
+            listingResponses.add(listingMapper.toDTO(listing));
         }
 
         return listingResponses;
@@ -35,8 +46,9 @@ public class ListingServiceImpl implements ListingService{
     public ListingResponse getListingById(Long listingId) {
         Optional<Listing> listing = listingRepository.findById(listingId);
 
-        return listingMapper.fromListing(
-                listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId)));
+        return listingMapper.toDTO(
+                listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId))
+        );
     }
 
     /*
@@ -53,35 +65,67 @@ public class ListingServiceImpl implements ListingService{
      */
 
     public Long createListing(ListingRequest listingRequest) {
-        Listing listing = listingRepository.save(listingMapper.toListing(listingRequest));
+        Listing listing = listingMapper.fromDTO(listingRequest);
 
-        return listing.getId();
+        // Set correct relation with other entities based on provided IDs
+        listing.setOwnerId(listingRequest.ownerId());
+        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
+            listing.setSellingCompany(
+                    companyRepository.findById(listingRequest.sellingCompanyId())
+                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
+            );
+        }
+        listing.setModel(
+                modelRepository.findById(listingRequest.modelId())
+                        .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + listingRequest.modelId()))
+        );
+        listing.setFeatures(
+             featureRepository.findAllById(listingRequest.featuresIds())
+        );
+
+        // Set creation and expiration time
+        listing.setCreatedAt(ZonedDateTime.now());
+        listing.setExpiresAt(listing.getCreatedAt().plusDays(listingRequest.validityPeriod().numberOfDays));
+
+        return listingRepository.save(listing).getId();
     }
 
     public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {
-        Listing existingListing = listingRepository.findById(listingId)
+        listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
-        Listing updatedListing = listingMapper.toListing(listingRequest);
+        Listing updatedListing = listingMapper.fromDTO(listingRequest);
         updatedListing.setId(listingId);
+
+        // Set correct relation with other entities based on provided IDs
+        updatedListing.setOwnerId(listingRequest.ownerId());
+        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
+            updatedListing.setSellingCompany(
+                    companyRepository.findById(listingRequest.sellingCompanyId())
+                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
+            );
+        }
+        updatedListing.setModel(
+                modelRepository.findById(listingRequest.modelId())
+                        .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + listingRequest.modelId()))
+        );
+        updatedListing.setFeatures(
+                featureRepository.findAllById(listingRequest.featuresIds())
+        );
 
         Listing savedListing = listingRepository.save(updatedListing);
 
-        return listingMapper.fromListing(savedListing);
+        return listingMapper.toDTO(savedListing);
     }
 
-    public ListingResponse extendExpirationDate(Long listingId, LocalDate newExpirationDate) {
+    public ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
-        if (newExpirationDate.isBefore(LocalDate.now())) {
-            throw new ListingExpirationDateException("New expiration date cannot be in the past");
-        }
-
-        listing.setExpiresAt(newExpirationDate);
+        listing.setExpiresAt(listing.getExpiresAt().plusDays(validityPeriod.numberOfDays));
         Listing updatedListing = listingRepository.save(listing);
 
-        return listingMapper.fromListing(updatedListing);
+        return listingMapper.toDTO(updatedListing);
     }
 
     public void deleteListing(Long listingId) {

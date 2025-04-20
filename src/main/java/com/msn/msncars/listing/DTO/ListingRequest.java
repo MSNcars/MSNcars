@@ -1,6 +1,7 @@
 package com.msn.msncars.listing.DTO;
 
 import com.msn.msncars.car.*;
+import com.msn.msncars.listing.ValidityPeriod;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -17,8 +18,6 @@ public record ListingRequest(
         @NotNull
         Long modelId,
         List<Long> featuresIds,
-        LocalDate expiresAt,
-        Boolean revoked,
         @Min(value = 0)
         BigDecimal price,
         @Min(value = 1900)
@@ -30,6 +29,7 @@ public record ListingRequest(
         CarOperationalStatus carOperationalStatus,
         CarType carType,
         @Size(max = 500)
-        String description
+        String description,
+        ValidityPeriod validityPeriod
 ) {
 }

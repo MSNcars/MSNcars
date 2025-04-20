@@ -50,16 +50,17 @@ public class ListingController {
     @PutMapping("/{listing-id}")
     public ListingResponse updateListing(
             @PathVariable("listing-id") Long listingId,
-            @RequestBody @Valid ListingRequest listingRequest) {
+            @RequestBody @Valid ListingRequest listingRequest
+    ) {
         return listingService.updateListing(listingId, listingRequest);
     }
 
     @PatchMapping("/{listing-id}/extend")
     public ListingResponse extendExpirationDate(
             @PathVariable("listing-id") Long listingId,
-            @RequestBody LocalDate newExpirationDate
+            @RequestBody ValidityPeriod validityPeriod
     ) {
-        return listingService.extendExpirationDate(listingId, newExpirationDate);
+        return listingService.extendExpirationDate(listingId, validityPeriod);
     }
 
     @DeleteMapping("/{listing-id}")

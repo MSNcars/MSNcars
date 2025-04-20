@@ -1,19 +1,21 @@
 package com.msn.msncars.listing.DTO;
 
 import com.msn.msncars.car.*;
+import com.msn.msncars.company.CompanyDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public record ListingResponse (
         Long id,
         String ownerId,
-        String sellingCompanyName,
-        String modelName,
+        CompanyDTO sellingCompany,
+        ModelDTO model,
         List<Feature> features,
-        LocalDate createdAt,
-        LocalDate expiresAt,
+        ZonedDateTime createdAt,
+        ZonedDateTime expiresAt,
         Boolean revoked,
         BigDecimal price,
         Integer productionYear,
@@ -23,7 +25,6 @@ public record ListingResponse (
         CarOperationalStatus carOperationalStatus,
         CarType carType,
         String description
-
 ) {
 
 }
