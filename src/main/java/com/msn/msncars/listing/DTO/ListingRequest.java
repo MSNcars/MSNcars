@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-//This request DTO can be edited according to needs!
 public record ListingRequest(
         @NotEmpty
         String ownerId,

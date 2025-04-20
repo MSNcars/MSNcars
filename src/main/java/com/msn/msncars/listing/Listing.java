@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 @Entity
 public class Listing {
@@ -37,8 +38,8 @@ public class Listing {
     )
     private List<Feature> features;
 
-    private LocalDate createdAt;
-    private LocalDate expiresAt;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime expiresAt;
 
     private Boolean revoked;
 
@@ -68,7 +69,11 @@ public class Listing {
 
     public Listing() {}
 
-    public Listing(Long id, String ownerId, Company sellingCompany, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
+    public Listing(
+            Long id, String ownerId, Company sellingCompany, Model model, List<Feature> features, ZonedDateTime createdAt,
+            ZonedDateTime expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage,
+            Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description
+    ) {
         this.id = id;
         this.ownerId = ownerId;
         this.sellingCompany = sellingCompany;
@@ -162,19 +167,19 @@ public class Listing {
         this.features = features;
     }
 
-    public LocalDate getCreatedAt() {
+    public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(ZonedDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDate getExpiresAt() {
+    public ZonedDateTime getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDate expiresAt) {
+    public void setExpiresAt(ZonedDateTime expiresAt) {
         this.expiresAt = expiresAt;
     }
 
