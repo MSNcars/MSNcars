@@ -1,16 +1,24 @@
 package com.msn.msncars.image;
 
+import com.msn.msncars.company.exception.CompanyNotFoundException;
+import com.msn.msncars.listing.Listing;
+import com.msn.msncars.listing.ListingRepository;
+import com.msn.msncars.listing.exception.ListingExpiredException;
+import com.msn.msncars.listing.exception.ListingNotFoundException;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.ForbiddenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,24 +26,42 @@ import java.util.List;
 public class ImageServiceImpl implements ImageService {
 
     private final MinioClient minioClient;
+    private final ListingRepository listingRepository;
     public static final String bucketName = "images";
     private final List<String> allowedContentTypes = List.of(".jpg", ".jpeg", ".png");
     private final Logger logger = LoggerFactory.getLogger(ImageServiceImpl.class);
 
-    public ImageServiceImpl(MinioClient minioClient) {
+    public ImageServiceImpl(MinioClient minioClient, ListingRepository listingRepository) {
         this.minioClient = minioClient;
+        this.listingRepository = listingRepository;
     }
 
     @Override
-    public void attachImage(Long listingId, MultipartFile image) {
+    public void attachImage(Long listingId, MultipartFile image, Jwt authenticationPrincipal) {
         //Bucket structure is flat, prefix is used to create hierarchy
         String prefix = createPrefix(listingId, image.getOriginalFilename());
         logger.info("Created prefix for image: {}", prefix);
 
+        // Check that passed file is of type image
         String fileExtension = getFileExtension(image);
         if(!allowedContentTypes.contains(fileExtension)){
             logger.error("File extension {} not allowed", fileExtension);
             throw new NotSupportedFileExtensionException(String.format("File extension %s not allowed", fileExtension));
+        }
+
+        // Check that listing exists
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException("Company not found with id: " + listingId));
+        // Check that user has permissions to update this listing
+        if(
+                !listing.getOwnerId().equals(authenticationPrincipal.getSubject()) &&
+                !listing.getSellingCompany().getUsersId().contains(authenticationPrincipal.getSubject())
+        ){
+            throw new ForbiddenException("You don't have permission to edit this listing.");
+        }
+        //Check that listing is not archived
+        if (listing.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new ListingExpiredException("You can't edit listing that already expired.");
         }
 
         try{

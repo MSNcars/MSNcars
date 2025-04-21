@@ -21,18 +21,12 @@ public class ImageController {
         this.imageService = imageService;
     }
 
-    /*
-        TODO for attach image:
-            - Check if user owns the listing he is trying to add images to (after setting up authentication)
-            - Check if listing can be modified (e.g you cannot change images of listing that is already expired)
-            - Check if listing doesn't have too much images (e.g. set limit to 40 images per listing)
-    */
     @PostMapping("images")
     @ResponseStatus(HttpStatus.CREATED)
     public void attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image,
                             @AuthenticationPrincipal Jwt authenticationPrincipal) {
         logger.info("Attaching image to listing id: {}", listingId);
-        imageService.attachImage(listingId, image);
+        imageService.attachImage(listingId, image, authenticationPrincipal);
     }
 
     @GetMapping("images")
