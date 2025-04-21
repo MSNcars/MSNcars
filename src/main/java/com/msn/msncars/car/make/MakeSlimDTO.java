@@ -1,4 +1,4 @@
-package com.msn.msncars.car;
+package com.msn.msncars.car.make;
 
 /*
     Used when returning short information about Make, for example when returning information

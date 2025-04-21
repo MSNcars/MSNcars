@@ -1,7 +1,7 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.FeatureRepository;
-import com.msn.msncars.car.ModelRepository;
+import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.company.exception.CompanyNotFoundException;

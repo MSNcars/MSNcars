@@ -428,7 +428,7 @@ public class ListingControllerTest {
     }
 
     @Test
-    public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_WhenDateIsValid () throws Exception {
+    public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_WhenDateIsValid() throws Exception {
         // given
 
         Long listingId = 1L;
@@ -556,7 +556,7 @@ public class ListingControllerTest {
         Long listingId = 1L;
 
         Mockito.doThrow(new ListingNotFoundException("Listing not found with id: " + listingId)).when(listingServiceImpl)
-                        .deleteListing(listingId);
+                .deleteListing(listingId);
 
         // when & then
 

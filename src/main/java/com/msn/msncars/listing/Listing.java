@@ -1,5 +1,6 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.model.Model;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
 import jakarta.persistence.*;
@@ -9,7 +10,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 @Entity

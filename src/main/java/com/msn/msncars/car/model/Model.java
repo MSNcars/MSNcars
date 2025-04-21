@@ -1,5 +1,6 @@
-package com.msn.msncars.car;
+package com.msn.msncars.car.model;
 
+import com.msn.msncars.car.make.Make;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 

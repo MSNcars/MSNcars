@@ -1,6 +1,8 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.*;
+import com.msn.msncars.car.make.Make;
+import com.msn.msncars.car.model.Model;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
