@@ -9,7 +9,6 @@ import java.util.List;
 @Entity
 public class Make {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotEmpty

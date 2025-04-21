@@ -12,7 +12,7 @@ public class Model {
 
     private String name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "make_id")
     @NotNull
     private Make make;
