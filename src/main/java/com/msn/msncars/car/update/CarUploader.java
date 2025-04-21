@@ -1,4 +1,4 @@
-package com.msn.msncars.car.model.update;
+package com.msn.msncars.car.update;
 
 import com.msn.msncars.car.make.Make;
 import com.msn.msncars.car.make.MakeRepository;
@@ -29,10 +29,13 @@ public class CarUploader {
         this.vehicleApiClient = vehicleApiClient;
     }
 
+    /*
+        Populates Model and Make tables in our database. It does not update Models and Makes already present in our database,
+        instead it only inserts models/makes which IDs are completely missing.
+    */
     //@Scheduled(cron = "0 0 0 * * ?") // every day at midnight
-    @Scheduled(fixedRate = 4 * 1000 * 60) // every 4 minutes -> use for testing only
-    @Transactional
-    public void fetchAllMakesFromAPI(){
+    @Scheduled(fixedRate = 10 * 1000 * 60) // every 10 minutes -> used for testing only
+    public void updateVehicleInformationFromApi(){
         logger.info("Starting to update Vehicle data using external API.");
 
         var vehicleApiResponse = vehicleApiClient.get()
@@ -41,7 +44,7 @@ public class CarUploader {
                 .retrieve()
                 .body(AllModelsApiResponse.class);
 
-        if(vehicleApiResponse == null || vehicleApiResponse.models() == null){
+        if(vehicleApiResponse == null || vehicleApiResponse.vehicles() == null){
             logger.info("External API returned empty data.");
             return;
         }
@@ -51,34 +54,38 @@ public class CarUploader {
             return;
         }
 
-        for (VehicleInformation vehicleInformation : vehicleApiResponse.models()){
-            Optional<Model> modelOptional = modelRepository.findById(vehicleInformation.modelID());
-
-            if(modelOptional.isPresent()){
-                continue;
-            }
-
-            Model model = new Model(vehicleInformation.modelID(), vehicleInformation.makeName());
-
-            Optional<Make> makeOptional = makeRepository.findById(vehicleInformation.makeID());
-            if(makeOptional.isPresent()){
-                Make make = makeOptional.get();
-                model.setMake(make);
-                make.getModels().add(model);
-            }else{
-                model.setMake(
-                        new Make(
-                                vehicleInformation.makeID(),
-                                vehicleInformation.makeName(),
-                                List.of(model)
-                        )
-                );
-            }
-
-            modelRepository.save(model);
+        for (VehicleInformation vehicleInformation : vehicleApiResponse.vehicles()){
+            if(modelRepository.count() == 1000) break; //Insert only first 1000 vehicles -> used for testing only
+            updateVehicleInformation(vehicleInformation);
         }
 
         logger.info("Vehicle data successfully updated.");
+    }
+
+    @Transactional
+    private void updateVehicleInformation(VehicleInformation vehicleInformation){
+        Optional<Model> modelOptional = modelRepository.findById(vehicleInformation.modelID());
+
+        if(modelOptional.isPresent()){
+            return;
+        }
+
+        Model model = new Model(vehicleInformation.modelID(), vehicleInformation.modelName());
+
+        Optional<Make> makeOptional = makeRepository.findById(vehicleInformation.makeID());
+        if(makeOptional.isPresent()){
+            model.setMake(makeOptional.get());
+        }else{
+            model.setMake(
+                    new Make(
+                            vehicleInformation.makeID(),
+                            vehicleInformation.makeName(),
+                            List.of(model)
+                    )
+            );
+        }
+
+        modelRepository.save(model);
     }
 
 }

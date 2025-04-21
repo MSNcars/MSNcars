@@ -1,4 +1,4 @@
-package com.msn.msncars.car.model.update;
+package com.msn.msncars.car.update;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

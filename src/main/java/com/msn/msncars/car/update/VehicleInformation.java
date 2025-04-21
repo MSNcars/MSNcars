@@ -1,4 +1,4 @@
-package com.msn.msncars.car.model.update;
+package com.msn.msncars.car.update;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 public record VehicleInformation(
