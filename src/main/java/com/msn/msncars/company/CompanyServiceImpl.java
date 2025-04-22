@@ -16,10 +16,12 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService, UserMapper userMapper) {
         this.companyRepository = companyRepository;
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -53,7 +55,7 @@ public class CompanyServiceImpl implements CompanyService {
                 .map(userService::getUserRepresentationById)
                 .toList();
 
-        return userRepresentations.stream().map(UserMapper.INSTANCE::toDTO).toList();
+        return userRepresentations.stream().map(userMapper::toDTO).toList();
     }
 
     @Override
@@ -61,7 +63,7 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         String ownerId = company.getOwnerId();
         UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId);
-        return UserMapper.INSTANCE.toDTO(ownerRepresentation);
+        return userMapper.toDTO(ownerRepresentation);
     }
 
     @Override

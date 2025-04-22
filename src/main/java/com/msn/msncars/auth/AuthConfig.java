@@ -25,8 +25,9 @@ public class AuthConfig {
         http
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images", "/public", "/listings"
-                                , "listings/{listing-id}")
+                                .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images", "/public")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/listings/**")
                                 .permitAll()
                                 .requestMatchers(HttpMethod.POST, "/listings")
                                 .permitAll()
