@@ -9,7 +9,9 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CompanyServiceImpl implements CompanyService {
@@ -31,8 +33,13 @@ public class CompanyServiceImpl implements CompanyService {
             createCompanyRequest.phone(),
             createCompanyRequest.email()
         );
+        company.setUsersId(Set.of(ownerId));
 
         return companyRepository.save(company);
+    }
+
+    public Optional<Company> getCompany(Long companyId) {
+        return companyRepository.findById(companyId);
     }
 
     @Override
@@ -51,6 +58,8 @@ public class CompanyServiceImpl implements CompanyService {
         List<UserRepresentation> userRepresentations = company.getUsersId()
                 .stream()
                 .map(userService::getUserRepresentationById)
+                .map(userRepresentationOptional -> userRepresentationOptional.orElse(null))
+                .filter(Objects::nonNull)
                 .toList();
 
         return userRepresentations.stream().map(UserMapper.INSTANCE::toDTO).toList();
@@ -60,7 +69,7 @@ public class CompanyServiceImpl implements CompanyService {
     public UserDTO getCompanyOwner(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         String ownerId = company.getOwnerId();
-        UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId);
+        UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId).orElseThrow(() -> new NotFoundException("Owner of the company not found"));
         return UserMapper.INSTANCE.toDTO(ownerRepresentation);
     }
 
