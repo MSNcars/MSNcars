@@ -11,10 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice
-public class GlobalExceptionHandler  {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleNotFoundException(NotFoundException e) {
@@ -27,30 +26,28 @@ public class GlobalExceptionHandler  {
     }
 
     @ExceptionHandler(ListingNotFoundException.class)
-    protected ResponseEntity<String> handleListingNotFoundException(ListingNotFoundException e) {
+    public ResponseEntity<String> handleListingNotFoundException(ListingNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(CompanyNotFoundException.class)
-    protected ResponseEntity<String> handleCompanyNotFoundException(CompanyNotFoundException e) {
+    public ResponseEntity<String> handleCompanyNotFoundException(CompanyNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(MakeNotFoundException.class)
-    protected ResponseEntity<String> handleMakeNotFoundException(MakeNotFoundException e) {
+    public ResponseEntity<String> handleMakeNotFoundException(MakeNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(ModelNotFoundException.class)
-    protected ResponseEntity<String> handleModelNotFoundException(ModelNotFoundException e) {
+    public ResponseEntity<String> handleModelNotFoundException(ModelNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(ListingRevokedException.class)
-    protected ResponseEntity<String> handleListingRevokedException(ListingRevokedException e) {
+    public ResponseEntity<String> handleListingRevokedException(ListingRevokedException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 }
-
-
