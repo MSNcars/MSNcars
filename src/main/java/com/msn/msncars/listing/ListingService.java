@@ -13,4 +13,6 @@ public interface ListingService {
     ListingResponse updateListing(Long listingId, ListingRequest listingRequest, String userId);
     ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod, String userId);
     void deleteListing(Long listingId, String userId);
+    void validateListingOwnership(Listing listing, String userId);
+    void validateListingActive(Listing listing);
 }

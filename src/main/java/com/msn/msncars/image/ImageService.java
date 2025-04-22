@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 public interface ImageService {
-    void attachImage(Long listingId, MultipartFile image, Jwt authenticationPrincipal);
+    void attachImage(Long listingId, MultipartFile image, String userId);
     Image fetchImage(String path);
     List<String> fetchListingImagesPaths(Long listingId);
 }

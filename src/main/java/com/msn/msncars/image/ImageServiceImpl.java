@@ -3,6 +3,7 @@ package com.msn.msncars.image;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.Listing;
 import com.msn.msncars.listing.ListingRepository;
+import com.msn.msncars.listing.ListingService;
 import com.msn.msncars.listing.exception.ListingExpiredException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import io.minio.*;
@@ -26,18 +27,20 @@ import java.util.List;
 public class ImageServiceImpl implements ImageService {
 
     private final MinioClient minioClient;
+    private final ListingService listingService;
     private final ListingRepository listingRepository;
     public static final String bucketName = "images";
     private final List<String> allowedContentTypes = List.of(".jpg", ".jpeg", ".png");
     private final Logger logger = LoggerFactory.getLogger(ImageServiceImpl.class);
 
-    public ImageServiceImpl(MinioClient minioClient, ListingRepository listingRepository) {
+    public ImageServiceImpl(MinioClient minioClient, ListingService listingService, ListingRepository listingRepository) {
         this.minioClient = minioClient;
+        this.listingService = listingService;
         this.listingRepository = listingRepository;
     }
 
     @Override
-    public void attachImage(Long listingId, MultipartFile image, Jwt authenticationPrincipal) {
+    public void attachImage(Long listingId, MultipartFile image, String userId) {
         //Bucket structure is flat, prefix is used to create hierarchy
         String prefix = createPrefix(listingId, image.getOriginalFilename());
         logger.info("Created prefix for image: {}", prefix);
@@ -53,16 +56,9 @@ public class ImageServiceImpl implements ImageService {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Company not found with id: " + listingId));
         // Check that user has permissions to update this listing
-        if(
-                !listing.getOwnerId().equals(authenticationPrincipal.getSubject()) &&
-                !listing.getSellingCompany().getUsersId().contains(authenticationPrincipal.getSubject())
-        ){
-            throw new ForbiddenException("You don't have permission to edit this listing.");
-        }
-        //Check that listing is not archived
-        if (listing.getExpiresAt().isBefore(ZonedDateTime.now())){
-            throw new ListingExpiredException("You can't edit listing that already expired.");
-        }
+        listingService.validateListingOwnership(listing, userId);
+        // Check that listing is not archived
+        listingService.validateListingActive(listing);
 
         try{
             minioClient.putObject(

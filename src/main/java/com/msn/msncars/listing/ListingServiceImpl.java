@@ -7,6 +7,7 @@ import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
+import com.msn.msncars.listing.exception.ListingExpiredException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import com.msn.msncars.listing.exception.ListingRevokedException;
 import jakarta.ws.rs.ForbiddenException;
@@ -81,11 +82,8 @@ public class ListingServiceImpl implements ListingService{
         Listing oldListing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
-        if(oldListing.getRevoked()){
-            throw new ListingRevokedException("Cannot extend revoked listing.");
-        }
-
         validateListingOwnership(oldListing, userId);
+        validateListingActive(oldListing);
 
         Listing updatedListing = listingMapper.fromDTO(listingRequest);
         updatedListing.setId(listingId);
@@ -128,6 +126,15 @@ public class ListingServiceImpl implements ListingService{
             (listing.getSellingCompany() != null && !listing.getSellingCompany().getUsersId().contains(userId))
         ){
             throw new ForbiddenException("You don't have permission to edit this listing.");
+        }
+    }
+
+    public void validateListingActive(Listing listing){
+        if(listing.getRevoked()){
+            throw new ListingRevokedException("Cannot extend revoked listing.");
+        }
+        if (listing.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new ListingExpiredException("You can't edit listing that already expired.");
         }
     }
 

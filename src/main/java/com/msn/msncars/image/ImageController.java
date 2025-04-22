@@ -26,7 +26,7 @@ public class ImageController {
     public void attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image,
                             @AuthenticationPrincipal Jwt authenticationPrincipal) {
         logger.info("Attaching image to listing id: {}", listingId);
-        imageService.attachImage(listingId, image, authenticationPrincipal);
+        imageService.attachImage(listingId, image, authenticationPrincipal.getSubject());
     }
 
     @GetMapping("images")
