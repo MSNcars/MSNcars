@@ -5,6 +5,8 @@ import com.msn.msncars.listing.DTO.ListingResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -25,22 +27,21 @@ public class ListingController {
         return listingService.getAllListings();
     }
 
-    @GetMapping(path="/{listing-id}")
+    @GetMapping("/{listing-id}")
     public ListingResponse getListingById(@PathVariable("listing-id") Long listingId) {
         return listingService.getListingById(listingId);
     }
 
-    /*
-    @GetMapping(path="/me")
+    @GetMapping("/me")
     public List<ListingResponse> getListingsOfRequestingUser(@AuthenticationPrincipal Jwt principal) {
         return listingService.getAllListingFromUser(principal.getSubject());
     }
-    */
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long createListing(@RequestBody @Valid ListingRequest listingRequest, HttpServletResponse response) {
-        Long id = listingService.createListing(listingRequest);
+    public Long createListing(@RequestBody @Valid ListingRequest listingRequest, @AuthenticationPrincipal Jwt principal,
+                              HttpServletResponse response) {
+        Long id = listingService.createListing(listingRequest, principal.getSubject());
 
         response.setHeader("Location", "/listings/" + id);
 
@@ -50,22 +51,24 @@ public class ListingController {
     @PutMapping("/{listing-id}")
     public ListingResponse updateListing(
             @PathVariable("listing-id") Long listingId,
-            @RequestBody @Valid ListingRequest listingRequest
+            @RequestBody @Valid ListingRequest listingRequest,
+            @AuthenticationPrincipal Jwt principal
     ) {
-        return listingService.updateListing(listingId, listingRequest);
+        return listingService.updateListing(listingId, listingRequest, principal.getSubject());
     }
 
     @PatchMapping("/{listing-id}/extend")
     public ListingResponse extendExpirationDate(
             @PathVariable("listing-id") Long listingId,
-            @RequestBody ValidityPeriod validityPeriod
+            @RequestBody ValidityPeriod validityPeriod,
+            @AuthenticationPrincipal Jwt principal
     ) {
-        return listingService.extendExpirationDate(listingId, validityPeriod);
+        return listingService.extendExpirationDate(listingId, validityPeriod, principal.getSubject());
     }
 
     @DeleteMapping("/{listing-id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteListing(@PathVariable("listing-id") Long listingId) {
-        listingService.deleteListing(listingId);
+    public void deleteListing(@PathVariable("listing-id") Long listingId, @AuthenticationPrincipal Jwt principal) {
+        listingService.deleteListing(listingId, principal.getSubject());
     }
 }

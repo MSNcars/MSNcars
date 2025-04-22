@@ -52,7 +52,7 @@ public class ImageController {
     }
 
     @ExceptionHandler(NotSupportedFileExtensionException.class)
-    public ResponseEntity<String> handleIllegalArgument(NotSupportedFileExtensionException ex) {
+    public ResponseEntity<String> handleNotSupportedFileExtensionException(NotSupportedFileExtensionException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 }

@@ -8,6 +8,8 @@ import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
+import com.msn.msncars.listing.exception.ListingRevokedException;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -51,37 +53,22 @@ public class ListingServiceImpl implements ListingService{
         );
     }
 
-    /*
     public List<ListingResponse> getAllListingFromUser(String userId) {
         List<Listing> listings = listingRepository.findAllByOwnerId(userId);
-        List<ListingResponse> listingResponses = new ArrayList<>();
 
+        List<ListingResponse> listingResponses = new ArrayList<>();
         for (Listing listing : listings) {
-            listingResponses.add(listingMapper.fromListing(listing));
+            listingResponses.add(listingMapper.toDTO(listing));
         }
 
         return listingResponses;
     }
-     */
 
-    public Long createListing(ListingRequest listingRequest) {
+    public Long createListing(ListingRequest listingRequest, String userId) {
         Listing listing = listingMapper.fromDTO(listingRequest);
+        listing.setOwnerId(userId);
 
-        // Set correct relation with other entities based on provided IDs
-        listing.setOwnerId(listingRequest.ownerId());
-        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
-            listing.setSellingCompany(
-                    companyRepository.findById(listingRequest.sellingCompanyId())
-                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
-            );
-        }
-        listing.setModel(
-                modelRepository.findById(listingRequest.modelId())
-                        .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + listingRequest.modelId()))
-        );
-        listing.setFeatures(
-             featureRepository.findAllById(listingRequest.featuresIds())
-        );
+        fetchEntities(listing, listingRequest);
 
         // Set creation and expiration time
         listing.setCreatedAt(ZonedDateTime.now());
@@ -90,48 +77,80 @@ public class ListingServiceImpl implements ListingService{
         return listingRepository.save(listing).getId();
     }
 
-    public ListingResponse updateListing(Long listingId, ListingRequest listingRequest) {
-        listingRepository.findById(listingId)
+    public ListingResponse updateListing(Long listingId, ListingRequest listingRequest, String userId) {
+        Listing oldListing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        if(oldListing.getRevoked()){
+            throw new ListingRevokedException("Cannot extend revoked listing.");
+        }
+
+        validateListingOwnership(oldListing, userId);
 
         Listing updatedListing = listingMapper.fromDTO(listingRequest);
         updatedListing.setId(listingId);
 
-        // Set correct relation with other entities based on provided IDs
-        updatedListing.setOwnerId(listingRequest.ownerId());
-        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
-            updatedListing.setSellingCompany(
-                    companyRepository.findById(listingRequest.sellingCompanyId())
-                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
-            );
-        }
-        updatedListing.setModel(
-                modelRepository.findById(listingRequest.modelId())
-                        .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + listingRequest.modelId()))
-        );
-        updatedListing.setFeatures(
-                featureRepository.findAllById(listingRequest.featuresIds())
-        );
+        fetchEntities(updatedListing, listingRequest);
 
-        Listing savedListing = listingRepository.save(updatedListing);
-
-        return listingMapper.toDTO(savedListing);
+        return listingMapper.toDTO(listingRepository.save(updatedListing));
     }
 
-    public ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod) {
+    public ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod, String userId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
-        listing.setExpiresAt(listing.getExpiresAt().plusDays(validityPeriod.numberOfDays));
+        if(listing.getRevoked()){
+            throw new ListingRevokedException("Cannot extend revoked listing.");
+        }
+
+        validateListingOwnership(listing, userId);
+
+        ZonedDateTime startingTime = listing.getExpiresAt().isAfter(ZonedDateTime.now()) ? listing.getExpiresAt() : ZonedDateTime.now();
+        listing.setExpiresAt(startingTime.plusDays(validityPeriod.numberOfDays));
+
         Listing updatedListing = listingRepository.save(listing);
 
         return listingMapper.toDTO(updatedListing);
     }
 
-    public void deleteListing(Long listingId) {
+    public void deleteListing(Long listingId, String userId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
+        validateListingOwnership(listing, userId);
+
         listingRepository.delete(listing);
+    }
+
+    public void validateListingOwnership(Listing listing, String userId){
+        if(
+            !listing.getOwnerId().equals(userId) &&
+            (listing.getSellingCompany() != null && !listing.getSellingCompany().getUsersId().contains(userId))
+        ){
+            throw new ForbiddenException("You don't have permission to edit this listing.");
+        }
+    }
+
+    /*
+        Fetch other entities based on provided IDs.
+    */
+    private void fetchEntities(Listing listing, ListingRequest listingRequest){
+        listing.setOwnerId(listingRequest.ownerId());
+
+        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
+            listing.setSellingCompany(
+                    companyRepository.findById(listingRequest.sellingCompanyId())
+                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
+            );
+        }
+
+        listing.setModel(
+                modelRepository.findById(listingRequest.modelId())
+                        .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + listingRequest.modelId()))
+        );
+
+        listing.setFeatures(
+                featureRepository.findAllById(listingRequest.featuresIds())
+        );
     }
 }

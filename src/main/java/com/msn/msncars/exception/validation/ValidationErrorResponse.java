@@ -1,4 +1,4 @@
-package com.msn.msncars.exception;
+package com.msn.msncars.exception.validation;
 
 import java.util.List;
 

@@ -4,28 +4,17 @@ import com.msn.msncars.car.exception.MakeNotFoundException;
 import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
+import com.msn.msncars.listing.exception.ListingRevokedException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler  {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleNotFoundException(NotFoundException e) {
@@ -38,57 +27,28 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ListingNotFoundException.class)
-    protected ResponseEntity<Object> handleListingNotFoundException(ListingNotFoundException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @NotNull
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException e,
-            @NotNull HttpHeaders headers,
-            @NotNull HttpStatusCode status,
-            @NotNull WebRequest request) {
-
-        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
-        List<ValidationError> validationErrors = new ArrayList<>();
-
-        for (FieldError fieldError : fieldErrors) {
-            validationErrors.add(new ValidationError(fieldError.getField(), fieldError.getDefaultMessage()));
-        }
-
-        ValidationErrorResponse response = new ValidationErrorResponse(validationErrors);
-
-        return handleExceptionInternal(e, response, headers, HttpStatus.BAD_REQUEST, request);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException e, WebRequest request) {
-        Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
-        List<ValidationError> validationErrors = new ArrayList<>();
-
-        for (ConstraintViolation<?> violation : constraintViolations) {
-            validationErrors.add(new ValidationError(violation.getPropertyPath().toString(), violation.getMessage()));
-        }
-
-        ValidationErrorResponse response = new ValidationErrorResponse(validationErrors);
-
-        return handleExceptionInternal(e, response, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    protected ResponseEntity<String> handleListingNotFoundException(ListingNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(CompanyNotFoundException.class)
-    protected ResponseEntity<Object> handleCompanyNotFoundException(CompanyNotFoundException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    protected ResponseEntity<String> handleCompanyNotFoundException(CompanyNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(MakeNotFoundException.class)
-    protected ResponseEntity<Object> handleMakeNotFoundException(MakeNotFoundException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    protected ResponseEntity<String> handleMakeNotFoundException(MakeNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(ModelNotFoundException.class)
-    protected ResponseEntity<Object> handleModelNotFoundException(ModelNotFoundException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    protected ResponseEntity<String> handleModelNotFoundException(ModelNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(ListingRevokedException.class)
+    protected ResponseEntity<String> handleListingRevokedException(ListingRevokedException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 }
