@@ -55,7 +55,7 @@ public class CarUploader {
         }
 
         for (VehicleInformation vehicleInformation : vehicleApiResponse.vehicles()){
-            if(modelRepository.count() == 1000) break; //Insert only first 1000 vehicles -> used for testing only
+            if(modelRepository.count() == 500) break; //Insert only first 1000 vehicles -> used for testing only
             updateVehicleInformation(vehicleInformation);
         }
 
@@ -63,7 +63,7 @@ public class CarUploader {
     }
 
     @Transactional
-    private void updateVehicleInformation(VehicleInformation vehicleInformation){
+    public void updateVehicleInformation(VehicleInformation vehicleInformation){
         Optional<Model> modelOptional = modelRepository.findById(vehicleInformation.modelID());
 
         if(modelOptional.isPresent()){
