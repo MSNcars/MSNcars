@@ -7,6 +7,7 @@ import com.msn.msncars.car.model.ModelRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,13 +30,21 @@ public class CarUploader {
         this.vehicleApiClient = vehicleApiClient;
     }
 
+    @Value("${car.uploader.suspend}")
+    private Boolean suspend;
+
+    @Value("${car.uploader.limit}")
+    private Long modelsLimit;
+
     /*
         Populates Model and Make tables in our database. It does not update Models and Makes already present in our database,
         instead it only inserts models/makes which IDs are completely missing.
     */
-    //@Scheduled(cron = "0 0 0 * * ?") // every day at midnight
-    @Scheduled(fixedRate = 10 * 1000 * 60) // every 10 minutes -> used for testing only
+    @Scheduled(fixedRate = 10 * 1000 * 60) // every 10 minutes
     public void updateVehicleInformationFromApi(){
+        if(suspend)
+            return;
+
         logger.info("Starting to update Vehicle data using external API.");
 
         var vehicleApiResponse = vehicleApiClient.get()
@@ -55,7 +64,7 @@ public class CarUploader {
         }
 
         for (VehicleInformation vehicleInformation : vehicleApiResponse.vehicles()){
-            if(modelRepository.count() == 500) break; //Insert only first 1000 vehicles -> used for testing only
+            if(modelRepository.count() > modelsLimit) break;
             updateVehicleInformation(vehicleInformation);
         }
 
