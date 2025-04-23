@@ -7,12 +7,11 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 public class Model {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "make_id")
     @NotNull
     private Make make;
