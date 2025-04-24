@@ -7,10 +7,12 @@ import com.msn.msncars.car.model.Model;
 import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
+import com.msn.msncars.listing.exception.ListingNotFoundException;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,8 +35,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -270,6 +271,26 @@ public class ListingIntegrationTests {
                 .andExpect(jsonPath("$.productionYear", is(2020)))
                 .andExpect(jsonPath("$.carType", is("SEDAN")));
     }
+
+    @Test
+    public void getListingById_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
+        // given
+
+        Long listingId = 2L;
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get("/listings/" + listingId)
+                .with(jwt())
+                .accept(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 2"));
+    }
+
+
 
 
 
