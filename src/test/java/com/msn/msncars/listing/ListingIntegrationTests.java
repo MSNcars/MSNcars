@@ -31,8 +31,8 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -84,6 +84,13 @@ public class ListingIntegrationTests {
 
     @BeforeEach
     public void setUp() {
+        listingRepository.deleteAll();
+    }
+
+    @Test
+    public void getAllListings_ShouldReturnAllListings_And200Code() throws Exception {
+        // given
+
         Make toyota = new Make(1L, "Toyota");
         Make bmw = new Make(2L, "BMW");
         Make ford = new Make(3L, "Ford");
@@ -92,38 +99,85 @@ public class ListingIntegrationTests {
         Model series3 = new Model(2L, "3 Series", bmw);
         Model focus = new Model(3L, "Focus", ford);
 
-        Company autoWorld = new Company(null, "1", "Auto World", "123 Main St", "123-456-789", "contact@autoworld.com");
-        Company bmwCenter = new Company(null, "2", "BMW Center", "456 BMW Rd", "987-654-321", "sales@bmwcenter.com");
-        Company fordDealer = new Company(null, "3", "Ford Dealer", "789 Ford Ln", "555-222-111", "info@forddealer.com");
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+        Company bmwCenter = new Company(null,
+                "2",
+                "BMW Center",
+                "456 BMW Rd",
+                "987-654-321",
+                "sales@bmwcenter.com");
+        Company fordDealer = new Company(null,
+                "3",
+                "Ford Dealer",
+                "789 Ford Ln",
+                "555-222-111",
+                "info@forddealer.com");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
         Feature leatherSeats = new Feature(null, "Leather Seats");
 
         Listing listing1 = new Listing(
-                null, "1", autoWorld, corolla, List.of(sunroof, navigation),
-                ZonedDateTime.now(), ZonedDateTime.now().plusMonths(1), false,
-                new BigDecimal("18000.00"), 2020, 45000,
-                Fuel.PETROL, CarUsage.USED, CarOperationalStatus.WORKING,
-                CarType.SEDAN, "Well maintained Toyota Corolla with sunroof and nav."
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
         );
 
         Listing listing2 = new Listing(
-                null, "2", bmwCenter, series3, List.of(leatherSeats),
-                ZonedDateTime.now(), ZonedDateTime.now().plusMonths(2), false,
-                new BigDecimal("32000.00"), 2022, 15000,
-                Fuel.DIESEL, CarUsage.USED, CarOperationalStatus.WORKING,
-                CarType.SEDAN, "Luxury BMW 3 Series with leather interior."
+                null,
+                "2",
+                bmwCenter,
+                series3,
+                List.of(leatherSeats),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(2),
+                false,
+                new BigDecimal("32000.00"),
+                2022,
+                15000,
+                Fuel.DIESEL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Luxury BMW 3 Series with leather interior."
         );
 
         Listing listing3 = new Listing(
-                null, "3", fordDealer, focus, List.of(navigation),
-                ZonedDateTime.now(), ZonedDateTime.now().plusWeeks(3), false,
-                new BigDecimal("14000.00"), 2018, 78000,
-                Fuel.PETROL, CarUsage.USED, CarOperationalStatus.DAMAGED,
-                CarType.HATCHBACK, "Reliable Ford Focus, ideal for city use."
+                null,
+                "3",
+                fordDealer,
+                focus,
+                List.of(navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusWeeks(3),
+                false,
+                new BigDecimal("14000.00"),
+                2018,
+                78000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.DAMAGED,
+                CarType.HATCHBACK,
+                "Reliable Ford Focus, ideal for city use."
         );
-        listingRepository.deleteAll();
 
         makeRepository.save(toyota);
         makeRepository.save(bmw);
@@ -144,21 +198,12 @@ public class ListingIntegrationTests {
         listingRepository.save(listing1);
         listingRepository.save(listing2);
         listingRepository.save(listing3);
-    }
 
-    @Test
-    public void simple()
-    {
-        System.out.println(postgres.getJdbcUrl());
-        System.out.println(postgres.getUsername());
-        System.out.println(postgres.getPassword());
-    }
-
-    @Test
-    public void getAllListingsEndpoint_ShouldReturnAllListings() throws Exception {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get("/listings")
                 .contentType(MediaType.APPLICATION_JSON);
+
+        // when & then
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -167,6 +212,67 @@ public class ListingIntegrationTests {
                 .andExpect(jsonPath("$[1].price", is(32000.00)))
                 .andExpect(jsonPath("$[2].fuel", is("PETROL")));
     }
+
+    @Test
+    public void getListingById_ShouldReturnListing_And200Code_WhenRequestedListingExists() throws Exception {
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+
+        Listing listing1 = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        makeRepository.save(toyota);
+        modelRepository.save(corolla);
+        companyRepository.save(autoWorld);
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        Listing savedListing = listingRepository.save(listing1);
+        Long listingId = savedListing.getId();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get("/listings/" + listingId)
+                .with(jwt())
+                .accept(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$.sellingCompany.name", is("Auto World")))
+                .andExpect(jsonPath("$.productionYear", is(2020)))
+                .andExpect(jsonPath("$.carType", is("SEDAN")));
+    }
+
+
+
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
