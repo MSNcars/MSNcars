@@ -1,5 +1,6 @@
 package com.msn.msncars.listing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msn.msncars.car.*;
 import com.msn.msncars.car.make.Make;
 import com.msn.msncars.car.make.MakeRepository;
@@ -7,8 +8,10 @@ import com.msn.msncars.car.model.Model;
 import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
+import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import com.zaxxer.hikari.HikariDataSource;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +19,14 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -33,8 +38,11 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -83,6 +91,8 @@ public class ListingIntegrationTests {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    ObjectMapper objectMapper;
 
     @BeforeEach
     public void setUp() {
@@ -211,6 +221,8 @@ public class ListingIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].model.name", is("Corolla")))
+                // can you get correct make name
+                .andExpect(jsonPath("$[0].model.make.name", is("Toyota")))
                 .andExpect(jsonPath("$[1].price", is(32000.00)))
                 .andExpect(jsonPath("$[2].fuel", is("PETROL")));
     }
@@ -231,7 +243,7 @@ public class ListingIntegrationTests {
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
 
-        Listing listing1 = new Listing(
+        Listing listing = new Listing(
                 null,
                 "1",
                 autoWorld,
@@ -255,7 +267,7 @@ public class ListingIntegrationTests {
         companyRepository.save(autoWorld);
         featureRepository.save(sunroof);
         featureRepository.save(navigation);
-        Listing savedListing = listingRepository.save(listing1);
+        Listing savedListing = listingRepository.save(listing);
         Long listingId = savedListing.getId();
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
@@ -424,6 +436,75 @@ public class ListingIntegrationTests {
                 .andExpect(jsonPath("$[1].price", is(14000.00)))
                 .andExpect(jsonPath("$[1].fuel", is("PETROL")));
     }
+
+    @Test
+    public void createListing_ShouldReturn201Code_AndIdOfCreatedResource_AndShouldCreateNewListingInDatabase_WhenRequestIsValid()
+            throws Exception {
+        // given
+
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+
+        makeRepository.save(toyota);
+        modelRepository.save(corolla);
+        companyRepository.save(autoWorld);
+        Feature f1 = featureRepository.save(sunroof);
+        Feature f2 = featureRepository.save(navigation);
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                1L,
+                1L,
+                List.of(f1.getId(), f2.getId()),
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav.",
+                ValidityPeriod.Standard
+        );
+
+        String requestJson = objectMapper.writeValueAsString(listingRequest);
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .post("/listings")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        // when & then
+        MvcResult result = mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(header().string(HttpHeaders.LOCATION, Matchers.startsWith("/listings/")))
+                .andReturn();
+
+        assertEquals(1, listingRepository.count());
+
+        String content = result.getResponse().getContentAsString();
+        Long generatedId = objectMapper.readValue(content, Long.class);
+
+        assertTrue(listingRepository.findById(generatedId).isPresent());
+
+        Listing saved = listingRepository.findById(generatedId).orElseThrow();
+
+        assertEquals(45000, saved.getMileage());
+        assertEquals(new BigDecimal("18000.00"), saved.getPrice());
+    }
+
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
