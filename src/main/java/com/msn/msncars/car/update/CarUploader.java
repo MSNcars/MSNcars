@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Profile("!test")
 public class CarUploader {
 
     private final ModelRepository modelRepository;
@@ -40,6 +42,7 @@ public class CarUploader {
         Populates Model and Make tables in our database. It does not update Models and Makes already present in our database,
         instead it only inserts models/makes which IDs are completely missing.
     */
+
     @Scheduled(fixedRate = 10 * 1000 * 60) // every 10 minutes
     public void updateVehicleInformationFromApi(){
         if(suspend)

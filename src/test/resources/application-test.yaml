@@ -1,4 +1,0 @@
-minio:
-  endpoint: http://localhost:9002
-  username: minioadmintest
-  password: minioadmintest
