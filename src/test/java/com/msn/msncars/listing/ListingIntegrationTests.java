@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -290,10 +291,139 @@ public class ListingIntegrationTests {
                 .andExpect(content().string("Listing not found with id: 2"));
     }
 
+    @Test
+    public void getMyListings_ShouldReturn200Code_AndReturnListingsOfSpecifiedUser() throws Exception {
+        // given
 
+        Make toyota = new Make(1L, "Toyota");
+        Make bmw = new Make(2L, "BMW");
+        Make ford = new Make(3L, "Ford");
 
+        Model corolla = new Model(1L, "Corolla", toyota);
+        Model series3 = new Model(2L, "3 Series", bmw);
+        Model focus = new Model(3L, "Focus", ford);
 
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+        Company bmwCenter = new Company(null,
+                "2",
+                "BMW Center",
+                "456 BMW Rd",
+                "987-654-321",
+                "sales@bmwcenter.com");
+        Company fordDealer = new Company(null,
+                "3",
+                "Ford Dealer",
+                "789 Ford Ln",
+                "555-222-111",
+                "info@forddealer.com");
 
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+        Feature leatherSeats = new Feature(null, "Leather Seats");
+
+        Listing listing1 = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        Listing listing2 = new Listing(
+                null,
+                "2",
+                bmwCenter,
+                series3,
+                List.of(leatherSeats),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(2),
+                false,
+                new BigDecimal("32000.00"),
+                2022,
+                15000,
+                Fuel.DIESEL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Luxury BMW 3 Series with leather interior."
+        );
+
+        Listing listing3 = new Listing(
+                null,
+                "1",
+                fordDealer,
+                focus,
+                List.of(navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusWeeks(3),
+                false,
+                new BigDecimal("14000.00"),
+                2018,
+                78000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.DAMAGED,
+                CarType.HATCHBACK,
+                "Reliable Ford Focus, ideal for city use."
+        );
+
+        makeRepository.save(toyota);
+        makeRepository.save(bmw);
+        makeRepository.save(ford);
+
+        modelRepository.save(corolla);
+        modelRepository.save(series3);
+        modelRepository.save(focus);
+
+        companyRepository.save(autoWorld);
+        companyRepository.save(bmwCenter);
+        companyRepository.save(fordDealer);
+
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        featureRepository.save(leatherSeats);
+
+        listingRepository.save(listing1);
+        listingRepository.save(listing2);
+        listingRepository.save(listing3);
+
+        String userId = "1";
+
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get("/listings/me")
+                .with(jwt().jwt(jwt))
+                .accept(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].model.name", is("Corolla")))
+                .andExpect(jsonPath("$[1].price", is(14000.00)))
+                .andExpect(jsonPath("$[1].fuel", is("PETROL")));
+    }
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
