@@ -1,16 +1,19 @@
-package com.msn.msncars.car;
+package com.msn.msncars.car.model;
 
+import com.msn.msncars.car.make.Make;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Model {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "make_id")
+    @NotNull
     private Make make;
 
     public Model() {}
@@ -19,6 +22,11 @@ public class Model {
         this.id = id;
         this.name = name;
         this.make = make;
+    }
+
+    public Model(Long id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     public void setId(Long id) {

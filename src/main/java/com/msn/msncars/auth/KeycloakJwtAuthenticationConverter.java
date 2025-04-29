@@ -1,5 +1,6 @@
 package com.msn.msncars.auth;
 
+import com.msn.msncars.auth.keycloak.KeycloakConfig;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -25,6 +26,11 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
 
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
     private final String principalClaimName = "sub";
+    private final KeycloakConfig keycloakConfig;
+
+    public KeycloakJwtAuthenticationConverter(KeycloakConfig keycloakConfig) {
+        this.keycloakConfig = keycloakConfig;
+    }
 
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
@@ -46,10 +52,10 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
         }
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
 
-        if (resourceAccess.get("MSNcars") == null) {
+        if (resourceAccess.get(keycloakConfig.getRealm()) == null) {
             return Set.of();
         }
-        Map<String, Object> resource = (Map<String, Object>) resourceAccess.get("MSNcars");
+        Map<String, Object> resource = (Map<String, Object>) resourceAccess.get(keycloakConfig.getRealm());
 
         if (resource.get("roles") == null) {
             return Set.of();

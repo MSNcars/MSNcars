@@ -1,20 +1,24 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.model.Model;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
-
 @Entity
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotEmpty
     private String ownerId;
 
     @ManyToOne
@@ -22,11 +26,8 @@ public class Listing {
     private Company sellingCompany;
 
     @ManyToOne
-    @JoinColumn(name = "make_id")
-    private Make make;
-
-    @ManyToOne
     @JoinColumn(name = "model_id")
+    @NotNull
     private Model model;
 
     @ManyToMany
@@ -37,8 +38,8 @@ public class Listing {
     )
     private List<Feature> features;
 
-    private LocalDate createdAt;
-    private LocalDate expiresAt;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime expiresAt;
 
     private Boolean revoked;
 
@@ -68,11 +69,14 @@ public class Listing {
 
     public Listing() {}
 
-    public Listing(Long id, String ownerId, Company sellingCompany, Make make, Model model, List<Feature> features, LocalDate createdAt, LocalDate expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage, Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description) {
+    public Listing(
+            Long id, String ownerId, Company sellingCompany, Model model, List<Feature> features, ZonedDateTime createdAt,
+            ZonedDateTime expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage,
+            Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description
+    ) {
         this.id = id;
         this.ownerId = ownerId;
         this.sellingCompany = sellingCompany;
-        this.make = make;
         this.model = model;
         this.features = features;
         this.createdAt = createdAt;
@@ -86,6 +90,25 @@ public class Listing {
         this.carOperationalStatus = carOperationalStatus;
         this.carType = carType;
         this.description = description;
+    }
+
+    public Listing(Listing other) {
+        this.id = other.id;
+        this.ownerId = other.ownerId;
+        this.sellingCompany = other.sellingCompany;
+        this.model = other.model;
+        this.features = other.features;
+        this.createdAt = other.createdAt;
+        this.expiresAt = other.expiresAt;
+        this.revoked = other.revoked;
+        this.price = other.price;
+        this.productionYear = other.productionYear;
+        this.mileage = other.mileage;
+        this.fuel = other.fuel;
+        this.carUsage = other.carUsage;
+        this.carOperationalStatus = other.carOperationalStatus;
+        this.carType = other.carType;
+        this.description = other.description;
     }
 
     public Boolean getRevoked() {
@@ -120,14 +143,6 @@ public class Listing {
         this.sellingCompany = sellingCompany;
     }
 
-    public Make getMake() {
-        return make;
-    }
-
-    public void setMake(Make make) {
-        this.make = make;
-    }
-
     public Model getModel() {
         return model;
     }
@@ -152,19 +167,19 @@ public class Listing {
         this.features = features;
     }
 
-    public LocalDate getCreatedAt() {
+    public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(ZonedDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDate getExpiresAt() {
+    public ZonedDateTime getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDate expiresAt) {
+    public void setExpiresAt(ZonedDateTime expiresAt) {
         this.expiresAt = expiresAt;
     }
 
@@ -223,4 +238,5 @@ public class Listing {
     public void setDescription(String description) {
         this.description = description;
     }
+
 }
