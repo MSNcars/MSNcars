@@ -1,7 +1,9 @@
 # Endpoints
 
 ### 🔐 Auth
-##### To create account use localhost:80/auth/register endpoint (for now only supports accounts with user role).
+##### To create account use: 
+- localhost:80/auth/user/register - user account
+- localhost:80/auth/company/register - company account
 
 ### 👤 Default Accounts for Testing
 
