@@ -27,7 +27,7 @@ class CompanyTest {
     private CompanyRepository companyRepository;
 
     @Autowired
-    private CompanyServiceImpl companyService;
+    private CompanyService companyService;
 
     @Test
     void createCompany_WhenRequestCorrect_ShouldCallSaveExactlyOnce() {
@@ -90,7 +90,7 @@ class CompanyTest {
         Company company = new Company();
         company.setUsersId(usersId);
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(new UserRepresentation());
+        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
 
         // when
         List<UserDTO> userDTOs = companyService.getCompanyMembers(1L);
@@ -132,7 +132,7 @@ class CompanyTest {
         ownerRepresentation.setFirstName("ownerFirstName");
         ownerRepresentation.setLastName("ownerLastName");
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(ownerRepresentation);
+        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(ownerRepresentation));
 
         // when
         UserDTO userDTO = companyService.getCompanyOwner(1L);
@@ -143,6 +143,17 @@ class CompanyTest {
         assertEquals(ownerRepresentation.getUsername(), userDTO.username());
         assertEquals(ownerRepresentation.getFirstName(), userDTO.firstName());
         assertEquals(ownerRepresentation.getLastName(), userDTO.lastName());
+    }
+
+    @Test
+    void getCompanyOwner_WhenOwnerNotFound_ShouldThrowNotFoundException() {
+        // given
+        Company company = new Company();
+        Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
+        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.empty());
+
+        // when
+        assertThrows(NotFoundException.class, () -> companyService.getCompanyOwner(1L));
     }
 
     @Test

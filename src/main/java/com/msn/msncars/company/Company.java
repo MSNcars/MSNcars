@@ -96,4 +96,16 @@ public class Company {
     public void setUsersId(Set<String> usersId) {
         this.usersId = usersId;
     }
+
+    public boolean hasMember(String userId) {
+        return usersId.contains(userId);
+    }
+
+    public boolean hasOwner(String userId) {
+        return ownerId.equals(userId);
+    }
+
+    public void addMember(String userId) {
+        usersId.add(userId);
+    }
 }
