@@ -32,7 +32,7 @@ class CompanyTest {
     @Test
     void createCompany_WhenRequestCorrect_ShouldCallSaveExactlyOnce() {
         // given
-        CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest(
+        CompanyCreationRequest companyCreationRequest = new CompanyCreationRequest(
                 "companyName",
                 "companyAddress",
                 "companyPhone",
@@ -40,7 +40,7 @@ class CompanyTest {
         );
 
         // when
-        companyService.createCompany(createCompanyRequest, "1");
+        companyService.createCompany(companyCreationRequest, "1");
 
         // then
         Mockito.verify(companyRepository, Mockito.times(1)).save(Mockito.any());
