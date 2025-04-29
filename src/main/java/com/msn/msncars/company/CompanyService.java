@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CompanyService {
-    Company createCompany(CreateCompanyRequest createCompanyRequest, String ownerId);
+    Company createCompany(CompanyCreationRequest companyCreationRequest, String ownerId);
     Optional<Company> getCompany(Long companyId);
     Optional<CompanyDTO> getCompanyInfo(Long companyId);
     List<UserDTO> getCompanyMembers(Long companyId);

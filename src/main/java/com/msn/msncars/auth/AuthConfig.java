@@ -37,7 +37,7 @@ public class AuthConfig {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/listings/{listing-id}")
                                 .permitAll()
-                                .requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
+                                .requestMatchers("/auth/user/register", "/auth/company/register", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
                                 .requestMatchers("/company/**")
                                 .permitAll()

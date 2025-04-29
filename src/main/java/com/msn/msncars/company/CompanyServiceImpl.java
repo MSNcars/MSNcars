@@ -27,13 +27,13 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public Company createCompany(CreateCompanyRequest createCompanyRequest, String ownerId) {
+    public Company createCompany(CompanyCreationRequest companyCreationRequest, String ownerId) {
         Company company = new Company(
             ownerId,
-            createCompanyRequest.name(),
-            createCompanyRequest.address(),
-            createCompanyRequest.phone(),
-            createCompanyRequest.email()
+            companyCreationRequest.name(),
+            companyCreationRequest.address(),
+            companyCreationRequest.phone(),
+            companyCreationRequest.email()
         );
         company.setUsersId(Set.of(ownerId));
 
