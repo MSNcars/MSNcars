@@ -20,8 +20,8 @@ public class CompanyController {
     }
 
     @PostMapping("/company")
-    public ResponseEntity<Company> createCompany(@RequestBody CreateCompanyRequest createCompanyRequest, @AuthenticationPrincipal Jwt jwt) {
-        var createdCompany = companyService.createCompany(createCompanyRequest, jwt.getSubject());
+    public ResponseEntity<Company> createCompany(@RequestBody CompanyCreationRequest companyCreationRequest, @AuthenticationPrincipal Jwt jwt) {
+        var createdCompany = companyService.createCompany(companyCreationRequest, jwt.getSubject());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCompany);
     }
 
