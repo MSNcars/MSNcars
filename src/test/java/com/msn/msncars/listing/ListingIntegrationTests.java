@@ -648,6 +648,10 @@ public class ListingIntegrationTests {
                 .andExpect(jsonPath("$.model.id", is(2)))
                 .andExpect(jsonPath("$.price", is(12000.00)));
 
+        Listing saved = listingRepository.findById(listingInDatabaseId).orElseThrow();
+
+        assertEquals(2L, saved.getModel().getId());
+        assertEquals(new BigDecimal("12000.00"), saved.getPrice());
     }
 
     @AfterAll
