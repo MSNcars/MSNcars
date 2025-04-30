@@ -1098,6 +1098,76 @@ public class ListingIntegrationTests {
                 .andExpect(content().string("Listing not found with id: 1"));
     }
 
+    @Test
+    public void extendExpirationDate_ShouldReturn400Code_AndAccordingMessage_WhenListingIsRevoked() throws Exception {
+        // given
+
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+        Model yaris = new Model(2L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+
+        Listing listingInDatabase = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusDays(2),
+                true,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        makeRepository.save(toyota);
+        modelRepository.save(corolla);
+        modelRepository.save(yaris);
+        companyRepository.save(autoWorld);
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        Listing savedListing = listingRepository.save(listingInDatabase);
+        Long listingInDatabaseId = savedListing.getId();
+
+        ValidityPeriod validityPeriod = ValidityPeriod.Extended;
+
+        String requestJson = objectMapper.writeValueAsString(validityPeriod);
+
+        String userId = "1";
+
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .patch("/listings/" + listingInDatabaseId + "/extend")
+                .with(jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Cannot extend revoked listing."));
+    }
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
