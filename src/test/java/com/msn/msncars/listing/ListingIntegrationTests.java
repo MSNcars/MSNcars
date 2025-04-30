@@ -40,8 +40,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -1169,6 +1168,73 @@ public class ListingIntegrationTests {
                 .andExpect(content().string("Cannot extend revoked listing."));
     }
 
+    @Test
+    public void deleteListing_ShouldReturn200Code_AnDeleteListingFromDatabase_WhenListingExists() throws Exception {
+        // given
+
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+
+        Listing listing = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        makeRepository.save(toyota);
+        modelRepository.save(corolla);
+        companyRepository.save(autoWorld);
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        Listing savedListing = listingRepository.save(listing);
+        Long listingId = savedListing.getId();
+
+        String userId = "1";
+
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete("/listings/" + listingId)
+                .with(jwt().jwt(jwt))
+                .accept(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        assertFalse(listingRepository.findById(listingId).isPresent());
+    }
+
+
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
         if (dataSource instanceof HikariDataSource) {
@@ -1177,6 +1243,4 @@ public class ListingIntegrationTests {
 
         postgres.stop();
     }
-
 }
-
