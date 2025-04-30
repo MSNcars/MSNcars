@@ -562,7 +562,7 @@ public class ListingIntegrationTests {
     }
 
     @Test
-    public void  updateListing_ShouldReturnUpdatedListingInDatabase_And200Code_WhenRequestIsValid() throws Exception {
+    public void updateListing_ShouldReturnUpdatedListingInDatabase_And200Code_WhenRequestIsValid() throws Exception {
         // given
 
         Make toyota = new Make(1L, "Toyota");
@@ -653,6 +653,95 @@ public class ListingIntegrationTests {
         assertEquals(2L, saved.getModel().getId());
         assertEquals(new BigDecimal("12000.00"), saved.getPrice());
     }
+
+    @Test
+    public void updateListing_ShouldReturn403Code_AndAccordingMessage_WhenUserWantsToUpdateNotHisListings() throws Exception {
+        // given
+
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+        Model yaris = new Model(2L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+
+        Listing listingInDatabase = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        makeRepository.save(toyota);
+        modelRepository.save(corolla);
+        modelRepository.save(yaris);
+        companyRepository.save(autoWorld);
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        Listing savedListing = listingRepository.save(listingInDatabase);
+        Long listingInDatabaseId = savedListing.getId();
+
+        // want to update model and price
+        ListingRequest listingUpdateRequest = new ListingRequest(
+                "1",
+                1L,
+                2L,
+                List.of(sunroof.getId(), navigation.getId()),
+                new BigDecimal("12000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav.",
+                ValidityPeriod.Standard
+        );
+
+        String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
+
+        String userId = "2";
+
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put("/listings/" + listingInDatabaseId)
+                .with(jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("You don't have permission to edit this listing."));
+    }
+
+
+
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
