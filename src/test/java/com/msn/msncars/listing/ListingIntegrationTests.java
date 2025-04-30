@@ -740,7 +740,10 @@ public class ListingIntegrationTests {
                 .andExpect(content().string("You don't have permission to edit this listing."));
     }
 
+    @Test
+    public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
 
+    }
 
 
     @AfterAll

@@ -82,7 +82,7 @@ public class ListingServiceImpl implements ListingService{
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
         if(oldListing.getRevoked()){
-            throw new ListingRevokedException("Cannot extend revoked listing.");
+            throw new ListingRevokedException("Cannot update revoked listing.");
         }
 
         validateListingOwnership(oldListing, userId);
