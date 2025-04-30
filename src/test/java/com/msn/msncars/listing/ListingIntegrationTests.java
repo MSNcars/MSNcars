@@ -285,7 +285,7 @@ public class ListingIntegrationTests {
     public void getListingById_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
 
-        Long listingId = 2L;
+        long listingId = 2L;
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .get("/listings/" + listingId)
@@ -507,25 +507,11 @@ public class ListingIntegrationTests {
     public void createListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
 
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(1L, "Sunroof");
-        Feature navigation = new Feature(2L, "Navigation");
-
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 1L,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(1L, 2L),
                 new BigDecimal("18000.00"),
                 1820,
                 45000,
@@ -738,25 +724,11 @@ public class ListingIntegrationTests {
     public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
 
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(1L, "Sunroof");
-        Feature navigation = new Feature(2L, "Navigation");
-
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 1L,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(1L, 2L),
                 new BigDecimal("-18000.00"),
                 2020,
                 45000,
@@ -770,7 +742,7 @@ public class ListingIntegrationTests {
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
 
-        Long listingId = 1L;
+        long listingId = 1L;
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .put("/listings/" + listingId)
@@ -791,25 +763,11 @@ public class ListingIntegrationTests {
     public void updateListing_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
 
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(1L, "Sunroof");
-        Feature navigation = new Feature(2L, "Navigation");
-
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 1L,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(1L, 2L),
                 new BigDecimal("18000.00"),
                 2020,
                 45000,
@@ -823,7 +781,7 @@ public class ListingIntegrationTests {
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
 
-        Long listingId = 1L;
+        long listingId = 1L;
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .put("/listings/" + listingId)
@@ -1085,7 +1043,7 @@ public class ListingIntegrationTests {
 
         String requestJson = objectMapper.writeValueAsString(validityPeriod);
 
-        Long listingId = 1L;
+        long listingId = 1L;
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .patch("/listings/" + listingId + "/extend")
@@ -1306,7 +1264,7 @@ public class ListingIntegrationTests {
     {
         // given
 
-        Long listingId = 1L;
+        long listingId = 1L;
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .delete("/listings/" + listingId)
