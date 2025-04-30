@@ -1302,6 +1302,25 @@ public class ListingIntegrationTests {
                 .andExpect(content().string("You don't have permission to edit this listing."));
     }
 
+    @Test
+    public void deleteListing_ShouldReturn404Code_WhenListingDoesNotExist() throws Exception
+    {
+        // given
+
+        Long listingId = 1L;
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete("/listings/" + listingId)
+                .with(jwt())
+                .accept(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 1"));
+    }
+
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
