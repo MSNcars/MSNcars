@@ -38,6 +38,7 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -496,10 +497,11 @@ public class ListingIntegrationTests {
 
         assertTrue(listingRepository.findById(generatedId).isPresent());
 
-        Listing saved = listingRepository.findById(generatedId).orElseThrow();
+        Optional<Listing> saved = listingRepository.findById(generatedId);
 
-        assertEquals(45000, saved.getMileage());
-        assertEquals(new BigDecimal("18000.00"), saved.getPrice());
+        assertTrue(saved.isPresent());
+        assertEquals(45000, saved.get().getMileage());
+        assertEquals(new BigDecimal("18000.00"), saved.get().getPrice());
     }
 
     @Test
@@ -640,10 +642,11 @@ public class ListingIntegrationTests {
                 .andExpect(jsonPath("$.model.id", is(2)))
                 .andExpect(jsonPath("$.price", is(12000.00)));
 
-        Listing saved = listingRepository.findById(listingInDatabaseId).orElseThrow();
+        Optional<Listing> saved = listingRepository.findById(listingInDatabaseId);
 
-        assertEquals(2L, saved.getModel().getId());
-        assertEquals(new BigDecimal("12000.00"), saved.getPrice());
+        assertTrue(saved.isPresent());
+        assertEquals(2L, saved.get().getModel().getId());
+        assertEquals(new BigDecimal("12000.00"), saved.get().getPrice());
     }
 
     @Test
@@ -995,10 +998,11 @@ public class ListingIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(listingInDatabaseId.intValue())));
 
-        Listing saved = listingRepository.findById(listingInDatabaseId).orElseThrow();
+        Optional<Listing> saved = listingRepository.findById(listingInDatabaseId);
 
+        assertTrue(saved.isPresent());
         // one second tolerance
-        Duration diff = Duration.between(ZonedDateTime.now().plusDays(32).toInstant(), saved.getExpiresAt().toInstant());
+        Duration diff = Duration.between(ZonedDateTime.now().plusDays(32).toInstant(), saved.get().getExpiresAt().toInstant());
         assertTrue(Math.abs(diff.toMillis()) < 1000);
     }
 
