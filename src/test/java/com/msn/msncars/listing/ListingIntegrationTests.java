@@ -701,9 +701,8 @@ public class ListingIntegrationTests {
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
-        // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
-                "1",
+                "2",
                 1L,
                 2L,
                 List.of(sunroof.getId(), navigation.getId()),
@@ -742,7 +741,55 @@ public class ListingIntegrationTests {
 
     @Test
     public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
+        // given
 
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(1L, "Sunroof");
+        Feature navigation = new Feature(2L, "Navigation");
+
+        ListingRequest listingRequest = new ListingRequest(
+                "1",
+                1L,
+                1L,
+                List.of(sunroof.getId(), navigation.getId()),
+                new BigDecimal("-18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav.",
+                ValidityPeriod.Standard
+        );
+
+        String requestJson = objectMapper.writeValueAsString(listingRequest);
+
+        Long listingId = 1L;
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put("/listings/" + listingId)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(greaterThan(0))))
+                .andExpect(jsonPath("$.errors[0].field", is("price")))
+                .andExpect(jsonPath("$.errors[0].message", is("must be greater than or equal to 0")));
     }
 
 
