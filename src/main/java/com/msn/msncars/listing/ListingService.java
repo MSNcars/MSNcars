@@ -7,7 +7,7 @@ import com.msn.msncars.listing.DTO.ListingResponse;
 import java.util.List;
 
 public interface ListingService {
-    List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortOrder sortByPrice, SortOrder sortByMileage);
+    List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortAttribute sortAttribute, SortOrder sortOrder);
     ListingResponse getListingById(Long listingId);
     List<ListingResponse> getAllListingFromUser(String userId);
     Long createListing(ListingRequest listingRequest, String userId);

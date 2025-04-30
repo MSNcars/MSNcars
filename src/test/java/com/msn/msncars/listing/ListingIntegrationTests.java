@@ -224,6 +224,199 @@ public class ListingIntegrationTests {
     }
 
     @Test
+    public void getAllListingsWithFilters_ShouldReturnFilteredListings_And200Code() throws Exception {
+        // given
+
+        Make toyota = new Make(1L, "Toyota");
+        Make bmw = new Make(2L, "BMW");
+        Make ford = new Make(3L, "Ford");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+        Model yaris = new Model(4L, "Yaris", toyota);
+        Model series3 = new Model(2L, "3 Series", bmw);
+        Model focus = new Model(3L, "Focus", ford);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+        Company bmwCenter = new Company(null,
+                "2",
+                "BMW Center",
+                "456 BMW Rd",
+                "987-654-321",
+                "sales@bmwcenter.com");
+        Company fordDealer = new Company(null,
+                "3",
+                "Ford Dealer",
+                "789 Ford Ln",
+                "555-222-111",
+                "info@forddealer.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+        Feature leatherSeats = new Feature(null, "Leather Seats");
+
+        Listing listing1 = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        Listing listing2 = new Listing(
+                null,
+                "2",
+                bmwCenter,
+                series3,
+                List.of(leatherSeats),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(2),
+                false,
+                new BigDecimal("32000.00"),
+                2022,
+                15000,
+                Fuel.DIESEL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Luxury BMW 3 Series with leather interior."
+        );
+
+        Listing listing3 = new Listing(
+                null,
+                "3",
+                fordDealer,
+                focus,
+                List.of(navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusWeeks(3),
+                false,
+                new BigDecimal("14000.00"),
+                2018,
+                78000,
+                Fuel.DIESEL,
+                CarUsage.USED,
+                CarOperationalStatus.DAMAGED,
+                CarType.HATCHBACK,
+                "Reliable Ford Focus, ideal for city use."
+        );
+
+        Listing listing4 = new Listing(
+                null,
+                "1",
+                autoWorld,
+                yaris,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("12000.00"),
+                2020,
+                47000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota with sunroof and nav."
+        );
+
+        Listing listing5 = new Listing(
+                null,
+                "1",
+                autoWorld,
+                yaris,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusMonths(1),
+                false,
+                new BigDecimal("10000.00"),
+                2020,
+                41000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota with sunroof and nav."
+        );
+
+        makeRepository.save(toyota);
+        makeRepository.save(bmw);
+        makeRepository.save(ford);
+
+        modelRepository.save(corolla);
+        modelRepository.save(yaris);
+        modelRepository.save(series3);
+        modelRepository.save(focus);
+
+        companyRepository.save(autoWorld);
+        companyRepository.save(bmwCenter);
+        companyRepository.save(fordDealer);
+
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        featureRepository.save(leatherSeats);
+
+        listingRepository.save(listing1);
+        listingRepository.save(listing2);
+        listingRepository.save(listing3);
+        listingRepository.save(listing4);
+        listingRepository.save(listing5);
+
+        MockHttpServletRequestBuilder request1 = MockMvcRequestBuilders
+                .get("/listings?makeName=Toyota&sortAttribute=PRICE&sortOrder=ASCENDING")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        MockHttpServletRequestBuilder request2 = MockMvcRequestBuilders
+                .get("/listings?fuel=DIESEL&sortAttribute=MILEAGE&sortOrder=DESCENDING")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request1)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].model.name", is("Yaris")))
+                .andExpect(jsonPath("$[0].model.make.name", is("Toyota")))
+                .andExpect(jsonPath("$[0].price", is(10000.00)))
+                .andExpect(jsonPath("$[1].model.name", is("Yaris")))
+                .andExpect(jsonPath("$[1].model.make.name", is("Toyota")))
+                .andExpect(jsonPath("$[1].price", is(12000.00)))
+                .andExpect(jsonPath("$[2].model.name", is("Corolla")))
+                .andExpect(jsonPath("$[2].model.make.name", is("Toyota")))
+                .andExpect(jsonPath("$[2].price", is(18000.00)));
+
+        mockMvc.perform(request2)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].model.name", is("Focus")))
+                .andExpect(jsonPath("$[0].model.make.name", is("Ford")))
+                .andExpect(jsonPath("$[0].fuel", is("DIESEL")))
+                .andExpect(jsonPath("$[0].mileage", is(78000)))
+                .andExpect(jsonPath("$[1].model.name", is("3 Series")))
+                .andExpect(jsonPath("$[1].model.make.name", is("BMW")))
+                .andExpect(jsonPath("$[1].fuel", is("DIESEL")))
+                .andExpect(jsonPath("$[1].mileage", is(15000)));
+
+    }
+
+    @Test
     public void getListingById_ShouldReturnListing_And200Code_WhenRequestedListingExists() throws Exception {
         Make toyota = new Make(1L, "Toyota");
 

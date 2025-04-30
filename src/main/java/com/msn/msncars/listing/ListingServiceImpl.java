@@ -37,7 +37,7 @@ public class ListingServiceImpl implements ListingService{
         this.featureRepository = featureRepository;
     }
 
-    public List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortOrder sortByPrice, SortOrder sortByMileage) {
+    public List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortAttribute sortAttribute, SortOrder sortOrder) {
         List<Listing> listings = listingRepository.findAll();
         List<ListingResponse> listingResponses = new ArrayList<>();
 
@@ -55,18 +55,8 @@ public class ListingServiceImpl implements ListingService{
             stream = stream.filter(l -> l.getFuel() == fuel);
         }
 
-        if (sortByPrice != null) {
-            switch (sortByPrice) {
-                case ASCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getPrice));
-                case DESCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getPrice).reversed());
-            }
-        }
-
-        if (sortByMileage != null) {
-            switch (sortByMileage) {
-                case ASCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getMileage));
-                case DESCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getMileage).reversed());
-            }
+        if (sortAttribute != null && sortOrder != null) {
+            stream = stream.sorted(sortAttribute.getComparator(sortOrder));
         }
 
         listings = stream.toList();

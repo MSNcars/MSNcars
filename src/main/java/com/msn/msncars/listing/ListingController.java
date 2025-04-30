@@ -23,20 +23,15 @@ public class ListingController {
         this.listingService = listingService;
     }
 
-    //marka
-    //model
-    //cena (kolejnosć)
-    //przebieg (kolejność)
-    //paliwo
     @GetMapping
     public List<ListingResponse> getAllListings(
             @RequestParam(required = false) String makeName,
             @RequestParam(required = false) String modelName,
             @RequestParam(required = false) Fuel fuel,
-            @RequestParam(required = false) SortOrder sortByPrice,
-            @RequestParam(required = false) SortOrder sortByMileage
+            @RequestParam(required = false) SortAttribute sortAttribute,
+            @RequestParam(required = false) SortOrder sortOrder
     ) {
-        return listingService.getAllListings(makeName, modelName, fuel, sortByPrice, sortByMileage);
+        return listingService.getAllListings(makeName, modelName, fuel, sortAttribute, sortOrder);
     }
 
     @GetMapping("/{listing-id}")
