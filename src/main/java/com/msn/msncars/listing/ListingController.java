@@ -66,6 +66,14 @@ public class ListingController {
         return listingService.extendExpirationDate(listingId, validityPeriod, principal.getSubject());
     }
 
+    @PatchMapping("/{listing-id}/set-revoked/{is-revoked}")
+    public ListingResponse setListingRevokedStatus(
+            @PathVariable("listing-id") Long listingId,
+            @PathVariable("is-revoked") boolean isRevoked,
+            @AuthenticationPrincipal Jwt principal) {
+        return listingService.setListingRevokedStatus(listingId, isRevoked, principal.getSubject());
+    }
+
     @DeleteMapping("/{listing-id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteListing(@PathVariable("listing-id") Long listingId, @AuthenticationPrincipal Jwt principal) {

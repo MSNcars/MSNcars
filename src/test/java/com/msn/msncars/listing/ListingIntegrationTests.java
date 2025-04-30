@@ -35,7 +35,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -1320,7 +1319,6 @@ public class ListingIntegrationTests {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Listing not found with id: 1"));
     }
-
 
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {

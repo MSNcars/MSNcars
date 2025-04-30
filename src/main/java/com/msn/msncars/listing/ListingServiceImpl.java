@@ -113,6 +113,19 @@ public class ListingServiceImpl implements ListingService{
         return listingMapper.toDTO(updatedListing);
     }
 
+    public ListingResponse setListingRevokedStatus(Long listingId, boolean isRevoked, String userId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        validateListingOwnership(listing, userId);
+
+        listing.setRevoked(isRevoked);
+
+        Listing updatedListing = listingRepository.save(listing);
+
+        return listingMapper.toDTO(updatedListing);
+    }
+
     public void deleteListing(Long listingId, String userId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));

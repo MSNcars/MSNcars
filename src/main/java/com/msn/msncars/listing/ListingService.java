@@ -12,5 +12,6 @@ public interface ListingService {
     Long createListing(ListingRequest listingRequest, String userId);
     ListingResponse updateListing(Long listingId, ListingRequest listingRequest, String userId);
     ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod, String userId);
+    ListingResponse setListingRevokedStatus(Long listingId, boolean isRevoked, String userId);
     void deleteListing(Long listingId, String userId);
 }
