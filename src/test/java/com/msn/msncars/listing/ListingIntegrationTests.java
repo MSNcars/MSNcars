@@ -1075,6 +1075,30 @@ public class ListingIntegrationTests {
                 .andExpect(content().string("You don't have permission to edit this listing."));
     }
 
+    @Test
+    public void extendExpirationDate_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
+        // given
+
+        ValidityPeriod validityPeriod = ValidityPeriod.Extended;
+
+        String requestJson = objectMapper.writeValueAsString(validityPeriod);
+
+        Long listingId = 1L;
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .patch("/listings/" + listingId + "/extend")
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Listing not found with id: 1"));
+    }
+
+
     @AfterAll
     static void tearDown(@Autowired DataSource dataSource) {
         if (dataSource instanceof HikariDataSource) {
