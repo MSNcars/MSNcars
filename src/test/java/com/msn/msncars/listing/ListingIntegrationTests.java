@@ -884,13 +884,12 @@ public class ListingIntegrationTests {
     }
 
     @Test
-    public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_AndUpdateListingInDatabase_WhenDateIsValid () throws Exception {
+    public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_AndUpdateListingInDatabase_WhenRequestIsValid () throws Exception {
         // given
 
         Make toyota = new Make(1L, "Toyota");
 
         Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(2L, "Corolla", toyota);
 
         Company autoWorld = new Company(null,
                 "1",
@@ -923,7 +922,6 @@ public class ListingIntegrationTests {
 
         makeRepository.save(toyota);
         modelRepository.save(corolla);
-        modelRepository.save(yaris);
         companyRepository.save(autoWorld);
         featureRepository.save(sunroof);
         featureRepository.save(navigation);
@@ -971,7 +969,6 @@ public class ListingIntegrationTests {
         Make toyota = new Make(1L, "Toyota");
 
         Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(2L, "Corolla", toyota);
 
         Company autoWorld = new Company(null,
                 "1",
@@ -1004,7 +1001,6 @@ public class ListingIntegrationTests {
 
         makeRepository.save(toyota);
         modelRepository.save(corolla);
-        modelRepository.save(yaris);
         companyRepository.save(autoWorld);
         featureRepository.save(sunroof);
         featureRepository.save(navigation);
@@ -1065,7 +1061,6 @@ public class ListingIntegrationTests {
         Make toyota = new Make(1L, "Toyota");
 
         Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(2L, "Corolla", toyota);
 
         Company autoWorld = new Company(null,
                 "1",
@@ -1098,7 +1093,6 @@ public class ListingIntegrationTests {
 
         makeRepository.save(toyota);
         modelRepository.save(corolla);
-        modelRepository.save(yaris);
         companyRepository.save(autoWorld);
         featureRepository.save(sunroof);
         featureRepository.save(navigation);
@@ -1127,6 +1121,78 @@ public class ListingIntegrationTests {
         mockMvc.perform(request)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Cannot extend revoked listing."));
+    }
+
+    @Test
+    public void setListingRevokedStatus_ShouldReturn200Code_AndListingWithUpdatedRevokedStatus_AndUpdateListingInDatabase_WhenRequestIsValid () throws Exception {
+        // given
+
+        Make toyota = new Make(1L, "Toyota");
+
+        Model corolla = new Model(1L, "Corolla", toyota);
+
+        Company autoWorld = new Company(null,
+                "1",
+                "Auto World",
+                "123 Main St",
+                "123-456-789",
+                "contact@autoworld.com");
+
+        Feature sunroof = new Feature(null, "Sunroof");
+        Feature navigation = new Feature(null, "Navigation");
+
+        Listing listingInDatabase = new Listing(
+                null,
+                "1",
+                autoWorld,
+                corolla,
+                List.of(sunroof, navigation),
+                ZonedDateTime.now(),
+                ZonedDateTime.now().plusDays(2),
+                false,
+                new BigDecimal("18000.00"),
+                2020,
+                45000,
+                Fuel.PETROL,
+                CarUsage.USED,
+                CarOperationalStatus.WORKING,
+                CarType.SEDAN,
+                "Well maintained Toyota Corolla with sunroof and nav."
+        );
+
+        makeRepository.save(toyota);
+        modelRepository.save(corolla);
+        companyRepository.save(autoWorld);
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        Listing savedListing = listingRepository.save(listingInDatabase);
+        Long listingInDatabaseId = savedListing.getId();
+
+        boolean isRevoked = true;
+
+        String userId = "1";
+
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .patch("/listings/" + listingInDatabaseId + "/set-revoked/" + isRevoked)
+                .with(jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // when & then
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(listingInDatabaseId.intValue())))
+                .andExpect(jsonPath("$.revoked", is(true)));
+
+        Optional<Listing> saved = listingRepository.findById(listingInDatabaseId);
+
+        assertTrue(saved.isPresent());
+        assertTrue(saved.get().getRevoked());
     }
 
     @Test
