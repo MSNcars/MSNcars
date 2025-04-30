@@ -1,6 +1,7 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.FeatureRepository;
+import com.msn.msncars.car.Fuel;
 import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.CompanyRepository;
@@ -14,8 +15,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class ListingServiceImpl implements ListingService{
@@ -34,9 +37,39 @@ public class ListingServiceImpl implements ListingService{
         this.featureRepository = featureRepository;
     }
 
-    public List<ListingResponse> getAllListings() {
+    public List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortOrder sortByPrice, SortOrder sortByMileage) {
         List<Listing> listings = listingRepository.findAll();
         List<ListingResponse> listingResponses = new ArrayList<>();
+
+        Stream<Listing> stream = listings.stream();
+
+        if (makeName != null) {
+            stream = stream.filter(l -> l.getModel().getMake().getName().equalsIgnoreCase(makeName));
+        }
+
+        if (modelName != null) {
+            stream = stream.filter(l -> l.getModel().getName().equalsIgnoreCase(modelName));
+        }
+
+        if (fuel != null) {
+            stream = stream.filter(l -> l.getFuel() == fuel);
+        }
+
+        if (sortByPrice != null) {
+            switch (sortByPrice) {
+                case ASCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getPrice));
+                case DESCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getPrice).reversed());
+            }
+        }
+
+        if (sortByMileage != null) {
+            switch (sortByMileage) {
+                case ASCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getMileage));
+                case DESCENDING -> stream = stream.sorted(Comparator.comparing(Listing::getMileage).reversed());
+            }
+        }
+
+        listings = stream.toList();
 
         for (Listing listing : listings) {
             listingResponses.add(listingMapper.toDTO(listing));

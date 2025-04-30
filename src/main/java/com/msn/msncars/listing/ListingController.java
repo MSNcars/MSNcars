@@ -1,5 +1,6 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.Fuel;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,9 +23,20 @@ public class ListingController {
         this.listingService = listingService;
     }
 
+    //marka
+    //model
+    //cena (kolejnosć)
+    //przebieg (kolejność)
+    //paliwo
     @GetMapping
-    public List<ListingResponse> getAllListings() {
-        return listingService.getAllListings();
+    public List<ListingResponse> getAllListings(
+            @RequestParam(required = false) String makeName,
+            @RequestParam(required = false) String modelName,
+            @RequestParam(required = false) Fuel fuel,
+            @RequestParam(required = false) SortOrder sortByPrice,
+            @RequestParam(required = false) SortOrder sortByMileage
+    ) {
+        return listingService.getAllListings(makeName, modelName, fuel, sortByPrice, sortByMileage);
     }
 
     @GetMapping("/{listing-id}")

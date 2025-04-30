@@ -1,12 +1,13 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.Fuel;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 
 import java.util.List;
 
 public interface ListingService {
-    List<ListingResponse> getAllListings();
+    List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortOrder sortByPrice, SortOrder sortByMileage);
     ListingResponse getListingById(Long listingId);
     List<ListingResponse> getAllListingFromUser(String userId);
     Long createListing(ListingRequest listingRequest, String userId);

@@ -95,7 +95,7 @@ public class ListingIntegrationTests {
     }
 
     @Test
-    public void getAllListings_ShouldReturnAllListings_And200Code() throws Exception {
+    public void getAllListingsWithoutFilters_ShouldReturnAllListings_And200Code() throws Exception {
         // given
 
         Make toyota = new Make(1L, "Toyota");
