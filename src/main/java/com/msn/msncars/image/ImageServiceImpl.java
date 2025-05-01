@@ -54,10 +54,8 @@ public class ImageServiceImpl implements ImageService {
 
         // Check that listing exists
         Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new ListingNotFoundException("Company not found with id: " + listingId));
-        // Check that user has permissions to update this listing
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
         listingService.validateListingOwnership(listing, userId);
-        // Check that listing is not archived
         listingService.validateListingActive(listing);
 
         try{
