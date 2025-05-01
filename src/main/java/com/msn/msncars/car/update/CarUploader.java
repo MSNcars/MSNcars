@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@Profile("!test")
 public class CarUploader {
 
     private final ModelRepository modelRepository;
