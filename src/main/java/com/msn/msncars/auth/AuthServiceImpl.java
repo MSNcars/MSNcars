@@ -2,6 +2,7 @@ package com.msn.msncars.auth;
 import com.msn.msncars.auth.exception.RegistrationException;
 import com.msn.msncars.auth.keycloak.KeycloakConfig;
 import com.msn.msncars.company.Company;
+import com.msn.msncars.company.CompanyDTO;
 import com.msn.msncars.company.CompanyService;
 import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.core.Response;
@@ -50,8 +51,8 @@ public class AuthServiceImpl implements AuthService{
         String userId = registerUserAndAssignRole(companyRegistrationRequest.userRegistrationRequest(), AccountRole.COMPANY);
         Long companyId;
         try {
-            Company company = companyService.createCompany(companyRegistrationRequest.companyCreationRequest(), userId);
-            companyId = company.getId();
+            CompanyDTO company = companyService.createCompany(companyRegistrationRequest.companyCreationRequest(), userId);
+            companyId = company.id();
         } catch (Exception e) {
             userService.deleteUser(userId);
             throw e;
