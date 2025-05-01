@@ -69,11 +69,11 @@ class AuthTest {
 
     @Test
     void testRegisterAndTokenFetching() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest("testUser", "testUser", "asmdo@omad.com", "John", "Mohn");
+        UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest("testUser", "testUser", "asmdo@omad.com", "John", "Mohn");
 
-        mockMvc.perform(post("/auth/register")
+        mockMvc.perform(post("/auth/user/register")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(registerRequest)))
+                        .content(objectMapper.writeValueAsString(userRegistrationRequest)))
                 .andExpect(status().isOk());
 
         // Test if you can fetch token

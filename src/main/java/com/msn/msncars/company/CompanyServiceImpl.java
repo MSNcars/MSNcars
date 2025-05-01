@@ -9,7 +9,9 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CompanyServiceImpl implements CompanyService {
@@ -17,24 +19,33 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
     private final UserService userService;
     private final UserMapper userMapper;
+    private final CompanyMapper companyMapper;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService, UserMapper userMapper) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService, UserMapper userMapper, CompanyMapper companyMapper) {
         this.companyRepository = companyRepository;
         this.userService = userService;
         this.userMapper = userMapper;
+        this.companyMapper = companyMapper;
     }
 
     @Override
-    public Company createCompany(CreateCompanyRequest createCompanyRequest, String ownerId) {
+    public CompanyDTO createCompany(CompanyCreationRequest companyCreationRequest, String ownerId) {
         Company company = new Company(
             ownerId,
-            createCompanyRequest.name(),
-            createCompanyRequest.address(),
-            createCompanyRequest.phone(),
-            createCompanyRequest.email()
+            companyCreationRequest.name(),
+            companyCreationRequest.address(),
+            companyCreationRequest.phone(),
+            companyCreationRequest.email()
         );
+        company.setUsersId(Set.of(ownerId));
 
-        return companyRepository.save(company);
+        Company savedCompany = companyRepository.save(company);
+
+        return companyMapper.toDTO(savedCompany);
+    }
+
+    public Optional<Company> getCompany(Long companyId) {
+        return companyRepository.findById(companyId);
     }
 
     @Override
@@ -42,7 +53,7 @@ public class CompanyServiceImpl implements CompanyService {
         Optional<Company> companyOptional = companyRepository.findById(companyId);
         if (companyOptional.isPresent()) {
             Company company = companyOptional.get();
-            return Optional.of(new CompanyDTO(company.getName(), company.getAddress(), company.getPhone(), company.getEmail()));
+            return Optional.of(companyMapper.toDTO(company));
         }
         return Optional.empty();
     }
@@ -53,6 +64,8 @@ public class CompanyServiceImpl implements CompanyService {
         List<UserRepresentation> userRepresentations = company.getUsersId()
                 .stream()
                 .map(userService::getUserRepresentationById)
+                .map(userRepresentationOptional -> userRepresentationOptional.orElse(null))
+                .filter(Objects::nonNull)
                 .toList();
 
         return userRepresentations.stream().map(userMapper::toDTO).toList();
@@ -62,7 +75,8 @@ public class CompanyServiceImpl implements CompanyService {
     public UserDTO getCompanyOwner(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         String ownerId = company.getOwnerId();
-        UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId);
+
+        UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId).orElseThrow(() -> new NotFoundException("Owner of the company not found"));
         return userMapper.toDTO(ownerRepresentation);
     }
 
