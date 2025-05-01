@@ -1,7 +1,6 @@
 package com.msn.msncars.auth;
 
-import org.springframework.http.ResponseEntity;
-
 public interface AuthService {
-    ResponseEntity<String> registerUser(RegisterRequest registerRequest);
+    String registerUserAndAssignRole(UserRegistrationRequest userRegistrationRequest, AccountRole accountRole);
+    CompanyRegistrationResponse registerCompany(CompanyRegistrationRequest companyRegistrationRequest);
 }

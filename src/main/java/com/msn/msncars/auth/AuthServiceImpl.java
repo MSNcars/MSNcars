@@ -1,5 +1,10 @@
 package com.msn.msncars.auth;
+import com.msn.msncars.auth.exception.RegistrationException;
 import com.msn.msncars.auth.keycloak.KeycloakConfig;
+import com.msn.msncars.company.Company;
+import com.msn.msncars.company.CompanyDTO;
+import com.msn.msncars.company.CompanyService;
+import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -18,54 +23,91 @@ public class AuthServiceImpl implements AuthService{
 
     private final Keycloak keycloakAPI;
     private final KeycloakConfig keycloakConfig;
-    
-    public AuthServiceImpl(Keycloak keycloakAPI, KeycloakConfig keycloakConfig) {
+    private final CompanyService companyService;
+    private final UserService userService;
+
+    public AuthServiceImpl(Keycloak keycloakAPI, KeycloakConfig keycloakConfig, CompanyService companyService, UserService userService) {
         this.keycloakAPI = keycloakAPI;
         this.keycloakConfig = keycloakConfig;
+        this.companyService = companyService;
+        this.userService = userService;
     }
 
-    /*
-        Creates new account and assign user role to it, this has to be done in separate api calls.
-     */
-    public ResponseEntity<String> registerUser(RegisterRequest registerRequest) {
-        UserRepresentation user = getUserRepresentation(registerRequest);
+    @Override
+    public String registerUserAndAssignRole(UserRegistrationRequest userRegistrationRequest, AccountRole accountRole) {
+        UserRepresentation userRepresentation = getUserRepresentation(userRegistrationRequest);
+        String userId = createUser(userRepresentation);
+        try {
+            assignRoleToUser(userId, accountRole);
+        } catch (Exception e) {
+            userService.deleteUser(userId);
+            throw e;
+        }
+        return userId;
+    }
 
-        //Send request to register user
-        try(Response registerResponse = keycloakAPI.realm(keycloakConfig.getRealm()).users().create(user)){
-            if (registerResponse.getStatus() == 201) {
+    @Override
+    public CompanyRegistrationResponse registerCompany(CompanyRegistrationRequest companyRegistrationRequest) {
+        String userId = registerUserAndAssignRole(companyRegistrationRequest.userRegistrationRequest(), AccountRole.COMPANY);
+        Long companyId;
+        try {
+            CompanyDTO company = companyService.createCompany(companyRegistrationRequest.companyCreationRequest(), userId);
+            companyId = company.id();
+        } catch (Exception e) {
+            userService.deleteUser(userId);
+            throw e;
+        }
+        return new CompanyRegistrationResponse(userId, companyId);
+    }
 
-                //Get client and role
-                ClientRepresentation clientRepresentation = keycloakAPI.realm(keycloakConfig.getRealm())
-                        .clients().findByClientId(keycloakConfig.getRealm())
-                        .getFirst();
-                RoleRepresentation roleRepresentation = keycloakAPI.realm(keycloakConfig.getRealm())
-                        .clients().get(clientRepresentation.getId())
-                        .roles().get("user")
-                        .toRepresentation();
+    private String createUser(UserRepresentation userRepresentation) {
+        try (Response registerResponse = keycloakAPI.realm(keycloakConfig.getRealm())
+                .users()
+                .create(userRepresentation)) {
 
-                //Add role to user
-                keycloakAPI.realm(keycloakConfig.getRealm())
-                        .users().get(CreatedResponseUtil.getCreatedId(registerResponse))
-                        .roles().clientLevel(clientRepresentation.getId()).add(List.of(roleRepresentation));
+            if (registerResponse.getStatus() != 201)
+                throw new RegistrationException(
+                    registerResponse.getStatusInfo().getReasonPhrase(),
+                    HttpStatus.valueOf(registerResponse.getStatus())
+                );
 
-                return ResponseEntity.ok("User registered successfully");
-            } else {
-                return ResponseEntity.status(registerResponse.getStatus()).body("Error: " + registerResponse.getStatusInfo().getReasonPhrase());
-            }
+            return CreatedResponseUtil.getCreatedId(registerResponse);
         }
     }
-    private UserRepresentation getUserRepresentation(RegisterRequest registerRequest) {
+
+    private void assignRoleToUser(String userId, AccountRole accountRole) {
+        ClientRepresentation client = keycloakAPI.realm(keycloakConfig.getRealm())
+                .clients()
+                .findByClientId(keycloakConfig.getRealm())
+                .getFirst();
+
+        RoleRepresentation role = keycloakAPI.realm(keycloakConfig.getRealm())
+                .clients()
+                .get(client.getId())
+                .roles()
+                .get(accountRole.getName())
+                .toRepresentation();
+
+        keycloakAPI.realm(keycloakConfig.getRealm())
+                .users()
+                .get(userId)
+                .roles()
+                .clientLevel(client.getId())
+                .add(List.of(role));
+    }
+
+    private UserRepresentation getUserRepresentation(UserRegistrationRequest userRegistrationRequest) {
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(registerRequest.username());
-        user.setFirstName(registerRequest.firstName());
-        user.setLastName(registerRequest.lastName());
-        user.setEmail(registerRequest.email());
+        user.setUsername(userRegistrationRequest.username());
+        user.setFirstName(userRegistrationRequest.firstName());
+        user.setLastName(userRegistrationRequest.lastName());
+        user.setEmail(userRegistrationRequest.email());
         user.setEnabled(true);
 
         CredentialRepresentation passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(registerRequest.password());
+        passwordCred.setValue(userRegistrationRequest.password());
         user.setCredentials(Collections.singletonList(passwordCred));
 
         return user;

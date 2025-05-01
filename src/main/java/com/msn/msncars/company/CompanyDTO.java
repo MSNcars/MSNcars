@@ -1,4 +1,4 @@
 package com.msn.msncars.company;
 
-public record CompanyDTO(String name, String address, String phone, String email) {
+public record CompanyDTO(Long id, String name, String address, String phone, String email) {
 }
