@@ -174,7 +174,7 @@ public class ListingServiceImpl implements ListingService{
             case COMPANY -> {
                 Company company = companyRepository.findById(Long.valueOf(listing.getOwnerId()))
                         .orElseThrow(() -> new CompanyNotFoundException("Company not found with id " + listing.getOwnerId()));
-                if (company.getUsersId().contains(userId)){
+                if (company.getMembers().contains(userId)){
                     throw new ForbiddenException("You don't have permission to this listing.");
                 }
             }

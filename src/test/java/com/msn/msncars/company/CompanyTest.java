@@ -88,7 +88,7 @@ class CompanyTest {
         // given
         Set<String> usersId = Set.of("2", "3", "4");
         Company company = new Company();
-        company.setUsersId(usersId);
+        company.setMembers(usersId);
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
 
@@ -103,7 +103,7 @@ class CompanyTest {
     void getCompanyMembers_WhenCompanyDoesNotHaveMembers_ShouldReturnEmptyList() {
         // given
         Company company = new Company();
-        company.setUsersId(Collections.emptySet());
+        company.setMembers(Collections.emptySet());
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
 
         // when

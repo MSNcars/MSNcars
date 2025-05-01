@@ -81,7 +81,7 @@ class InvitationServiceTest {
         String ownerId = "2";
         Company company = new Company();
         company.setOwnerId(ownerId);
-        company.setUsersId(Set.of(ownerId));
+        company.setMembers(Set.of(ownerId));
         Invitation savedInvitation = new Invitation();
         savedInvitation.setCreationDateTime(fixedClock.instant());
         Invitation invitation = new Invitation();
@@ -108,7 +108,7 @@ class InvitationServiceTest {
         String ownerId = "2";
         Company company = new Company();
         company.setOwnerId(ownerId);
-        company.setUsersId(Set.of("1", ownerId));
+        company.setMembers(Set.of("1", ownerId));
 
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
@@ -124,7 +124,7 @@ class InvitationServiceTest {
         // given
         Company company = new Company();
         company.setOwnerId("3");
-        company.setUsersId(Set.of("2", "3"));
+        company.setMembers(Set.of("2", "3"));
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
@@ -140,7 +140,7 @@ class InvitationServiceTest {
         String ownerId = "2";
         Company company = new Company();
         company.setOwnerId(ownerId);
-        company.setUsersId(Set.of(ownerId));
+        company.setMembers(Set.of(ownerId));
         Invitation invitation = new Invitation();
         invitation.setCreationDateTime(fixedClock.instant());
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
@@ -353,7 +353,7 @@ class InvitationServiceTest {
     void getInvitationsSentByCompany_WhenRequestedByNonMember_ShouldThrowForbiddenException() {
         // given
         Company company = new Company();
-        company.setUsersId(Set.of("1", "2"));
+        company.setMembers(Set.of("1", "2"));
         Mockito.when(companyService.getCompany(Mockito.any())).thenReturn(Optional.of(company));
 
         // when & then
@@ -364,7 +364,7 @@ class InvitationServiceTest {
     void getInvitationsSentByCompany_WhenNoInvitations_ShouldReturnEmptyList() {
         // given
         Company company = new Company();
-        company.setUsersId(Set.of("1", "2", "3"));
+        company.setMembers(Set.of("1", "2", "3"));
         Mockito.when(companyService.getCompany(Mockito.any())).thenReturn(Optional.of(company));
         Mockito.when(invitationRepository.getInvitationsBySenderCompanyId(Mockito.any())).thenReturn(List.of());
 
@@ -380,7 +380,7 @@ class InvitationServiceTest {
         // given
         Company company = new Company();
         company.setId(1L);
-        company.setUsersId(Set.of("2", "4", "6"));
+        company.setMembers(Set.of("2", "4", "6"));
         List<Invitation> invitations = List.of(
                 new Invitation("1", company, Instant.now(fixedClock), InvitationState.DECLINED, fixedClock),
                 new Invitation("3", company, Instant.now(fixedClock), InvitationState.PENDING, fixedClock),

@@ -20,7 +20,7 @@ public class Company {
     @ElementCollection
     @CollectionTable(name = "company_user")
     @Column(name = "user_id")
-    private Set<String> usersId = new HashSet<>();
+    private Set<String> members = new HashSet<>();
 
     public Company() {}
 
@@ -89,16 +89,16 @@ public class Company {
         this.email = email;
     }
 
-    public Set<String> getUsersId() {
-        return usersId;
+    public Set<String> getMembers() {
+        return members;
     }
 
-    public void setUsersId(Set<String> usersId) {
-        this.usersId = usersId;
+    public void setMembers(Set<String> members) {
+        this.members = members;
     }
 
     public boolean hasMember(String userId) {
-        return usersId.contains(userId);
+        return members.contains(userId);
     }
 
     public boolean hasOwner(String userId) {
@@ -106,6 +106,6 @@ public class Company {
     }
 
     public void addMember(String userId) {
-        usersId.add(userId);
+        members.add(userId);
     }
 }
