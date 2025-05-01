@@ -75,56 +75,56 @@ class InvitationServiceTest {
     }
 
     @Test
-    void invite_WhenUserHasNotAcceptedInvitations_ShouldRemovePreviousInvitations() {
+    void invite_WhenUserHasNotAcceptedInvitation_ShouldRemovePreviousInvitation() {
         // given
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
+        String ownerId = "2";
         Company company = new Company();
-        company.setUsersId(Set.of("2"));
+        company.setOwnerId(ownerId);
+        company.setUsersId(Set.of(ownerId));
         Invitation savedInvitation = new Invitation();
         savedInvitation.setCreationDateTime(fixedClock.instant());
-        Invitation invitation1 = new Invitation();
-        Invitation invitation2 = new Invitation();
-        invitation1.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        invitation1.setInvitationState(InvitationState.PENDING);
-        invitation1.setCreationDateTime(fixedClock.instant());
-        invitation2.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        invitation2.setInvitationState(InvitationState.PENDING);
-        invitation2.setCreationDateTime(fixedClock.instant());
-        List<Invitation> invitations = List.of(invitation1, invitation2);
+        Invitation invitation = new Invitation();
+        invitation.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        invitation.setInvitationState(InvitationState.PENDING);
+        invitation.setCreationDateTime(fixedClock.instant());
 
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
-        Mockito.when(invitationRepository.getInvitationsBySenderCompanyIdAndRecipientUserId(Mockito.any(), Mockito.any())).thenReturn(Optional.of(invitations));
+        Mockito.when(invitationRepository.getInvitationsBySenderCompanyIdAndRecipientUserId(Mockito.any(), Mockito.any())).thenReturn(Optional.of(List.of(invitation)));
         Mockito.when(invitationRepository.save(Mockito.any(Invitation.class))).thenReturn(savedInvitation);
 
         // when
-        invitationService.invite(createInvitationRequest, "2");
+        invitationService.invite(createInvitationRequest, ownerId);
 
         // then
-        Mockito.verify(invitationRepository, Mockito.times(2)).deleteById(Mockito.any());
+        Mockito.verify(invitationRepository, Mockito.times(1)).deleteById(Mockito.any());
     }
 
     @Test
     void invite_WhenUserAlreadyAcceptedCompanyInvitation_ShouldThrowIllegalStateException() {
         // given
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
+        String ownerId = "2";
         Company company = new Company();
-        company.setUsersId(Set.of("1", "2"));
+        company.setOwnerId(ownerId);
+        company.setUsersId(Set.of("1", ownerId));
 
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
 
         // when & then
-        assertThrows(IllegalStateException.class, () -> invitationService.invite(createInvitationRequest, "2"));
+        assertThrows(IllegalStateException.class, () -> invitationService.invite(createInvitationRequest, ownerId));
         Mockito.verify(invitationRepository, Mockito.times(0)).deleteById(Mockito.any());
         Mockito.verify(invitationRepository, Mockito.times(0)).save(Mockito.any(Invitation.class));
     }
 
     @Test
-    void invite_WhenRequestedByNonMember_ShouldThrowForbiddenException() {
+    void invite_WhenRequestedByNonOwner_ShouldThrowForbiddenException() {
         // given
         Company company = new Company();
-        company.setUsersId(Set.of("1", "2", "3"));
+        company.setOwnerId("3");
+        company.setUsersId(Set.of("2", "3"));
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
@@ -137,8 +137,10 @@ class InvitationServiceTest {
     void invite_WhenAllDependenciesRespondCorrectly_ShouldSaveInvitation() {
         // given
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
+        String ownerId = "2";
         Company company = new Company();
-        company.setUsersId(Set.of("2"));
+        company.setOwnerId(ownerId);
+        company.setUsersId(Set.of(ownerId));
         Invitation invitation = new Invitation();
         invitation.setCreationDateTime(fixedClock.instant());
         Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
@@ -146,7 +148,7 @@ class InvitationServiceTest {
         Mockito.when(invitationRepository.save(Mockito.any(Invitation.class))).thenReturn(invitation);
 
         // when
-        invitationService.invite(createInvitationRequest, "2");
+        invitationService.invite(createInvitationRequest, ownerId);
 
         // then
         Mockito.verify(invitationRepository, Mockito.times(1)).save(Mockito.any(Invitation.class));
@@ -210,7 +212,6 @@ class InvitationServiceTest {
         UUID invitationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         Invitation invitation = new Invitation(
             recipientUserId,
-            "2",
             company,
             fixedClock.instant(),
             InvitationState.PENDING,
@@ -289,7 +290,6 @@ class InvitationServiceTest {
         UUID invitationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         Invitation invitation = new Invitation(
             recipientUserId,
-            "2",
             company,
             fixedClock.instant(),
             InvitationState.PENDING,
@@ -325,8 +325,8 @@ class InvitationServiceTest {
         company1.setId(1L);
         company2.setId(2L);
         List<Invitation> invitations = List.of(
-            new Invitation("1", "2", company1, Instant.now(fixedClock), InvitationState.ACCEPTED, fixedClock),
-            new Invitation("1", "2", company2, Instant.now(fixedClock), InvitationState.PENDING, fixedClock)
+            new Invitation("1", company1, Instant.now(fixedClock), InvitationState.ACCEPTED, fixedClock),
+            new Invitation("1", company2, Instant.now(fixedClock), InvitationState.PENDING, fixedClock)
         );
         Mockito.when(invitationRepository.getInvitationsByRecipientUserId(Mockito.any())).thenReturn(invitations);
 
@@ -336,42 +336,8 @@ class InvitationServiceTest {
         // then
         assertEquals(2, invitationsDTO.size());
         assertEquals(invitations.getFirst().getInvitationState(), invitationsDTO.getFirst().invitationState());
-        assertEquals(invitations.getFirst().getSenderUserId(), invitationsDTO.getFirst().senderUserId());
         assertEquals(invitations.getLast().getSenderCompany().getId(), invitationsDTO.getLast().senderCompanyId());
         assertEquals(invitations.getLast().getFormattedDateForUser(fixedClock.getZone()), invitationsDTO.getLast().creationDate());
-    }
-
-    @Test
-    void getInvitationsSentByUser_WhenNoInvitations_ShouldReturnEmptyList() {
-        // given
-        Mockito.when(invitationRepository.getInvitationsBySenderUserId(Mockito.any())).thenReturn(List.of());
-
-        // when
-        List<InvitationDTO> invitationDTOS = invitationService.getInvitationsSentByUser("1");
-
-        // then
-        assertTrue(invitationDTOS.isEmpty());
-    }
-
-    @Test
-    void getInvitationsSentByUser_WhenInvitationsExist_ShouldReturnInvitationsDTOList() {
-        // given
-        Company company = new Company();
-        company.setId(1L);
-        List<Invitation> invitations = List.of(
-                new Invitation("2", "1", company, Instant.now(fixedClock), InvitationState.PENDING, fixedClock)
-        );
-        Mockito.when(invitationRepository.getInvitationsBySenderUserId(Mockito.any())).thenReturn(invitations);
-
-        // when
-        List<InvitationDTO> invitationDTOS = invitationService.getInvitationsSentByUser("1");
-
-        // then
-        assertEquals(1, invitationDTOS.size());
-        assertEquals(invitations.getFirst().getInvitationState(), invitationDTOS.getFirst().invitationState());
-        assertEquals(invitations.getFirst().getSenderUserId(), invitationDTOS.getFirst().senderUserId());
-        assertEquals(invitations.getFirst().getSenderCompany().getId(), invitationDTOS.getFirst().senderCompanyId());
-        assertEquals(invitations.getFirst().getFormattedDateForUser(fixedClock.getZone()), invitationDTOS.getFirst().creationDate());
     }
 
     @Test
@@ -416,9 +382,9 @@ class InvitationServiceTest {
         company.setId(1L);
         company.setUsersId(Set.of("2", "4", "6"));
         List<Invitation> invitations = List.of(
-                new Invitation("1", "2",  company, Instant.now(fixedClock), InvitationState.DECLINED, fixedClock),
-                new Invitation("3", "2",  company, Instant.now(fixedClock), InvitationState.PENDING, fixedClock),
-                new Invitation("5", "4",  company, Instant.now(fixedClock), InvitationState.ACCEPTED, fixedClock)
+                new Invitation("1", company, Instant.now(fixedClock), InvitationState.DECLINED, fixedClock),
+                new Invitation("3", company, Instant.now(fixedClock), InvitationState.PENDING, fixedClock),
+                new Invitation("5", company, Instant.now(fixedClock), InvitationState.ACCEPTED, fixedClock)
         );
         Mockito.when(companyService.getCompany(Mockito.any())).thenReturn(Optional.of(company));
         Mockito.when(invitationRepository.getInvitationsBySenderCompanyId(Mockito.any())).thenReturn(invitations);
@@ -429,7 +395,6 @@ class InvitationServiceTest {
         // then
         assertEquals(3, invitationDTOS.size());
         assertEquals(invitations.getFirst().getInvitationState(), invitationDTOS.getFirst().invitationState());
-        assertEquals(invitations.get(1).getSenderUserId(), invitationDTOS.get(1).senderUserId());
         assertEquals(1L, invitationDTOS.getLast().senderCompanyId());
     }
 }
