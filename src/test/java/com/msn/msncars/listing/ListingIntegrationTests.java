@@ -132,7 +132,7 @@ public class ListingIntegrationTests {
         Listing listing1 = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -151,7 +151,7 @@ public class ListingIntegrationTests {
         Listing listing2 = new Listing(
                 null,
                 "2",
-                bmwCenter,
+                OwnerType.COMPANY,
                 series3,
                 List.of(leatherSeats),
                 ZonedDateTime.now(),
@@ -170,7 +170,7 @@ public class ListingIntegrationTests {
         Listing listing3 = new Listing(
                 null,
                 "3",
-                fordDealer,
+                OwnerType.COMPANY,
                 focus,
                 List.of(navigation),
                 ZonedDateTime.now(),
@@ -262,7 +262,7 @@ public class ListingIntegrationTests {
         Listing listing1 = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -281,7 +281,7 @@ public class ListingIntegrationTests {
         Listing listing2 = new Listing(
                 null,
                 "2",
-                bmwCenter,
+                OwnerType.COMPANY,
                 series3,
                 List.of(leatherSeats),
                 ZonedDateTime.now(),
@@ -300,7 +300,7 @@ public class ListingIntegrationTests {
         Listing listing3 = new Listing(
                 null,
                 "3",
-                fordDealer,
+                OwnerType.COMPANY,
                 focus,
                 List.of(navigation),
                 ZonedDateTime.now(),
@@ -319,7 +319,7 @@ public class ListingIntegrationTests {
         Listing listing4 = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 yaris,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -338,7 +338,7 @@ public class ListingIntegrationTests {
         Listing listing5 = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 yaris,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -435,7 +435,7 @@ public class ListingIntegrationTests {
         Listing listing = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -469,7 +469,8 @@ public class ListingIntegrationTests {
         mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", notNullValue()))
-                .andExpect(jsonPath("$.sellingCompany.name", is("Auto World")))
+                .andExpect(jsonPath("$.ownerId", is("1")))
+                .andExpect(jsonPath("$.ownerType", is("COMPANY")))
                 .andExpect(jsonPath("$.productionYear", is(2020)))
                 .andExpect(jsonPath("$.carType", is("SEDAN")));
     }
@@ -530,7 +531,7 @@ public class ListingIntegrationTests {
         Listing listing1 = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -549,7 +550,7 @@ public class ListingIntegrationTests {
         Listing listing2 = new Listing(
                 null,
                 "2",
-                bmwCenter,
+                OwnerType.COMPANY,
                 series3,
                 List.of(leatherSeats),
                 ZonedDateTime.now(),
@@ -568,7 +569,7 @@ public class ListingIntegrationTests {
         Listing listing3 = new Listing(
                 null,
                 "1",
-                fordDealer,
+                OwnerType.USER,
                 focus,
                 List.of(navigation),
                 ZonedDateTime.now(),
@@ -620,10 +621,10 @@ public class ListingIntegrationTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].model.name", is("Corolla")))
-                .andExpect(jsonPath("$[1].price", is(14000.00)))
-                .andExpect(jsonPath("$[1].fuel", is("PETROL")));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].model.name", is("Focus")))
+                .andExpect(jsonPath("$[0].price", is(14000.00)))
+                .andExpect(jsonPath("$[0].fuel", is("PETROL")));
     }
 
     @Test
@@ -641,6 +642,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -653,7 +655,7 @@ public class ListingIntegrationTests {
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
-                1L,
+                OwnerType.COMPANY,
                 1L,
                 List.of(f1.getId(), f2.getId()),
                 new BigDecimal("18000.00"),
@@ -669,9 +671,16 @@ public class ListingIntegrationTests {
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
 
+        String userId = "1";
+
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
+
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post("/listings")
-                .with(jwt())
+                .with(jwt().jwt(jwt))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson);
 
@@ -702,7 +711,7 @@ public class ListingIntegrationTests {
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
-                1L,
+                OwnerType.COMPANY,
                 1L,
                 List.of(1L, 2L),
                 new BigDecimal("18000.00"),
@@ -748,6 +757,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -755,7 +765,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -783,7 +793,7 @@ public class ListingIntegrationTests {
         // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
                 "1",
-                1L,
+                OwnerType.COMPANY,
                 2L,
                 List.of(sunroof.getId(), navigation.getId()),
                 new BigDecimal("12000.00"),
@@ -849,7 +859,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.USER,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -877,7 +887,7 @@ public class ListingIntegrationTests {
         // even when sending new owner id in request
         ListingRequest listingUpdateRequest = new ListingRequest(
                 "2",
-                1L,
+                OwnerType.USER,
                 2L,
                 List.of(sunroof.getId(), navigation.getId()),
                 new BigDecimal("12000.00"),
@@ -910,7 +920,7 @@ public class ListingIntegrationTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isForbidden())
-                .andExpect(content().string("You don't have permission to edit this listing."));
+                .andExpect(content().string("You don't have permission to this listing."));
     }
 
     @Test
@@ -919,7 +929,7 @@ public class ListingIntegrationTests {
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
-                1L,
+                OwnerType.USER,
                 1L,
                 List.of(1L, 2L),
                 new BigDecimal("-18000.00"),
@@ -958,7 +968,7 @@ public class ListingIntegrationTests {
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
-                1L,
+                OwnerType.USER,
                 1L,
                 List.of(1L, 2L),
                 new BigDecimal("18000.00"),
@@ -1011,7 +1021,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1039,7 +1049,7 @@ public class ListingIntegrationTests {
         // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
                 "1",
-                1L,
+                OwnerType.COMPANY,
                 2L,
                 List.of(sunroof.getId(), navigation.getId()),
                 new BigDecimal("12000.00"),
@@ -1090,6 +1100,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -1097,7 +1108,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1140,8 +1151,6 @@ public class ListingIntegrationTests {
 
         // when & then
 
-
-
         mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(listingInDatabaseId.intValue())));
@@ -1176,7 +1185,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1221,7 +1230,7 @@ public class ListingIntegrationTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isForbidden())
-                .andExpect(content().string("You don't have permission to edit this listing."));
+                .andExpect(content().string("You don't have permission to this listing."));
     }
 
     @Test
@@ -1261,6 +1270,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -1268,7 +1278,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1330,6 +1340,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -1337,7 +1348,7 @@ public class ListingIntegrationTests {
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1402,6 +1413,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -1409,7 +1421,7 @@ public class ListingIntegrationTests {
         Listing listing = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1468,6 +1480,7 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
@@ -1475,7 +1488,7 @@ public class ListingIntegrationTests {
         Listing listing = new Listing(
                 null,
                 "1",
-                autoWorld,
+                OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof, navigation),
                 ZonedDateTime.now(),
@@ -1515,7 +1528,7 @@ public class ListingIntegrationTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isForbidden())
-                .andExpect(content().string("You don't have permission to edit this listing."));
+                .andExpect(content().string("You don't have permission to this listing."));
     }
 
     @Test

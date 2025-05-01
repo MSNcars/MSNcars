@@ -81,7 +81,8 @@ public class ListingServiceImpl implements ListingService{
 
         List<ListingResponse> listingResponses = new ArrayList<>();
         for (Listing listing : listings) {
-            listingResponses.add(listingMapper.toDTO(listing));
+            if (listing.getOwnerType() != OwnerType.COMPANY)
+                listingResponses.add(listingMapper.toDTO(listing));
         }
 
         return listingResponses;
@@ -174,7 +175,7 @@ public class ListingServiceImpl implements ListingService{
             case COMPANY -> {
                 Company company = companyRepository.findById(Long.valueOf(listing.getOwnerId()))
                         .orElseThrow(() -> new CompanyNotFoundException("Company not found with id " + listing.getOwnerId()));
-                if (company.getMembers().contains(userId)){
+                if (!company.getMembers().contains(userId)){
                     throw new ForbiddenException("You don't have permission to this listing.");
                 }
             }

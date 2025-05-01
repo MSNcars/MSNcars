@@ -3,6 +3,7 @@ package com.msn.msncars.listing.DTO;
 import com.msn.msncars.car.*;
 import com.msn.msncars.car.model.ModelDTO;
 import com.msn.msncars.company.CompanyDTO;
+import com.msn.msncars.listing.OwnerType;
 import com.msn.msncars.user.UserDTO;
 
 import java.math.BigDecimal;
@@ -11,8 +12,8 @@ import java.util.List;
 
 public record ListingResponse (
         Long id,
-        UserDTO user,
-        CompanyDTO sellingCompany,
+        String ownerId,
+        OwnerType ownerType,
         ModelDTO model,
         List<Feature> features,
         ZonedDateTime createdAt,

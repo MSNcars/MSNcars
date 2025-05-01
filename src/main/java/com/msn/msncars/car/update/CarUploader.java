@@ -42,7 +42,6 @@ public class CarUploader {
         Populates Model and Make tables in our database. It does not update Models and Makes already present in our database,
         instead it only inserts models/makes which IDs are completely missing.
     */
-
     @Scheduled(fixedRate = 10 * 1000 * 60) // every 10 minutes
     public void updateVehicleInformationFromApi(){
         if(suspend)
