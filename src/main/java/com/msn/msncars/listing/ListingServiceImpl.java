@@ -4,6 +4,7 @@ import com.msn.msncars.car.FeatureRepository;
 import com.msn.msncars.car.Fuel;
 import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.car.exception.ModelNotFoundException;
+import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -89,6 +89,9 @@ public class ListingServiceImpl implements ListingService{
 
     public Long createListing(ListingRequest listingRequest, String userId) {
         Listing listing = listingMapper.fromDTO(listingRequest);
+
+        validateListingOwnership(listing, userId);
+
         listing.setOwnerId(userId);
 
         fetchEntities(listing, listingRequest);
@@ -159,11 +162,19 @@ public class ListingServiceImpl implements ListingService{
     }
 
     public void validateListingOwnership(Listing listing, String userId){
-        if(
-            !listing.getOwnerId().equals(userId) &&
-            (listing.getSellingCompany() != null && !listing.getSellingCompany().getUsersId().contains(userId))
-        ){
-            throw new ForbiddenException("You don't have permission to edit this listing.");
+        switch (listing.getOwnerType()){
+            case USER -> {
+                if (!listing.getOwnerId().equals(userId)){
+                    throw new ForbiddenException("You don't have permission to add this listing.");
+                }
+            }
+            case COMPANY -> {
+                Company company = companyRepository.findById(Long.valueOf(listing.getOwnerId()))
+                        .orElseThrow(() -> new CompanyNotFoundException("Company not found with id " + listing.getOwnerId()));
+                if (company.getUsersId().contains(userId)){
+                    throw new ForbiddenException("You don't have permission to add this listing.");
+                }
+            }
         }
     }
 
@@ -172,13 +183,6 @@ public class ListingServiceImpl implements ListingService{
     */
     private void fetchEntities(Listing listing, ListingRequest listingRequest){
         listing.setOwnerId(listingRequest.ownerId());
-
-        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
-            listing.setSellingCompany(
-                    companyRepository.findById(listingRequest.sellingCompanyId())
-                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
-            );
-        }
 
         listing.setModel(
                 modelRepository.findById(listingRequest.modelId())
