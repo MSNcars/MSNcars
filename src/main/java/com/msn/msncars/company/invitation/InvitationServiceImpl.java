@@ -1,4 +1,4 @@
-package com.msn.msncars.invitation;
+package com.msn.msncars.company.invitation;
 
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyService;
@@ -6,7 +6,6 @@ import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
