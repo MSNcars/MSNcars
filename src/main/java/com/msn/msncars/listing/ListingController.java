@@ -1,5 +1,6 @@
 package com.msn.msncars.listing;
 
+import com.msn.msncars.car.Fuel;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.msn.msncars.listing.DTO.ListingResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,8 +24,14 @@ public class ListingController {
     }
 
     @GetMapping
-    public List<ListingResponse> getAllListings() {
-        return listingService.getAllListings();
+    public List<ListingResponse> getAllListings(
+            @RequestParam(required = false) String makeName,
+            @RequestParam(required = false) String modelName,
+            @RequestParam(required = false) Fuel fuel,
+            @RequestParam(required = false) SortAttribute sortAttribute,
+            @RequestParam(required = false) SortOrder sortOrder
+    ) {
+        return listingService.getAllListings(makeName, modelName, fuel, sortAttribute, sortOrder);
     }
 
     @GetMapping("/{listing-id}")
@@ -64,6 +71,14 @@ public class ListingController {
             @AuthenticationPrincipal Jwt principal
     ) {
         return listingService.extendExpirationDate(listingId, validityPeriod, principal.getSubject());
+    }
+
+    @PatchMapping("/{listing-id}/set-revoked/{is-revoked}")
+    public ListingResponse setListingRevokedStatus(
+            @PathVariable("listing-id") Long listingId,
+            @PathVariable("is-revoked") boolean isRevoked,
+            @AuthenticationPrincipal Jwt principal) {
+        return listingService.setListingRevokedStatus(listingId, isRevoked, principal.getSubject());
     }
 
     @DeleteMapping("/{listing-id}")

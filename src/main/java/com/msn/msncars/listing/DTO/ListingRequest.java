@@ -1,6 +1,7 @@
 package com.msn.msncars.listing.DTO;
 
 import com.msn.msncars.car.*;
+import com.msn.msncars.listing.OwnerType;
 import com.msn.msncars.listing.ValidityPeriod;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -14,7 +15,8 @@ import java.util.List;
 public record ListingRequest(
         @NotEmpty
         String ownerId,
-        Long sellingCompanyId,
+        @NotNull
+        OwnerType ownerType,
         @NotNull
         Long modelId,
         List<Long> featuresIds,

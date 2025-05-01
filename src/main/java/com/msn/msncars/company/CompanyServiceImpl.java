@@ -37,7 +37,7 @@ public class CompanyServiceImpl implements CompanyService {
             companyCreationRequest.phone(),
             companyCreationRequest.email()
         );
-        company.setUsersId(Set.of(ownerId));
+        company.setMembers(Set.of(ownerId));
 
         Company savedCompany = companyRepository.save(company);
 
@@ -61,7 +61,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public List<UserDTO> getCompanyMembers(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
-        List<UserRepresentation> userRepresentations = company.getUsersId()
+        List<UserRepresentation> userRepresentations = company.getMembers()
                 .stream()
                 .map(userService::getUserRepresentationById)
                 .map(userRepresentationOptional -> userRepresentationOptional.orElse(null))
