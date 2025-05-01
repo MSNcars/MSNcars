@@ -161,18 +161,21 @@ public class ListingServiceImpl implements ListingService{
         listingRepository.delete(listing);
     }
 
+    /*
+        Validates if user has access to modifying the listing.
+     */
     public void validateListingOwnership(Listing listing, String userId){
         switch (listing.getOwnerType()){
             case USER -> {
                 if (!listing.getOwnerId().equals(userId)){
-                    throw new ForbiddenException("You don't have permission to add this listing.");
+                    throw new ForbiddenException("You don't have permission to this listing.");
                 }
             }
             case COMPANY -> {
                 Company company = companyRepository.findById(Long.valueOf(listing.getOwnerId()))
                         .orElseThrow(() -> new CompanyNotFoundException("Company not found with id " + listing.getOwnerId()));
                 if (company.getUsersId().contains(userId)){
-                    throw new ForbiddenException("You don't have permission to add this listing.");
+                    throw new ForbiddenException("You don't have permission to this listing.");
                 }
             }
         }
