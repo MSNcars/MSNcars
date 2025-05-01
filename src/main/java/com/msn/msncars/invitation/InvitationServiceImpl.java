@@ -20,12 +20,14 @@ public class InvitationServiceImpl implements InvitationService {
     private final InvitationRepository invitationRepository;
     private final CompanyService companyService;
     private final UserService userService;
+    private final InvitationMapper invitationMapper;
     private final Clock clock;
 
-    public InvitationServiceImpl(InvitationRepository invitationRepository, CompanyService companyService, UserService userService, Clock clock) {
+    public InvitationServiceImpl(InvitationRepository invitationRepository, CompanyService companyService, UserService userService, InvitationMapper invitationMapper, Clock clock) {
         this.invitationRepository = invitationRepository;
         this.companyService = companyService;
         this.userService = userService;
+        this.invitationMapper = invitationMapper;
         this.clock = clock;
     }
 
@@ -37,7 +39,6 @@ public class InvitationServiceImpl implements InvitationService {
         clearCompanyInvitationsToRecipient(senderCompanyId, recipientId);
         Invitation invitation = new Invitation(
             recipientId,
-            senderId,
             companyService.getCompany(senderCompanyId).get(),
             Instant.now(clock),
             InvitationState.PENDING,
@@ -64,7 +65,7 @@ public class InvitationServiceImpl implements InvitationService {
     public void deleteInvitation(UUID invitationId, String userId) {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new NotFoundException("Invitation does not exist"));
-        if (!invitation.getSenderUserId().equals(userId))
+        if (!invitation.getSenderCompany().hasOwner(userId))
             throw new ForbiddenException("Only the invitation owner is allowed to delete it.");
         invitationRepository.deleteById(invitationId);
     }
@@ -72,12 +73,6 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public List<InvitationDTO> getInvitationsReceivedByUser(String userId) {
         List<Invitation> invitations = invitationRepository.getInvitationsByRecipientUserId(userId);
-        return mapInvitationsToDTOs(invitations);
-    }
-
-    @Override
-    public List<InvitationDTO> getInvitationsSentByUser(String userId) {
-        List<Invitation> invitations = invitationRepository.getInvitationsBySenderUserId(userId);
         return mapInvitationsToDTOs(invitations);
     }
 
@@ -101,8 +96,8 @@ public class InvitationServiceImpl implements InvitationService {
 
         Company company = companyOptional.get();
 
-        if (!company.hasMember(senderId))
-            throw new ForbiddenException("Only company members are allowed to send invitations.");
+        if (!company.hasOwner(senderId))
+            throw new ForbiddenException("Only company owner is allowed to send invitations.");
         else if (company.hasMember(recipientId))
             throw new IllegalStateException("User already accepted invitation from this company.");
     }
@@ -129,11 +124,11 @@ public class InvitationServiceImpl implements InvitationService {
 
     private List<InvitationDTO> mapInvitationsToDTOs(List<Invitation> invitations) {
         return invitations.stream()
-                .map(invitation -> InvitationMapper.INSTANCE.toDTO(invitation, clock.getZone()))
+                .map(this::mapInvitationToDTO)
                 .toList();
     }
 
     private InvitationDTO mapInvitationToDTO(Invitation invitation) {
-        return InvitationMapper.INSTANCE.toDTO(invitation, clock.getZone());
+        return invitationMapper.toDTO(invitation, clock.getZone());
     }
 }

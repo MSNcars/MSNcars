@@ -48,12 +48,6 @@ public class InvitationController {
         return ResponseEntity.ok(invitationDTOs);
     }
 
-    @GetMapping("/user/sent")
-    public ResponseEntity<List<InvitationDTO>> getInvitationsSentByUser(@AuthenticationPrincipal Jwt jwt) {
-        var invitationDTOs = invitationService.getInvitationsSentByUser(jwt.getSubject());
-        return ResponseEntity.ok(invitationDTOs);
-    }
-
     @GetMapping("/company/{companyId}/sent")
     public ResponseEntity<List<InvitationDTO>> getInvitationsSentByCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {
         var invitationDTOs = invitationService.getInvitationsSentByCompany(companyId, jwt.getSubject());

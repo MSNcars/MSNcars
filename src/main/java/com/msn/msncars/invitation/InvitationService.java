@@ -9,6 +9,5 @@ public interface InvitationService {
     InvitationDTO declineInvitation(UUID invitationId, String userId);
     void deleteInvitation(UUID invitationId, String userId);
     List<InvitationDTO> getInvitationsReceivedByUser(String userId);
-    List<InvitationDTO> getInvitationsSentByUser(String userId);
     List<InvitationDTO> getInvitationsSentByCompany(Long companyId, String userId);
 }

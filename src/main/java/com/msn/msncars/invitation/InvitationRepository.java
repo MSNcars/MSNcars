@@ -11,6 +11,5 @@ import java.util.UUID;
 public interface InvitationRepository extends JpaRepository<Invitation, UUID> {
     Optional<List<Invitation>> getInvitationsBySenderCompanyIdAndRecipientUserId(Long senderCompanyId, String recipientUserId);
     List<Invitation> getInvitationsByRecipientUserId(String id);
-    List<Invitation> getInvitationsBySenderUserId(String id);
     List<Invitation> getInvitationsBySenderCompanyId(Long companyId);
 }

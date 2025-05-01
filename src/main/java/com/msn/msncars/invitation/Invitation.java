@@ -12,7 +12,6 @@ public class Invitation {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String recipientUserId;
-    private String senderUserId;
     @ManyToOne
     @JoinColumn(name = "sender_company_id")
     private Company senderCompany;
@@ -26,9 +25,8 @@ public class Invitation {
         clock = Clock.systemUTC();
     }
 
-    public Invitation(String recipientUserId, String senderUserId, Company senderCompany, Instant creationDateTime, InvitationState invitationState, Clock clock) {
+    public Invitation(String recipientUserId, Company senderCompany, Instant creationDateTime, InvitationState invitationState, Clock clock) {
         this.recipientUserId = recipientUserId;
-        this.senderUserId = senderUserId;
         this.senderCompany = senderCompany;
         this.creationDateTime = creationDateTime;
         this.invitationState = invitationState;
@@ -64,14 +62,6 @@ public class Invitation {
 
     public void setRecipientUserId(String recipientUserId) {
         this.recipientUserId = recipientUserId;
-    }
-
-    public String getSenderUserId() {
-        return senderUserId;
-    }
-
-    public void setSenderUserId(String senderUserId) {
-        this.senderUserId = senderUserId;
     }
 
     public Company getSenderCompany() {
