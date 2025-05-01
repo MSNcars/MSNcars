@@ -19,15 +19,17 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
     private final UserService userService;
     private final UserMapper userMapper;
+    private final CompanyMapper companyMapper;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService, UserMapper userMapper) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService, UserMapper userMapper, CompanyMapper companyMapper) {
         this.companyRepository = companyRepository;
         this.userService = userService;
         this.userMapper = userMapper;
+        this.companyMapper = companyMapper;
     }
 
     @Override
-    public Company createCompany(CompanyCreationRequest companyCreationRequest, String ownerId) {
+    public CompanyDTO createCompany(CompanyCreationRequest companyCreationRequest, String ownerId) {
         Company company = new Company(
             ownerId,
             companyCreationRequest.name(),
@@ -37,7 +39,9 @@ public class CompanyServiceImpl implements CompanyService {
         );
         company.setUsersId(Set.of(ownerId));
 
-        return companyRepository.save(company);
+        Company savedCompany = companyRepository.save(company);
+
+        return companyMapper.toDTO(savedCompany);
     }
 
     public Optional<Company> getCompany(Long companyId) {
@@ -49,7 +53,7 @@ public class CompanyServiceImpl implements CompanyService {
         Optional<Company> companyOptional = companyRepository.findById(companyId);
         if (companyOptional.isPresent()) {
             Company company = companyOptional.get();
-            return Optional.of(new CompanyDTO(company.getName(), company.getAddress(), company.getPhone(), company.getEmail()));
+            return Optional.of(companyMapper.toDTO(company));
         }
         return Optional.empty();
     }
