@@ -1,8 +1,10 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.FeatureRepository;
+import com.msn.msncars.car.Fuel;
 import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.car.exception.ModelNotFoundException;
+import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.DTO.ListingRequest;
@@ -17,6 +19,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class ListingServiceImpl implements ListingService{
@@ -35,9 +38,29 @@ public class ListingServiceImpl implements ListingService{
         this.featureRepository = featureRepository;
     }
 
-    public List<ListingResponse> getAllListings() {
+    public List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortAttribute sortAttribute, SortOrder sortOrder) {
         List<Listing> listings = listingRepository.findAll();
         List<ListingResponse> listingResponses = new ArrayList<>();
+
+        Stream<Listing> stream = listings.stream();
+
+        if (makeName != null) {
+            stream = stream.filter(l -> l.getModel().getMake().getName().equalsIgnoreCase(makeName));
+        }
+
+        if (modelName != null) {
+            stream = stream.filter(l -> l.getModel().getName().equalsIgnoreCase(modelName));
+        }
+
+        if (fuel != null) {
+            stream = stream.filter(l -> l.getFuel() == fuel);
+        }
+
+        if (sortAttribute != null && sortOrder != null) {
+            stream = stream.sorted(sortAttribute.getComparator(sortOrder));
+        }
+
+        listings = stream.toList();
 
         for (Listing listing : listings) {
             listingResponses.add(listingMapper.toDTO(listing));
@@ -59,7 +82,8 @@ public class ListingServiceImpl implements ListingService{
 
         List<ListingResponse> listingResponses = new ArrayList<>();
         for (Listing listing : listings) {
-            listingResponses.add(listingMapper.toDTO(listing));
+            if (listing.getOwnerType() != OwnerType.COMPANY)
+                listingResponses.add(listingMapper.toDTO(listing));
         }
 
         return listingResponses;
@@ -67,6 +91,9 @@ public class ListingServiceImpl implements ListingService{
 
     public Long createListing(ListingRequest listingRequest, String userId) {
         Listing listing = listingMapper.fromDTO(listingRequest);
+
+        validateListingOwnership(listing, userId);
+
         listing.setOwnerId(userId);
 
         fetchEntities(listing, listingRequest);
@@ -111,6 +138,19 @@ public class ListingServiceImpl implements ListingService{
         return listingMapper.toDTO(updatedListing);
     }
 
+    public ListingResponse setListingRevokedStatus(Long listingId, boolean isRevoked, String userId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        validateListingOwnership(listing, userId);
+
+        listing.setRevoked(isRevoked);
+
+        Listing updatedListing = listingRepository.save(listing);
+
+        return listingMapper.toDTO(updatedListing);
+    }
+
     public void deleteListing(Long listingId, String userId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
@@ -120,18 +160,29 @@ public class ListingServiceImpl implements ListingService{
         listingRepository.delete(listing);
     }
 
+    /*
+        Validates if user has access to modifying the listing.
+     */
     public void validateListingOwnership(Listing listing, String userId){
-        if(
-            !listing.getOwnerId().equals(userId) &&
-            (listing.getSellingCompany() != null && !listing.getSellingCompany().getUsersId().contains(userId))
-        ){
-            throw new ForbiddenException("You don't have permission to edit this listing.");
+        switch (listing.getOwnerType()){
+            case USER -> {
+                if (!listing.getOwnerId().equals(userId)){
+                    throw new ForbiddenException("You don't have permission to this listing.");
+                }
+            }
+            case COMPANY -> {
+                Company company = companyRepository.findById(Long.valueOf(listing.getOwnerId()))
+                        .orElseThrow(() -> new CompanyNotFoundException("Company not found with id " + listing.getOwnerId()));
+                if (!company.getMembers().contains(userId)){
+                    throw new ForbiddenException("You don't have permission to this listing.");
+                }
+            }
         }
     }
 
     public void validateListingActive(Listing listing){
         if(listing.getRevoked()){
-            throw new ListingRevokedException("Cannot extend revoked listing.");
+            throw new ListingRevokedException("Cannot modify revoked listing.");
         }
         if (listing.getExpiresAt().isBefore(ZonedDateTime.now())){
             throw new ListingExpiredException("You can't edit listing that already expired.");
@@ -143,13 +194,6 @@ public class ListingServiceImpl implements ListingService{
     */
     private void fetchEntities(Listing listing, ListingRequest listingRequest){
         listing.setOwnerId(listingRequest.ownerId());
-
-        if (listingRequest.sellingCompanyId() != null){// Setting selling company is optional
-            listing.setSellingCompany(
-                    companyRepository.findById(listingRequest.sellingCompanyId())
-                            .orElseThrow(() -> new CompanyNotFoundException("Company not found with id: " + listingRequest.sellingCompanyId()))
-            );
-        }
 
         listing.setModel(
                 modelRepository.findById(listingRequest.modelId())

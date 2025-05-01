@@ -21,9 +21,9 @@ public class Listing {
     @NotEmpty
     private String ownerId;
 
-    @ManyToOne
-    @JoinColumn(name = "selling_company_id")
-    private Company sellingCompany;
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private OwnerType ownerType;
 
     @ManyToOne
     @JoinColumn(name = "model_id")
@@ -70,13 +70,13 @@ public class Listing {
     public Listing() {}
 
     public Listing(
-            Long id, String ownerId, Company sellingCompany, Model model, List<Feature> features, ZonedDateTime createdAt,
+            Long id, String ownerId, OwnerType ownerType, Model model, List<Feature> features, ZonedDateTime createdAt,
             ZonedDateTime expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage,
             Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description
     ) {
         this.id = id;
         this.ownerId = ownerId;
-        this.sellingCompany = sellingCompany;
+        this.ownerType = ownerType;
         this.model = model;
         this.features = features;
         this.createdAt = createdAt;
@@ -95,7 +95,7 @@ public class Listing {
     public Listing(Listing other) {
         this.id = other.id;
         this.ownerId = other.ownerId;
-        this.sellingCompany = other.sellingCompany;
+        this.ownerType = other.ownerType;
         this.model = other.model;
         this.features = other.features;
         this.createdAt = other.createdAt;
@@ -135,12 +135,12 @@ public class Listing {
         this.ownerId = ownerId;
     }
 
-    public Company getSellingCompany() {
-        return sellingCompany;
+    public OwnerType getOwnerType() {
+        return ownerType;
     }
 
-    public void setSellingCompany(Company sellingCompany) {
-        this.sellingCompany = sellingCompany;
+    public void setOwnerType(OwnerType ownerType) {
+        this.ownerType = ownerType;
     }
 
     public Model getModel() {
