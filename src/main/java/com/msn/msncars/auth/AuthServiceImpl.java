@@ -1,7 +1,7 @@
 package com.msn.msncars.auth;
+
 import com.msn.msncars.auth.exception.RegistrationException;
 import com.msn.msncars.auth.keycloak.KeycloakConfig;
-import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyDTO;
 import com.msn.msncars.company.CompanyService;
 import com.msn.msncars.user.UserService;
@@ -12,11 +12,12 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class AuthServiceImpl implements AuthService{
@@ -36,13 +37,9 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public String registerUserAndAssignRole(UserRegistrationRequest userRegistrationRequest, AccountRole accountRole) {
         UserRepresentation userRepresentation = getUserRepresentation(userRegistrationRequest);
+        cleanupUsersIfNecessary(userRepresentation);
         String userId = createUser(userRepresentation);
-        try {
-            assignRoleToUser(userId, accountRole);
-        } catch (Exception e) {
-            userService.deleteUser(userId);
-            throw e;
-        }
+        assignRoleToUser(userId, accountRole);
         return userId;
     }
 
@@ -67,8 +64,8 @@ public class AuthServiceImpl implements AuthService{
 
             if (registerResponse.getStatus() != 201)
                 throw new RegistrationException(
-                    registerResponse.getStatusInfo().getReasonPhrase(),
-                    HttpStatus.valueOf(registerResponse.getStatus())
+                        registerResponse.getStatusInfo().getReasonPhrase(),
+                        HttpStatus.valueOf(registerResponse.getStatus())
                 );
 
             return CreatedResponseUtil.getCreatedId(registerResponse);
@@ -111,5 +108,53 @@ public class AuthServiceImpl implements AuthService{
         user.setCredentials(Collections.singletonList(passwordCred));
 
         return user;
+    }
+
+    private void cleanupUsersIfNecessary(UserRepresentation userRepresentation) {
+        List<UserRepresentation> usersWithSameUsernameOrEmail = getUsersWithSameUsernameOrEmail(userRepresentation.getUsername(), userRepresentation.getEmail());
+        if (!usersWithSameUsernameOrEmail.isEmpty())
+            removeUsersWithoutAnyAccountRole(usersWithSameUsernameOrEmail);
+    }
+
+    private List<UserRepresentation> getUsersWithSameUsernameOrEmail(String username, String email) {
+        List<UserRepresentation> usersWithSameUsername = keycloakAPI.realm(keycloakConfig.getRealm())
+                .users()
+                .searchByUsername(username, true);
+
+        List<UserRepresentation> usersWithSameEmail = keycloakAPI.realm(keycloakConfig.getRealm())
+                .users()
+                .searchByEmail(email, true);
+
+        return Stream.concat(usersWithSameUsername.stream(), usersWithSameEmail.stream()).toList();
+    }
+
+    private void removeUsersWithoutAnyAccountRole(List<UserRepresentation> users) {
+        for (var user: users)
+            if (!doesUserHaveAnyAccountRole(user.getId()))
+                userService.deleteUser(user.getId());
+    }
+
+    private boolean doesUserHaveAccountRole(String userId, AccountRole accountRole) {
+        ClientRepresentation client = keycloakAPI.realm(keycloakConfig.getRealm())
+                .clients()
+                .findByClientId(keycloakConfig.getRealm())
+                .getFirst();
+
+        List<RoleRepresentation> roles = keycloakAPI.realm(keycloakConfig.getRealm())
+                .users()
+                .get(userId)
+                .roles()
+                .clientLevel(client.getId())
+                .listAll();
+
+        return roles.stream()
+                .anyMatch(role -> role.getName().equals(accountRole.getName()));
+    }
+
+    private boolean doesUserHaveAnyAccountRole(String userId) {
+        for (var accountRole : AccountRole.values())
+            if (doesUserHaveAccountRole(userId, accountRole))
+                return true;
+        return false;
     }
 }
