@@ -43,7 +43,7 @@ public class AuthConfig {
                                 .permitAll()
                                 .requestMatchers("/user")
                                 .hasRole("user")
-                                .requestMatchers("/company")
+                                .requestMatchers("/invitations")
                                 .hasRole("company")
                                 .requestMatchers("/admin")
                                 .hasRole("admin")
