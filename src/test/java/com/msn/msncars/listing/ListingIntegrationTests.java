@@ -149,7 +149,7 @@ public class ListingIntegrationTests {
                 "789 Ford Ln",
                 "555-222-111",
                 "info@forddealer.com");
-        bmwCenter.addMember("3");
+        fordDealer.addMember("3");
 
         companyRepository.save(autoWorld);
         companyRepository.save(bmwCenter);
