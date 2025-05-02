@@ -142,12 +142,14 @@ public class ListingIntegrationTests {
                 "456 BMW Rd",
                 "987-654-321",
                 "sales@bmwcenter.com");
+        bmwCenter.addMember("2");
         Company fordDealer = new Company(null,
                 "3",
                 "Ford Dealer",
                 "789 Ford Ln",
                 "555-222-111",
                 "info@forddealer.com");
+        bmwCenter.addMember("3");
 
         companyRepository.save(autoWorld);
         companyRepository.save(bmwCenter);
@@ -162,36 +164,70 @@ public class ListingIntegrationTests {
         featureRepository.save(leatherSeats);
     }
 
+    private class TestContext{
+        Make toyota;
+        Make bmw;
+        Make ford;
+
+        Model corolla;
+        Model series3;
+        Model focus;
+
+        Company autoWorld;
+        Company bmwCenter;
+        Company fordDealer;
+
+        Feature sunroof;
+        Feature navigation;
+        Feature leatherSeats;
+    }
+
+    private TestContext getTestContext(){
+        TestContext testContext = new TestContext();
+
+        testContext.toyota = makeRepository.findByName("Toyota")
+                .orElseThrow(() -> new RuntimeException("Make 'Toyota' not found (should've been added in tests set up data"));
+        testContext.bmw = makeRepository.findByName("BMW")
+                .orElseThrow(() -> new RuntimeException("Make 'BMW' not found (should've been added in tests set up data"));
+        testContext.ford = makeRepository.findByName("Ford")
+                .orElseThrow(() -> new RuntimeException("Make 'Ford' not found (should've been added in tests set up data"));
+
+
+        testContext.corolla = modelRepository.findByName("Corolla")
+                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
+        testContext.series3 = modelRepository.findByName("3 Series")
+                .orElseThrow(() -> new RuntimeException("Model '3 Series' not found (should've been added in tests set up data"));
+        testContext.focus = modelRepository.findByName("Focus")
+                .orElseThrow(() -> new RuntimeException("Model 'Focus' not found (should've been added in tests set up data"));
+
+        testContext.sunroof = featureRepository.findByName("Sunroof")
+                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
+        testContext.navigation = featureRepository.findByName("Navigation")
+                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        testContext.leatherSeats = featureRepository.findByName("Leather Seats")
+                .orElseThrow(() -> new RuntimeException("Feature 'Leather Seats' not found (should've been added in tests set up data"));
+
+        testContext.autoWorld = companyRepository.findByName("Auto World")
+                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        testContext.bmwCenter = companyRepository.findByName("BMW Center")
+                .orElseThrow(() -> new RuntimeException("Company 'BMW Center' not found (should've been added in tests set up data"));
+        testContext.fordDealer = companyRepository.findByName("Ford Dealer")
+                .orElseThrow(() -> new RuntimeException("Company 'Ford Dealer' not found (should've been added in tests set up data"));
+
+        return testContext;
+    }
+
     @Test
     public void getAllListingsWithoutFilters_ShouldReturnAllListings_And200Code() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Model series3 = modelRepository.findByName("3 Series")
-                .orElseThrow(() -> new RuntimeException("Model '3 Series' not found (should've been added in tests set up data"));
-        Model focus = modelRepository.findByName("Focus")
-                .orElseThrow(() -> new RuntimeException("Model 'Focus' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Feature leatherSeats = featureRepository.findByName("Leather Seats")
-                .orElseThrow(() -> new RuntimeException("Feature 'Leather Seats' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
-        Company BMWCenter = companyRepository.findByName("BMW Center")
-                .orElseThrow(() -> new RuntimeException("Company 'BMW Center' not found (should've been added in tests set up data"));
-        Company FordDealer = companyRepository.findByName("Ford Dealer")
-                .orElseThrow(() -> new RuntimeException("Company 'Ford Dealer' not found (should've been added in tests set up data"));
-
+        var testContext = getTestContext();
 
         Listing listing1 = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -207,10 +243,10 @@ public class ListingIntegrationTests {
 
         Listing listing2 = new Listing(
                 null,
-                BMWCenter.getId().toString(),
+                testContext.bmwCenter.getId().toString(),
                 OwnerType.COMPANY,
-                series3,
-                List.of(leatherSeats),
+                testContext.series3,
+                List.of(testContext.leatherSeats),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(2),
                 false,
@@ -226,10 +262,10 @@ public class ListingIntegrationTests {
 
         Listing listing3 = new Listing(
                 null,
-                FordDealer.getId().toString(),
+                testContext.fordDealer.getId().toString(),
                 OwnerType.COMPANY,
-                focus,
-                List.of(navigation),
+                testContext.focus,
+                List.of(testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusWeeks(3),
                 false,
@@ -267,37 +303,17 @@ public class ListingIntegrationTests {
     @Test
     public void getAllListingsWithFilters_ShouldReturnFilteredListings_And200Code() throws Exception {
         // given
+        var testContext = getTestContext();
 
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Model series3 = modelRepository.findByName("3 Series")
-                .orElseThrow(() -> new RuntimeException("Model '3 Series' not found (should've been added in tests set up data"));
-        Model focus = modelRepository.findByName("Focus")
-                .orElseThrow(() -> new RuntimeException("Model 'Focus' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Feature leatherSeats = featureRepository.findByName("Leather Seats")
-                .orElseThrow(() -> new RuntimeException("Feature 'Leather Seats' not found (should've been added in tests set up data"));
-        Make toyota = makeRepository.findByName("Toyota")
-                .orElseThrow(() -> new RuntimeException("Make 'Toyota' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
-        Company BMWCenter = companyRepository.findByName("BMW Center")
-                .orElseThrow(() -> new RuntimeException("Company 'BMW Center' not found (should've been added in tests set up data"));
-        Company FordDealer = companyRepository.findByName("Ford Dealer")
-                .orElseThrow(() -> new RuntimeException("Company 'Ford Dealer' not found (should've been added in tests set up data"));
-
-        Model yaris = new Model(4L, "Yaris", toyota);
+        Model yaris = new Model(4L, "Yaris", testContext.toyota);
         modelRepository.save(yaris);
 
         Listing listing1 = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -313,10 +329,10 @@ public class ListingIntegrationTests {
 
         Listing listing2 = new Listing(
                 null,
-                BMWCenter.getId().toString(),
+                testContext.bmwCenter.getId().toString(),
                 OwnerType.COMPANY,
-                series3,
-                List.of(leatherSeats),
+                testContext.series3,
+                List.of(testContext.leatherSeats),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(2),
                 false,
@@ -332,10 +348,10 @@ public class ListingIntegrationTests {
 
         Listing listing3 = new Listing(
                 null,
-                FordDealer.getId().toString(),
+                testContext.fordDealer.getId().toString(),
                 OwnerType.COMPANY,
-                focus,
-                List.of(navigation),
+                testContext.focus,
+                List.of(testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusWeeks(3),
                 false,
@@ -351,10 +367,10 @@ public class ListingIntegrationTests {
 
         Listing listing4 = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 yaris,
-                List.of(sunroof, navigation),
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -370,10 +386,10 @@ public class ListingIntegrationTests {
 
         Listing listing5 = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 yaris,
-                List.of(sunroof, navigation),
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -435,22 +451,14 @@ public class ListingIntegrationTests {
     @Test
     public void getListingById_ShouldReturnListing_And200Code_WhenRequestedListingExists() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listing = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -504,31 +512,14 @@ public class ListingIntegrationTests {
     @Test
     public void getMyListings_ShouldReturn200Code_AndReturnListingsOfSpecifiedUser() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Model series3 = modelRepository.findByName("3 Series")
-                .orElseThrow(() -> new RuntimeException("Model '3 Series' not found (should've been added in tests set up data"));
-        Model focus = modelRepository.findByName("Focus")
-                .orElseThrow(() -> new RuntimeException("Model 'Focus' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Feature leatherSeats = featureRepository.findByName("Leather Seats")
-                .orElseThrow(() -> new RuntimeException("Feature 'Leather Seats' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
-        Company BMWCenter = companyRepository.findByName("BMW Center")
-                .orElseThrow(() -> new RuntimeException("Company 'BMW Center' not found (should've been added in tests set up data"));
-
+        var testContext = getTestContext();
 
         Listing listing1 = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -544,29 +535,10 @@ public class ListingIntegrationTests {
 
         Listing listing2 = new Listing(
                 null,
-                BMWCenter.getId().toString(),
-                OwnerType.COMPANY,
-                series3,
-                List.of(leatherSeats),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(2),
-                false,
-                new BigDecimal("32000.00"),
-                2022,
-                15000,
-                Fuel.DIESEL,
-                CarUsage.USED,
-                CarOperationalStatus.WORKING,
-                CarType.SEDAN,
-                "Luxury BMW 3 Series with leather interior."
-        );
-
-        Listing listing3 = new Listing(
-                null,
                 "1",
                 OwnerType.USER,
-                focus,
-                List.of(navigation),
+                testContext.focus,
+                List.of(testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusWeeks(3),
                 false,
@@ -582,7 +554,6 @@ public class ListingIntegrationTests {
 
         listingRepository.save(listing1);
         listingRepository.save(listing2);
-        listingRepository.save(listing3);
 
         String userId = "1";
 
@@ -610,19 +581,13 @@ public class ListingIntegrationTests {
     public void createListing_ShouldReturn201Code_AndIdOfCreatedResource_AndShouldCreateNewListingInDatabase_WhenRequestIsValid()
             throws Exception {
         // given
-
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("18000.00"),
                 2020,
                 45000,
@@ -673,18 +638,13 @@ public class ListingIntegrationTests {
     @Test
     public void createListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("18000.00"),
                 1820,
                 45000,
@@ -716,22 +676,14 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturnUpdatedListing_And200Code_AndShouldUpdateListingInDatabase_WhenRequestIsValid() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -750,10 +702,10 @@ public class ListingIntegrationTests {
 
         // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 2L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("12000.00"),
                 2020,
                 45000,
@@ -798,20 +750,14 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn403Code_AndAccordingMessage_WhenUserWantsToUpdateNotHisListings() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
                 OwnerType.USER,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -833,7 +779,7 @@ public class ListingIntegrationTests {
                 "2",
                 OwnerType.USER,
                 2L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("12000.00"),
                 2020,
                 45000,
@@ -870,17 +816,13 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
-
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 OwnerType.USER,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("-18000.00"),
                 2020,
                 45000,
@@ -914,16 +856,13 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 OwnerType.USER,
                 1L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("18000.00"),
                 2020,
                 45000,
@@ -955,22 +894,14 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenListingIsRevoked() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 true,
@@ -989,10 +920,10 @@ public class ListingIntegrationTests {
 
         // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 2L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("12000.00"),
                 2020,
                 45000,
@@ -1030,22 +961,14 @@ public class ListingIntegrationTests {
     @Test
     public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_AndUpdateListingInDatabase_WhenRequestIsValid () throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 false,
@@ -1097,22 +1020,14 @@ public class ListingIntegrationTests {
     public void extendExpirationDate_ShouldReturn403Code_AndAccordingMessage_WhenUserWantsToExtendNotHisListings() throws Exception
     {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 false,
@@ -1179,22 +1094,14 @@ public class ListingIntegrationTests {
     @Test
     public void extendExpirationDate_ShouldReturn400Code_AndAccordingMessage_WhenListingIsRevoked() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 true,
@@ -1238,22 +1145,14 @@ public class ListingIntegrationTests {
     @Test
     public void setListingRevokedStatus_ShouldReturn200Code_AndListingWithUpdatedRevokedStatus_AndUpdateListingInDatabase_WhenRequestIsValid () throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 false,
@@ -1300,22 +1199,14 @@ public class ListingIntegrationTests {
     @Test
     public void deleteListing_ShouldReturn200Code_AndDeleteListingFromDatabase_WhenListingExists() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listing = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -1356,22 +1247,14 @@ public class ListingIntegrationTests {
     @Test
     public void deleteListing_ShouldReturn403Code_WhenUserWantsToDeleteNotHisListing() throws Exception {
         // given
-
-        Model corolla = modelRepository.findByName("Corolla")
-                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
-        Feature sunroof = featureRepository.findByName("Sunroof")
-                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
-        Feature navigation = featureRepository.findByName("Navigation")
-                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
-        Company autoWorld = companyRepository.findByName("Auto World")
-                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        var testContext = getTestContext();
 
         Listing listing = new Listing(
                 null,
-                autoWorld.getId().toString(),
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
