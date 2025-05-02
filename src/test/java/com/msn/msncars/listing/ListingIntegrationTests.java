@@ -11,9 +11,7 @@ import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.listing.DTO.ListingRequest;
 import com.zaxxer.hikari.HikariDataSource;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,8 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ListingIntegrationTests {
-
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.3")
             .withDatabaseName("testdb")
@@ -89,22 +87,47 @@ public class ListingIntegrationTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    @BeforeEach
-    public void setUp() {
+    public ListingIntegrationTests() {
+        if (!postgres.isRunning()) {
+            postgres.start();
+        }
+    }
+
+    @BeforeAll
+    public void setUpBeforeAll() {
+        initializeSharedTestData();
+    }
+
+    @AfterEach
+    public void cleanUp() {
         listingRepository.deleteAll();
     }
 
-    @Test
-    public void getAllListingsWithoutFilters_ShouldReturnAllListings_And200Code() throws Exception {
-        // given
+    @AfterAll
+    static void tearDown(@Autowired DataSource dataSource) {
+        if (dataSource instanceof HikariDataSource) {
+            ((HikariDataSource) dataSource).close();
+        }
 
+        postgres.stop();
+    }
+
+    private void initializeSharedTestData() {
         Make toyota = new Make(1L, "Toyota");
         Make bmw = new Make(2L, "BMW");
         Make ford = new Make(3L, "Ford");
 
+        makeRepository.save(toyota);
+        makeRepository.save(bmw);
+        makeRepository.save(ford);
+
         Model corolla = new Model(1L, "Corolla", toyota);
         Model series3 = new Model(2L, "3 Series", bmw);
         Model focus = new Model(3L, "Focus", ford);
+
+        modelRepository.save(corolla);
+        modelRepository.save(series3);
+        modelRepository.save(focus);
 
         Company autoWorld = new Company(null,
                 "1",
@@ -112,29 +135,99 @@ public class ListingIntegrationTests {
                 "123 Main St",
                 "123-456-789",
                 "contact@autoworld.com");
+        autoWorld.addMember("1");
         Company bmwCenter = new Company(null,
                 "2",
                 "BMW Center",
                 "456 BMW Rd",
                 "987-654-321",
                 "sales@bmwcenter.com");
+        bmwCenter.addMember("2");
         Company fordDealer = new Company(null,
                 "3",
                 "Ford Dealer",
                 "789 Ford Ln",
                 "555-222-111",
                 "info@forddealer.com");
+        fordDealer.addMember("3");
+
+        companyRepository.save(autoWorld);
+        companyRepository.save(bmwCenter);
+        companyRepository.save(fordDealer);
 
         Feature sunroof = new Feature(null, "Sunroof");
         Feature navigation = new Feature(null, "Navigation");
         Feature leatherSeats = new Feature(null, "Leather Seats");
 
+        featureRepository.save(sunroof);
+        featureRepository.save(navigation);
+        featureRepository.save(leatherSeats);
+    }
+
+    private class TestContext{
+        Make toyota;
+        Make bmw;
+        Make ford;
+
+        Model corolla;
+        Model series3;
+        Model focus;
+
+        Company autoWorld;
+        Company bmwCenter;
+        Company fordDealer;
+
+        Feature sunroof;
+        Feature navigation;
+        Feature leatherSeats;
+    }
+
+    private TestContext getTestContext(){
+        TestContext testContext = new TestContext();
+
+        testContext.toyota = makeRepository.findByName("Toyota")
+                .orElseThrow(() -> new RuntimeException("Make 'Toyota' not found (should've been added in tests set up data"));
+        testContext.bmw = makeRepository.findByName("BMW")
+                .orElseThrow(() -> new RuntimeException("Make 'BMW' not found (should've been added in tests set up data"));
+        testContext.ford = makeRepository.findByName("Ford")
+                .orElseThrow(() -> new RuntimeException("Make 'Ford' not found (should've been added in tests set up data"));
+
+
+        testContext.corolla = modelRepository.findByName("Corolla")
+                .orElseThrow(() -> new RuntimeException("Model 'Corolla' not found (should've been added in tests set up data"));
+        testContext.series3 = modelRepository.findByName("3 Series")
+                .orElseThrow(() -> new RuntimeException("Model '3 Series' not found (should've been added in tests set up data"));
+        testContext.focus = modelRepository.findByName("Focus")
+                .orElseThrow(() -> new RuntimeException("Model 'Focus' not found (should've been added in tests set up data"));
+
+        testContext.sunroof = featureRepository.findByName("Sunroof")
+                .orElseThrow(() -> new RuntimeException("Feature 'Sunroof' not found (should've been added in tests set up data"));
+        testContext.navigation = featureRepository.findByName("Navigation")
+                .orElseThrow(() -> new RuntimeException("Feature 'Navigation' not found (should've been added in tests set up data"));
+        testContext.leatherSeats = featureRepository.findByName("Leather Seats")
+                .orElseThrow(() -> new RuntimeException("Feature 'Leather Seats' not found (should've been added in tests set up data"));
+
+        testContext.autoWorld = companyRepository.findByName("Auto World")
+                .orElseThrow(() -> new RuntimeException("Company 'Auto World' not found (should've been added in tests set up data"));
+        testContext.bmwCenter = companyRepository.findByName("BMW Center")
+                .orElseThrow(() -> new RuntimeException("Company 'BMW Center' not found (should've been added in tests set up data"));
+        testContext.fordDealer = companyRepository.findByName("Ford Dealer")
+                .orElseThrow(() -> new RuntimeException("Company 'Ford Dealer' not found (should've been added in tests set up data"));
+
+        return testContext;
+    }
+
+    @Test
+    public void getAllListingsWithoutFilters_ShouldReturnAllListings_And200Code() throws Exception {
+        // given
+        var testContext = getTestContext();
+
         Listing listing1 = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -150,10 +243,10 @@ public class ListingIntegrationTests {
 
         Listing listing2 = new Listing(
                 null,
-                "2",
+                testContext.bmwCenter.getId().toString(),
                 OwnerType.COMPANY,
-                series3,
-                List.of(leatherSeats),
+                testContext.series3,
+                List.of(testContext.leatherSeats),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(2),
                 false,
@@ -169,10 +262,10 @@ public class ListingIntegrationTests {
 
         Listing listing3 = new Listing(
                 null,
-                "3",
+                testContext.fordDealer.getId().toString(),
                 OwnerType.COMPANY,
-                focus,
-                List.of(navigation),
+                testContext.focus,
+                List.of(testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusWeeks(3),
                 false,
@@ -185,22 +278,6 @@ public class ListingIntegrationTests {
                 CarType.HATCHBACK,
                 "Reliable Ford Focus, ideal for city use."
         );
-
-        makeRepository.save(toyota);
-        makeRepository.save(bmw);
-        makeRepository.save(ford);
-
-        modelRepository.save(corolla);
-        modelRepository.save(series3);
-        modelRepository.save(focus);
-
-        companyRepository.save(autoWorld);
-        companyRepository.save(bmwCenter);
-        companyRepository.save(fordDealer);
-
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
-        featureRepository.save(leatherSeats);
 
         listingRepository.save(listing1);
         listingRepository.save(listing2);
@@ -226,45 +303,17 @@ public class ListingIntegrationTests {
     @Test
     public void getAllListingsWithFilters_ShouldReturnFilteredListings_And200Code() throws Exception {
         // given
+        var testContext = getTestContext();
 
-        Make toyota = new Make(1L, "Toyota");
-        Make bmw = new Make(2L, "BMW");
-        Make ford = new Make(3L, "Ford");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(4L, "Yaris", toyota);
-        Model series3 = new Model(2L, "3 Series", bmw);
-        Model focus = new Model(3L, "Focus", ford);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        Company bmwCenter = new Company(null,
-                "2",
-                "BMW Center",
-                "456 BMW Rd",
-                "987-654-321",
-                "sales@bmwcenter.com");
-        Company fordDealer = new Company(null,
-                "3",
-                "Ford Dealer",
-                "789 Ford Ln",
-                "555-222-111",
-                "info@forddealer.com");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
-        Feature leatherSeats = new Feature(null, "Leather Seats");
+        Model yaris = new Model(4L, "Yaris", testContext.toyota);
+        modelRepository.save(yaris);
 
         Listing listing1 = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -280,10 +329,10 @@ public class ListingIntegrationTests {
 
         Listing listing2 = new Listing(
                 null,
-                "2",
+                testContext.bmwCenter.getId().toString(),
                 OwnerType.COMPANY,
-                series3,
-                List.of(leatherSeats),
+                testContext.series3,
+                List.of(testContext.leatherSeats),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(2),
                 false,
@@ -299,10 +348,10 @@ public class ListingIntegrationTests {
 
         Listing listing3 = new Listing(
                 null,
-                "3",
+                testContext.fordDealer.getId().toString(),
                 OwnerType.COMPANY,
-                focus,
-                List.of(navigation),
+                testContext.focus,
+                List.of(testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusWeeks(3),
                 false,
@@ -318,10 +367,10 @@ public class ListingIntegrationTests {
 
         Listing listing4 = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 yaris,
-                List.of(sunroof, navigation),
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -337,10 +386,10 @@ public class ListingIntegrationTests {
 
         Listing listing5 = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 yaris,
-                List.of(sunroof, navigation),
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -353,23 +402,6 @@ public class ListingIntegrationTests {
                 CarType.SEDAN,
                 "Well maintained Toyota with sunroof and nav."
         );
-
-        makeRepository.save(toyota);
-        makeRepository.save(bmw);
-        makeRepository.save(ford);
-
-        modelRepository.save(corolla);
-        modelRepository.save(yaris);
-        modelRepository.save(series3);
-        modelRepository.save(focus);
-
-        companyRepository.save(autoWorld);
-        companyRepository.save(bmwCenter);
-        companyRepository.save(fordDealer);
-
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
-        featureRepository.save(leatherSeats);
 
         listingRepository.save(listing1);
         listingRepository.save(listing2);
@@ -418,26 +450,15 @@ public class ListingIntegrationTests {
 
     @Test
     public void getListingById_ShouldReturnListing_And200Code_WhenRequestedListingExists() throws Exception {
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        // given
+        var testContext = getTestContext();
 
         Listing listing = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -451,11 +472,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listing);
         Long listingId = savedListing.getId();
 
@@ -496,44 +512,14 @@ public class ListingIntegrationTests {
     @Test
     public void getMyListings_ShouldReturn200Code_AndReturnListingsOfSpecifiedUser() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-        Make bmw = new Make(2L, "BMW");
-        Make ford = new Make(3L, "Ford");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-        Model series3 = new Model(2L, "3 Series", bmw);
-        Model focus = new Model(3L, "Focus", ford);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        Company bmwCenter = new Company(null,
-                "2",
-                "BMW Center",
-                "456 BMW Rd",
-                "987-654-321",
-                "sales@bmwcenter.com");
-        Company fordDealer = new Company(null,
-                "3",
-                "Ford Dealer",
-                "789 Ford Ln",
-                "555-222-111",
-                "info@forddealer.com");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
-        Feature leatherSeats = new Feature(null, "Leather Seats");
+        var testContext = getTestContext();
 
         Listing listing1 = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -549,29 +535,10 @@ public class ListingIntegrationTests {
 
         Listing listing2 = new Listing(
                 null,
-                "2",
-                OwnerType.COMPANY,
-                series3,
-                List.of(leatherSeats),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(2),
-                false,
-                new BigDecimal("32000.00"),
-                2022,
-                15000,
-                Fuel.DIESEL,
-                CarUsage.USED,
-                CarOperationalStatus.WORKING,
-                CarType.SEDAN,
-                "Luxury BMW 3 Series with leather interior."
-        );
-
-        Listing listing3 = new Listing(
-                null,
                 "1",
                 OwnerType.USER,
-                focus,
-                List.of(navigation),
+                testContext.focus,
+                List.of(testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusWeeks(3),
                 false,
@@ -585,25 +552,8 @@ public class ListingIntegrationTests {
                 "Reliable Ford Focus, ideal for city use."
         );
 
-        makeRepository.save(toyota);
-        makeRepository.save(bmw);
-        makeRepository.save(ford);
-
-        modelRepository.save(corolla);
-        modelRepository.save(series3);
-        modelRepository.save(focus);
-
-        companyRepository.save(autoWorld);
-        companyRepository.save(bmwCenter);
-        companyRepository.save(fordDealer);
-
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
-        featureRepository.save(leatherSeats);
-
         listingRepository.save(listing1);
         listingRepository.save(listing2);
-        listingRepository.save(listing3);
 
         String userId = "1";
 
@@ -631,33 +581,13 @@ public class ListingIntegrationTests {
     public void createListing_ShouldReturn201Code_AndIdOfCreatedResource_AndShouldCreateNewListingInDatabase_WhenRequestIsValid()
             throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
-
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        Feature f1 = featureRepository.save(sunroof);
-        Feature f2 = featureRepository.save(navigation);
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 1L,
-                List.of(f1.getId(), f2.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("18000.00"),
                 2020,
                 45000,
@@ -708,12 +638,13 @@ public class ListingIntegrationTests {
     @Test
     public void createListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 1L,
-                List.of(1L, 2L),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("18000.00"),
                 1820,
                 45000,
@@ -745,29 +676,14 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturnUpdatedListing_And200Code_AndShouldUpdateListingInDatabase_WhenRequestIsValid() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(2L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -781,21 +697,15 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        modelRepository.save(yaris);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
         // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 2L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("12000.00"),
                 2020,
                 45000,
@@ -840,28 +750,14 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn403Code_AndAccordingMessage_WhenUserWantsToUpdateNotHisListings() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(2L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
                 "1",
                 OwnerType.USER,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -875,12 +771,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        modelRepository.save(yaris);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
@@ -889,7 +779,7 @@ public class ListingIntegrationTests {
                 "2",
                 OwnerType.USER,
                 2L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("12000.00"),
                 2020,
                 45000,
@@ -926,12 +816,13 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenRequestIsInvalid() throws Exception {
         // given
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 OwnerType.USER,
                 1L,
-                List.of(1L, 2L),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("-18000.00"),
                 2020,
                 45000,
@@ -965,12 +856,13 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
+        var testContext = getTestContext();
 
         ListingRequest listingRequest = new ListingRequest(
                 "1",
                 OwnerType.USER,
                 1L,
-                List.of(1L, 2L),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("18000.00"),
                 2020,
                 45000,
@@ -1002,28 +894,14 @@ public class ListingIntegrationTests {
     @Test
     public void updateListing_ShouldReturn400Code_AndAccordingMessage_WhenListingIsRevoked() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-        Model yaris = new Model(2L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 true,
@@ -1037,21 +915,15 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        modelRepository.save(yaris);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
         // want to update model and price
         ListingRequest listingUpdateRequest = new ListingRequest(
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
                 2L,
-                List.of(sunroof.getId(), navigation.getId()),
+                List.of(testContext.sunroof.getId(), testContext.navigation.getId()),
                 new BigDecimal("12000.00"),
                 2020,
                 45000,
@@ -1082,35 +954,21 @@ public class ListingIntegrationTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Cannot update revoked listing."));
+                .andExpect(content().string("Cannot modify revoked listing."));
 
     }
 
     @Test
     public void extendExpirationDate_ShouldReturn200Code_AndListingWithUpdatedDate_AndUpdateListingInDatabase_WhenRequestIsValid () throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 false,
@@ -1124,11 +982,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
@@ -1167,27 +1020,14 @@ public class ListingIntegrationTests {
     public void extendExpirationDate_ShouldReturn403Code_AndAccordingMessage_WhenUserWantsToExtendNotHisListings() throws Exception
     {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 false,
@@ -1201,11 +1041,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
@@ -1259,28 +1094,14 @@ public class ListingIntegrationTests {
     @Test
     public void extendExpirationDate_ShouldReturn400Code_AndAccordingMessage_WhenListingIsRevoked() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 true,
@@ -1294,11 +1115,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
@@ -1329,28 +1145,14 @@ public class ListingIntegrationTests {
     @Test
     public void setListingRevokedStatus_ShouldReturn200Code_AndListingWithUpdatedRevokedStatus_AndUpdateListingInDatabase_WhenRequestIsValid () throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listingInDatabase = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusDays(2),
                 false,
@@ -1364,11 +1166,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
@@ -1402,28 +1199,14 @@ public class ListingIntegrationTests {
     @Test
     public void deleteListing_ShouldReturn200Code_AndDeleteListingFromDatabase_WhenListingExists() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listing = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -1437,11 +1220,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listing);
         Long listingId = savedListing.getId();
 
@@ -1469,28 +1247,14 @@ public class ListingIntegrationTests {
     @Test
     public void deleteListing_ShouldReturn403Code_WhenUserWantsToDeleteNotHisListing() throws Exception {
         // given
-
-        Make toyota = new Make(1L, "Toyota");
-
-        Model corolla = new Model(1L, "Corolla", toyota);
-
-        Company autoWorld = new Company(null,
-                "1",
-                "Auto World",
-                "123 Main St",
-                "123-456-789",
-                "contact@autoworld.com");
-        autoWorld.addMember("1");
-
-        Feature sunroof = new Feature(null, "Sunroof");
-        Feature navigation = new Feature(null, "Navigation");
+        var testContext = getTestContext();
 
         Listing listing = new Listing(
                 null,
-                "1",
+                testContext.autoWorld.getId().toString(),
                 OwnerType.COMPANY,
-                corolla,
-                List.of(sunroof, navigation),
+                testContext.corolla,
+                List.of(testContext.sunroof, testContext.navigation),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().plusMonths(1),
                 false,
@@ -1504,11 +1268,6 @@ public class ListingIntegrationTests {
                 "Well maintained Toyota Corolla with sunroof and nav."
         );
 
-        makeRepository.save(toyota);
-        modelRepository.save(corolla);
-        companyRepository.save(autoWorld);
-        featureRepository.save(sunroof);
-        featureRepository.save(navigation);
         Listing savedListing = listingRepository.save(listing);
         Long listingId = savedListing.getId();
 
@@ -1548,14 +1307,5 @@ public class ListingIntegrationTests {
         mockMvc.perform(request)
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Listing not found with id: 1"));
-    }
-
-    @AfterAll
-    static void tearDown(@Autowired DataSource dataSource) {
-        if (dataSource instanceof HikariDataSource) {
-            ((HikariDataSource) dataSource).close();
-        }
-
-        postgres.stop();
     }
 }
