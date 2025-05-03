@@ -1,4 +1,4 @@
-package com.msn.msncars.invitation;
+package com.msn.msncars.company.invitation;
 
 public enum InvitationState {
     PENDING,

@@ -1,4 +1,4 @@
-package com.msn.msncars.invitation;
+package com.msn.msncars.company.invitation;
 
 import com.msn.msncars.company.Company;
 import jakarta.persistence.*;

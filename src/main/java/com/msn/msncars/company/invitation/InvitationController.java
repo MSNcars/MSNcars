@@ -1,4 +1,4 @@
-package com.msn.msncars.invitation;
+package com.msn.msncars.company.invitation;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
