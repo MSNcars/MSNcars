@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -37,7 +38,6 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public String registerUserAndAssignRole(UserRegistrationRequest userRegistrationRequest, AccountRole accountRole) {
         UserRepresentation userRepresentation = getUserRepresentation(userRegistrationRequest);
-        cleanupUsersIfNecessary(userRepresentation);
         String userId = createUser(userRepresentation);
         assignRoleToUser(userId, accountRole);
         return userId;
@@ -58,18 +58,36 @@ public class AuthServiceImpl implements AuthService{
     }
 
     private String createUser(UserRepresentation userRepresentation) {
-        try (Response registerResponse = keycloakAPI.realm(keycloakConfig.getRealm())
-                .users()
-                .create(userRepresentation)) {
+        Response registerResponse = attemptUserCreation(userRepresentation);
 
-            if (registerResponse.getStatus() != 201)
-                throw new RegistrationException(
-                        registerResponse.getStatusInfo().getReasonPhrase(),
-                        HttpStatus.valueOf(registerResponse.getStatus())
-                );
+        if (registerResponse.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
+            registerResponse.close();
+            cleanupUsersIfNecessary(userRepresentation);
 
-            return CreatedResponseUtil.getCreatedId(registerResponse);
+            try (Response retryResponse = attemptUserCreation(userRepresentation)) {
+                return handleUserCreationResponse(retryResponse);
+            }
         }
+
+        try (registerResponse) {
+            return handleUserCreationResponse(registerResponse);
+        }
+    }
+
+    private Response attemptUserCreation(UserRepresentation userRepresentation) {
+        return keycloakAPI.realm(keycloakConfig.getRealm())
+                .users()
+                .create(userRepresentation);
+    }
+
+    private String handleUserCreationResponse(Response response) {
+        if (response.getStatus() != Response.Status.CREATED.getStatusCode())
+            throw new RegistrationException(
+                response.getStatusInfo().getReasonPhrase(),
+                HttpStatus.valueOf(response.getStatus())
+            );
+
+        return CreatedResponseUtil.getCreatedId(response);
     }
 
     private void assignRoleToUser(String userId, AccountRole accountRole) {
@@ -124,6 +142,16 @@ public class AuthServiceImpl implements AuthService{
         List<UserRepresentation> usersWithSameEmail = keycloakAPI.realm(keycloakConfig.getRealm())
                 .users()
                 .searchByEmail(email, true);
+
+        // max 1 person can have same username and max 1 person can have same email, but they may be the same person
+
+        if (!usersWithSameUsername.isEmpty() && !usersWithSameEmail.isEmpty()) {
+            UserRepresentation user1 = usersWithSameUsername.getFirst();
+            UserRepresentation user2 = usersWithSameEmail.getFirst();
+
+            if (user1.getId().equals(user2.getId()))
+                return List.of(user1);
+        }
 
         return Stream.concat(usersWithSameUsername.stream(), usersWithSameEmail.stream()).toList();
     }
