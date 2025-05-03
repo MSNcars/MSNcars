@@ -60,6 +60,9 @@ public class AuthServiceImpl implements AuthService{
     private String createUser(UserRepresentation userRepresentation) {
         Response registerResponse = attemptUserCreation(userRepresentation);
 
+        // If in previous requests user was created successfully, but something went wrong when assigning role to user
+        // then you can safely remove this user -> it is needed because creating user and adding role to user
+        // using keycloakApi is not an atomic operation
         if (registerResponse.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
             registerResponse.close();
             cleanupUsersIfNecessary(userRepresentation);
