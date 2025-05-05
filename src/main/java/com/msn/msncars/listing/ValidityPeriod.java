@@ -1,13 +1,17 @@
 package com.msn.msncars.listing;
 
 public enum ValidityPeriod {
-    Short(7),
-    Standard(14),
-    Extended(30);
+    SHORT(7),
+    STANDARD(14),
+    EXTENDED(30);
 
-    final int numberOfDays;
+    private final int numberOfDays;
 
     ValidityPeriod(int numberOfDays){
         this.numberOfDays = numberOfDays;
+    }
+
+    public int getNumberOfDays() {
+        return numberOfDays;
     }
 }
