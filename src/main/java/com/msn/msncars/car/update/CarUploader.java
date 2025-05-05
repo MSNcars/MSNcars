@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@Profile("dev")
+@Profile("default")
 public class CarUploader {
 
     private final ModelRepository modelRepository;
