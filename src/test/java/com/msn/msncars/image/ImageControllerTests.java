@@ -1,4 +1,5 @@
 package com.msn.msncars.image;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -14,32 +15,40 @@ import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.listing.Listing;
 import com.msn.msncars.listing.ListingRepository;
 import com.msn.msncars.listing.OwnerType;
-import io.minio.*;
+import io.minio.ListObjectsArgs;
+import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
+import io.minio.Result;
 import io.minio.messages.Item;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.core.io.Resource;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static com.msn.msncars.image.ImageServiceImpl.bucketName;
@@ -62,8 +71,19 @@ class ImageControllerTests {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @MockitoBean
+    private Clock clock;
+
+    Clock fixedClock = Clock.fixed(Instant.parse("2025-01-01T23:00:00Z"), ZoneId.of("UTC"));
+
+    @BeforeEach
+    void setup() {
+        Mockito.when(clock.instant()).thenReturn(fixedClock.instant());
+        Mockito.when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
+    }
+
     @Container
-    private final static MinIOContainer container = new MinIOContainer("minio/minio")
+    private static final MinIOContainer container = new MinIOContainer("minio/minio")
             .withUserName("minioadmintest")
             .withPassword("minioadmintest")
             .withCreateContainerCmdModifier(cmd ->
@@ -77,7 +97,7 @@ class ImageControllerTests {
             );
 
     @Test
-    public void testThatAfterAddingListingYouCanSaveAndFetchImageAsUserOwner() throws Exception {
+    void testThatAfterAddingListingYouCanSaveAndFetchImageAsUserOwner() throws Exception {
         Long listingId = addSampleUserListing();
 
         Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
@@ -105,7 +125,7 @@ class ImageControllerTests {
     }
 
     @Test
-    public void testThatAfterAddingListingYouCanSaveAndFetchImageAsCompanyMember() throws Exception {
+    void testThatAfterAddingListingYouCanSaveAndFetchImageAsCompanyMember() throws Exception {
         Long listingId = addSampleCompanyListing();
 
         Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
@@ -133,7 +153,7 @@ class ImageControllerTests {
     }
 
     @Test
-    public void testThatYouCannotSaveFileWithBadExtension() throws Exception{
+    void testThatYouCannotSaveFileWithBadExtension() throws Exception{
         Resource jpegPhoto = new ClassPathResource("bmpTestPhoto.bmp");
 
         MockMultipartFile mockJpegPhoto = new MockMultipartFile("image", jpegPhoto.getFilename(), "image/bmp",
@@ -148,7 +168,7 @@ class ImageControllerTests {
     }
 
     @Test
-    public void testThatYouGetCorrectPathsForListing() throws Exception{
+    void testThatYouGetCorrectPathsForListing() throws Exception{
         Long listingId = addSampleUserListing();
 
         Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
@@ -184,7 +204,7 @@ class ImageControllerTests {
     }
 
     @Test
-    public void testThatYouCannotAddImagesToOtherPeopleListings() throws Exception {
+    void testThatYouCannotAddImagesToOtherPeopleListings() throws Exception {
         Long listingId = addSampleUserListing();
 
         Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
@@ -237,8 +257,8 @@ class ImageControllerTests {
                 OwnerType.USER,
                 series3,
                 List.of(navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("14000.00"),
                 2008,
@@ -280,8 +300,8 @@ class ImageControllerTests {
                 OwnerType.COMPANY,
                 corolla,
                 List.of(sunroof),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -300,7 +320,7 @@ class ImageControllerTests {
     }
 
     @AfterEach
-    public void tearDown() throws Exception{
+    void tearDown() throws Exception{
         Iterable<Result<Item>> objects = minioClient.listObjects(
                 ListObjectsArgs.builder().bucket(bucketName).recursive(true).build()
         );
