@@ -1,4 +1,4 @@
 package com.msn.msncars.user;
 
-public class UserUpdateRequest {
+public record UserUpdateRequest(String firstName, String lastName, String username, String email) {
 }
