@@ -1,4 +1,4 @@
 package com.msn.msncars.user;
 
-public interface UserService {
+public class UserController {
 }
