@@ -1,8 +1,7 @@
 package com.msn.msncars.listing;
 
-import com.msn.msncars.car.model.Model;
-import com.msn.msncars.company.Company;
 import com.msn.msncars.car.*;
+import com.msn.msncars.car.model.Model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -10,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 @Entity
 public class Listing {
@@ -38,10 +37,10 @@ public class Listing {
     )
     private List<Feature> features;
 
-    private ZonedDateTime createdAt;
-    private ZonedDateTime expiresAt;
+    private Instant createdAt;
+    private Instant expiresAt;
 
-    private Boolean revoked;
+    private boolean revoked;
 
     @Min(value = 0)
     private BigDecimal price;
@@ -70,8 +69,8 @@ public class Listing {
     public Listing() {}
 
     public Listing(
-            Long id, String ownerId, OwnerType ownerType, Model model, List<Feature> features, ZonedDateTime createdAt,
-            ZonedDateTime expiresAt, Boolean revoked, BigDecimal price, Integer productionYear, Integer mileage,
+            Long id, String ownerId, OwnerType ownerType, Model model, List<Feature> features, Instant createdAt,
+            Instant expiresAt, boolean revoked, BigDecimal price, Integer productionYear, Integer mileage,
             Fuel fuel, CarUsage carUsage, CarOperationalStatus carOperationalStatus, CarType carType, String description
     ) {
         this.id = id;
@@ -111,11 +110,11 @@ public class Listing {
         this.description = other.description;
     }
 
-    public Boolean getRevoked() {
+    public boolean getRevoked() {
         return revoked;
     }
 
-    public void setRevoked(Boolean revoked) {
+    public void setRevoked(boolean revoked) {
         this.revoked = revoked;
     }
 
@@ -167,19 +166,19 @@ public class Listing {
         this.features = features;
     }
 
-    public ZonedDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(ZonedDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public ZonedDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(ZonedDateTime expiresAt) {
+    public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
 

@@ -12,6 +12,7 @@ import com.msn.msncars.listing.DTO.ListingRequest;
 import com.zaxxer.hikari.HikariDataSource;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -32,8 +34,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,10 +89,21 @@ public class ListingIntegrationTests {
     @Autowired
     ObjectMapper objectMapper;
 
+    @MockitoBean
+    Clock clock;
+
+    Clock fixedClock = Clock.fixed(Instant.parse("2025-01-01T23:00:00Z"), ZoneId.of("UTC"));
+
     public ListingIntegrationTests() {
         if (!postgres.isRunning()) {
             postgres.start();
         }
+    }
+
+    @BeforeEach
+    void setUp() {
+        Mockito.when(clock.instant()).thenReturn(fixedClock.instant());
+        Mockito.when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
     }
 
     @BeforeAll
@@ -228,8 +241,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -247,8 +260,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.series3,
                 List.of(testContext.leatherSeats),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(2),
+                fixedClock.instant(),
+                fixedClock.instant().plus(61, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("32000.00"),
                 2022,
@@ -266,8 +279,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.focus,
                 List.of(testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusWeeks(3),
+                fixedClock.instant(),
+                fixedClock.instant().plus(21, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("14000.00"),
                 2018,
@@ -314,8 +327,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -333,8 +346,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.series3,
                 List.of(testContext.leatherSeats),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(2),
+                fixedClock.instant(),
+                fixedClock.instant().plus(61, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("32000.00"),
                 2022,
@@ -352,8 +365,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.focus,
                 List.of(testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusWeeks(3),
+                fixedClock.instant(),
+                fixedClock.instant().plus(21, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("14000.00"),
                 2018,
@@ -371,8 +384,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 yaris,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("12000.00"),
                 2020,
@@ -390,8 +403,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 yaris,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("10000.00"),
                 2020,
@@ -459,8 +472,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -520,8 +533,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -539,8 +552,8 @@ public class ListingIntegrationTests {
                 OwnerType.USER,
                 testContext.focus,
                 List.of(testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusWeeks(3),
+                fixedClock.instant(),
+                fixedClock.instant().plus(21, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("14000.00"),
                 2018,
@@ -596,7 +609,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
@@ -653,7 +666,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
@@ -684,8 +697,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -714,7 +727,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
@@ -758,8 +771,8 @@ public class ListingIntegrationTests {
                 OwnerType.USER,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -788,7 +801,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
@@ -831,7 +844,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
@@ -871,7 +884,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingRequest);
@@ -902,8 +915,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 true,
                 new BigDecimal("18000.00"),
                 2020,
@@ -932,7 +945,7 @@ public class ListingIntegrationTests {
                 CarOperationalStatus.WORKING,
                 CarType.SEDAN,
                 "Well maintained Toyota Corolla with sunroof and nav.",
-                ValidityPeriod.Standard
+                ValidityPeriod.STANDARD
         );
 
         String requestJson = objectMapper.writeValueAsString(listingUpdateRequest);
@@ -969,8 +982,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusDays(2),
+                fixedClock.instant(),
+                fixedClock.instant().plus(2, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -985,7 +998,7 @@ public class ListingIntegrationTests {
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
-        ValidityPeriod validityPeriod = ValidityPeriod.Extended;
+        ValidityPeriod validityPeriod = ValidityPeriod.EXTENDED;
 
         String requestJson = objectMapper.writeValueAsString(validityPeriod);
 
@@ -1012,8 +1025,8 @@ public class ListingIntegrationTests {
 
         assertTrue(saved.isPresent());
         // one second tolerance
-        Duration diff = Duration.between(ZonedDateTime.now().plusDays(32).toInstant(), saved.get().getExpiresAt().toInstant());
-        assertTrue(Math.abs(diff.toMillis()) < 1000);
+        Duration diff = Duration.between(fixedClock.instant().plus(32, ChronoUnit.DAYS), saved.get().getExpiresAt());
+        assertTrue(diff.isZero());
     }
 
     @Test
@@ -1028,8 +1041,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusDays(2),
+                fixedClock.instant(),
+                fixedClock.instant().plus(2, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -1044,7 +1057,7 @@ public class ListingIntegrationTests {
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
-        ValidityPeriod validityPeriod = ValidityPeriod.Extended;
+        ValidityPeriod validityPeriod = ValidityPeriod.EXTENDED;
 
         String requestJson = objectMapper.writeValueAsString(validityPeriod);
 
@@ -1072,7 +1085,7 @@ public class ListingIntegrationTests {
     public void extendExpirationDate_ShouldReturn404Code_AndAccordingMessage_WhenListingDoesNotExist() throws Exception {
         // given
 
-        ValidityPeriod validityPeriod = ValidityPeriod.Extended;
+        ValidityPeriod validityPeriod = ValidityPeriod.EXTENDED;
 
         String requestJson = objectMapper.writeValueAsString(validityPeriod);
 
@@ -1102,8 +1115,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusDays(2),
+                fixedClock.instant(),
+                fixedClock.instant().plus(2, ChronoUnit.DAYS),
                 true,
                 new BigDecimal("18000.00"),
                 2020,
@@ -1118,7 +1131,7 @@ public class ListingIntegrationTests {
         Listing savedListing = listingRepository.save(listingInDatabase);
         Long listingInDatabaseId = savedListing.getId();
 
-        ValidityPeriod validityPeriod = ValidityPeriod.Extended;
+        ValidityPeriod validityPeriod = ValidityPeriod.EXTENDED;
 
         String requestJson = objectMapper.writeValueAsString(validityPeriod);
 
@@ -1153,8 +1166,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusDays(2),
+                fixedClock.instant(),
+                fixedClock.instant().plus(2, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -1207,8 +1220,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,
@@ -1255,8 +1268,8 @@ public class ListingIntegrationTests {
                 OwnerType.COMPANY,
                 testContext.corolla,
                 List.of(testContext.sunroof, testContext.navigation),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusMonths(1),
+                fixedClock.instant(),
+                fixedClock.instant().plus(31, ChronoUnit.DAYS),
                 false,
                 new BigDecimal("18000.00"),
                 2020,

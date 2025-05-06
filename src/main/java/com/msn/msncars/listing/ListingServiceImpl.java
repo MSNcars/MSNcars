@@ -2,8 +2,8 @@ package com.msn.msncars.listing;
 
 import com.msn.msncars.car.FeatureRepository;
 import com.msn.msncars.car.Fuel;
-import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.car.exception.ModelNotFoundException;
+import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
@@ -15,7 +15,9 @@ import com.msn.msncars.listing.exception.ListingRevokedException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,12 +32,15 @@ public class ListingServiceImpl implements ListingService{
     private final CompanyRepository companyRepository;
     private final FeatureRepository featureRepository;
 
-    public ListingServiceImpl(ListingRepository listingRepository, ListingMapper listingMapper, ModelRepository modelRepository, CompanyRepository companyRepository, FeatureRepository featureRepository) {
+    private final Clock clock;
+
+    public ListingServiceImpl(ListingRepository listingRepository, ListingMapper listingMapper, ModelRepository modelRepository, CompanyRepository companyRepository, FeatureRepository featureRepository, Clock clock) {
         this.listingRepository = listingRepository;
         this.listingMapper = listingMapper;
         this.modelRepository = modelRepository;
         this.companyRepository = companyRepository;
         this.featureRepository = featureRepository;
+        this.clock = clock;
     }
 
     public List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortAttribute sortAttribute, SortOrder sortOrder) {
@@ -63,7 +68,7 @@ public class ListingServiceImpl implements ListingService{
         listings = stream.toList();
 
         for (Listing listing : listings) {
-            listingResponses.add(listingMapper.toDTO(listing));
+            listingResponses.add(listingMapper.toDTO(listing, clock.getZone()));
         }
 
         return listingResponses;
@@ -73,7 +78,8 @@ public class ListingServiceImpl implements ListingService{
         Optional<Listing> listing = listingRepository.findById(listingId);
 
         return listingMapper.toDTO(
-                listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId))
+            listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId)),
+            clock.getZone()
         );
     }
 
@@ -83,7 +89,7 @@ public class ListingServiceImpl implements ListingService{
         List<ListingResponse> listingResponses = new ArrayList<>();
         for (Listing listing : listings) {
             if (listing.getOwnerType() != OwnerType.COMPANY)
-                listingResponses.add(listingMapper.toDTO(listing));
+                listingResponses.add(listingMapper.toDTO(listing, clock.getZone()));
         }
 
         return listingResponses;
@@ -93,14 +99,10 @@ public class ListingServiceImpl implements ListingService{
         Listing listing = listingMapper.fromDTO(listingRequest);
 
         validateListingOwnership(listing, userId);
-
-        listing.setOwnerId(userId);
-
         fetchEntities(listing, listingRequest);
 
-        // Set creation and expiration time
-        listing.setCreatedAt(ZonedDateTime.now());
-        listing.setExpiresAt(listing.getCreatedAt().plusDays(listingRequest.validityPeriod().numberOfDays));
+        listing.setCreatedAt(clock.instant());
+        listing.setExpiresAt(listing.getCreatedAt().plus(listingRequest.validityPeriod().getNumberOfDays(), ChronoUnit.DAYS));
 
         return listingRepository.save(listing).getId();
     }
@@ -114,10 +116,12 @@ public class ListingServiceImpl implements ListingService{
 
         Listing updatedListing = listingMapper.fromDTO(listingRequest);
         updatedListing.setId(listingId);
+        updatedListing.setCreatedAt(oldListing.getCreatedAt());
+        updatedListing.setExpiresAt(oldListing.getExpiresAt());
 
         fetchEntities(updatedListing, listingRequest);
 
-        return listingMapper.toDTO(listingRepository.save(updatedListing));
+        return listingMapper.toDTO(listingRepository.save(updatedListing), clock.getZone());
     }
 
     public ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod, String userId) {
@@ -130,12 +134,12 @@ public class ListingServiceImpl implements ListingService{
 
         validateListingOwnership(listing, userId);
 
-        ZonedDateTime startingTime = listing.getExpiresAt().isAfter(ZonedDateTime.now()) ? listing.getExpiresAt() : ZonedDateTime.now();
-        listing.setExpiresAt(startingTime.plusDays(validityPeriod.numberOfDays));
+        Instant startingTime = listing.getExpiresAt().isAfter(clock.instant()) ? listing.getExpiresAt() : clock.instant();
+        listing.setExpiresAt(startingTime.plus(validityPeriod.getNumberOfDays(), ChronoUnit.DAYS));
 
         Listing updatedListing = listingRepository.save(listing);
 
-        return listingMapper.toDTO(updatedListing);
+        return listingMapper.toDTO(updatedListing, clock.getZone());
     }
 
     public ListingResponse setListingRevokedStatus(Long listingId, boolean isRevoked, String userId) {
@@ -148,7 +152,7 @@ public class ListingServiceImpl implements ListingService{
 
         Listing updatedListing = listingRepository.save(listing);
 
-        return listingMapper.toDTO(updatedListing);
+        return listingMapper.toDTO(updatedListing, clock.getZone());
     }
 
     public void deleteListing(Long listingId, String userId) {
@@ -173,7 +177,7 @@ public class ListingServiceImpl implements ListingService{
             case COMPANY -> {
                 Company company = companyRepository.findById(Long.valueOf(listing.getOwnerId()))
                         .orElseThrow(() -> new CompanyNotFoundException("Company not found with id " + listing.getOwnerId()));
-                if (!company.getMembers().contains(userId)){
+                if (!company.hasMember(userId)){
                     throw new ForbiddenException("You don't have permission to this listing.");
                 }
             }
@@ -184,7 +188,7 @@ public class ListingServiceImpl implements ListingService{
         if(listing.getRevoked()){
             throw new ListingRevokedException("Cannot modify revoked listing.");
         }
-        if (listing.getExpiresAt().isBefore(ZonedDateTime.now())){
+        if (listing.getExpiresAt().isBefore(clock.instant())){
             throw new ListingExpiredException("You can't edit listing that already expired.");
         }
     }
@@ -193,8 +197,6 @@ public class ListingServiceImpl implements ListingService{
         Fetch other entities based on provided IDs.
     */
     private void fetchEntities(Listing listing, ListingRequest listingRequest){
-        listing.setOwnerId(listingRequest.ownerId());
-
         listing.setModel(
                 modelRepository.findById(listingRequest.modelId())
                         .orElseThrow(() -> new ModelNotFoundException("Model not found with id: " + listingRequest.modelId()))
