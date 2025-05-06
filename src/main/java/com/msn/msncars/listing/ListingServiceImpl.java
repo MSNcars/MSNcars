@@ -95,9 +95,6 @@ public class ListingServiceImpl implements ListingService{
         return listingResponses;
     }
 
-    // TODO limit amount of listings allowed per user
-    // TODO user can now create a few listings for the same car, maybe validate if such listing does not exist yet?
-
     public Long createListing(ListingRequest listingRequest, String userId) {
         Listing listing = listingMapper.fromDTO(listingRequest);
 
