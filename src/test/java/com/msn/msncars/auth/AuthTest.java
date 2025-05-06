@@ -58,11 +58,11 @@ class AuthTest {
         String token = loginResponse.jsonPath().getString("access_token");
 
         // Test without token
-        mockMvc.perform(get("/secure"))
+        mockMvc.perform(get("/test/secure"))
                 .andExpect(status().isUnauthorized());
 
         // Test with token
-        mockMvc.perform(get("/secure")
+        mockMvc.perform(get("/test/secure")
                         .header("Authorization", "Bearer " + token)
                 ).andExpect(status().isOk());
     }
