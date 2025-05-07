@@ -1,8 +1,8 @@
 package com.msn.msncars.company;
 
+import com.msn.msncars.auth.keycloak.KeycloakService;
 import com.msn.msncars.user.UserDTO;
 import com.msn.msncars.user.UserMapper;
-import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -17,13 +17,13 @@ import java.util.Set;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final UserService userService;
+    private final KeycloakService keycloakService;
     private final UserMapper userMapper;
     private final CompanyMapper companyMapper;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, UserService userService, UserMapper userMapper, CompanyMapper companyMapper) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, KeycloakService keycloakService, UserMapper userMapper, CompanyMapper companyMapper) {
         this.companyRepository = companyRepository;
-        this.userService = userService;
+        this.keycloakService = keycloakService;
         this.userMapper = userMapper;
         this.companyMapper = companyMapper;
     }
@@ -63,12 +63,12 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         List<UserRepresentation> userRepresentations = company.getMembers()
                 .stream()
-                .map(userService::getUserRepresentationById)
+                .map(keycloakService::getUserRepresentationById)
                 .map(userRepresentationOptional -> userRepresentationOptional.orElse(null))
                 .filter(Objects::nonNull)
                 .toList();
 
-        return userRepresentations.stream().map(userMapper::toDTO).toList();
+        return userRepresentations.stream().map(userMapper::toUserDTO).toList();
     }
 
     @Override
@@ -76,8 +76,20 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NotFoundException("Company not found"));
         String ownerId = company.getOwnerId();
 
-        UserRepresentation ownerRepresentation = userService.getUserRepresentationById(ownerId).orElseThrow(() -> new NotFoundException("Owner of the company not found"));
-        return userMapper.toDTO(ownerRepresentation);
+        UserRepresentation ownerRepresentation = keycloakService.getUserRepresentationById(ownerId)
+                .orElseThrow(() -> new NotFoundException("Owner of the company not found"));
+        return userMapper.toUserDTO(ownerRepresentation);
+    }
+
+    @Override
+    public List<CompanyDTO> getCompaniesUserBelongsTo(String userId) {
+        if (keycloakService.getUserRepresentationById(userId).isEmpty())
+            throw new NotFoundException("User does not exist.");
+
+        List<Company> companies = companyRepository.findByMembersContaining(userId);
+        return companies.stream()
+                .map(companyMapper::toDTO)
+                .toList();
     }
 
     @Override
@@ -90,5 +102,18 @@ public class CompanyServiceImpl implements CompanyService {
             throw new ForbiddenException("You are not allowed to delete this company. Only owner can delete this company.");
 
         companyRepository.deleteById(companyId);
+    }
+
+    @Override
+    public void cleanupCompaniesOfRemovedUser(String userId) {
+        List<Company> userCompanies = companyRepository.findByMembersContaining(userId);
+        for (var company: userCompanies) {
+            if (company.hasOwner(userId)) {
+                companyRepository.deleteById(company.getId());
+            } else if (company.hasMember(userId)) {
+                company.removeMember(userId);
+                companyRepository.saveAndFlush(company);
+            }
+        }
     }
 }

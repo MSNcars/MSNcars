@@ -11,5 +11,7 @@ public interface CompanyService {
     Optional<CompanyDTO> getCompanyInfo(Long companyId);
     List<UserDTO> getCompanyMembers(Long companyId);
     UserDTO getCompanyOwner(Long companyId);
+    List<CompanyDTO> getCompaniesUserBelongsTo(String userId);
+    void cleanupCompaniesOfRemovedUser(String userId);
     void deleteCompany(Long companyId, String userId);
 }
