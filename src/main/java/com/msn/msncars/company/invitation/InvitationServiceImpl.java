@@ -1,5 +1,6 @@
 package com.msn.msncars.company.invitation;
 
+import com.msn.msncars.auth.keycloak.KeycloakService;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyService;
 import com.msn.msncars.user.UserService;
@@ -18,16 +19,16 @@ public class InvitationServiceImpl implements InvitationService {
 
     private final InvitationRepository invitationRepository;
     private final CompanyService companyService;
-    private final UserService userService;
     private final InvitationMapper invitationMapper;
     private final Clock clock;
+    private final KeycloakService keycloakService;
 
-    public InvitationServiceImpl(InvitationRepository invitationRepository, CompanyService companyService, UserService userService, InvitationMapper invitationMapper, Clock clock) {
+    public InvitationServiceImpl(InvitationRepository invitationRepository, CompanyService companyService, InvitationMapper invitationMapper, Clock clock, KeycloakService keycloakService) {
         this.invitationRepository = invitationRepository;
         this.companyService = companyService;
-        this.userService = userService;
         this.invitationMapper = invitationMapper;
         this.clock = clock;
+        this.keycloakService = keycloakService;
     }
 
     @Override
@@ -88,7 +89,7 @@ public class InvitationServiceImpl implements InvitationService {
 
     private void validateInvitationCreation(Long senderCompanyId, String recipientId, String senderId) {
         Optional<Company> companyOptional = companyService.getCompany(senderCompanyId);
-        if (userService.getUserRepresentationById(recipientId).isEmpty())
+        if (keycloakService.getUserRepresentationById(recipientId).isEmpty())
             throw new NotFoundException("Invitation recipient does not exist.");
         else if (companyOptional.isEmpty())
             throw new NotFoundException("Sender company does not exist.");

@@ -1,5 +1,6 @@
 package com.msn.msncars.company;
 
+import com.msn.msncars.auth.keycloak.KeycloakService;
 import com.msn.msncars.user.UserDTO;
 import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class CompanyTest {
     @MockitoBean
-    private UserService userService;
+    private KeycloakService keycloakService;
 
     @MockitoBean
     private CompanyRepository companyRepository;
@@ -90,7 +91,7 @@ class CompanyTest {
         Company company = new Company();
         company.setMembers(usersId);
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
 
         // when
         List<UserDTO> userDTOs = companyService.getCompanyMembers(1L);
@@ -132,7 +133,7 @@ class CompanyTest {
         ownerRepresentation.setFirstName("ownerFirstName");
         ownerRepresentation.setLastName("ownerLastName");
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(ownerRepresentation));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(ownerRepresentation));
 
         // when
         UserDTO userDTO = companyService.getCompanyOwner(1L);
@@ -150,7 +151,7 @@ class CompanyTest {
         // given
         Company company = new Company();
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.empty());
 
         // when
         assertThrows(NotFoundException.class, () -> companyService.getCompanyOwner(1L));

@@ -1,10 +1,9 @@
 package com.msn.msncars.invitation;
 
+import com.msn.msncars.auth.keycloak.KeycloakService;
 import com.msn.msncars.company.Company;
-import com.msn.msncars.company.CompanyRepository;
 import com.msn.msncars.company.CompanyService;
 import com.msn.msncars.company.invitation.*;
-import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,10 +30,10 @@ class InvitationServiceTest {
     private InvitationService invitationService;
 
     @MockitoBean
-    private UserService userService;
+    private CompanyService companyService;
 
     @MockitoBean
-    private CompanyService companyService;
+    private KeycloakService keycloakService;
 
     @MockitoBean
     private InvitationRepository invitationRepository;
@@ -43,8 +42,6 @@ class InvitationServiceTest {
     Clock clock;
 
     Clock fixedClock = Clock.fixed(Instant.parse("2025-01-01T23:00:00Z"), ZoneId.of("UTC"));
-    @Autowired
-    private CompanyRepository companyRepository;
 
     @BeforeEach
     void setUp() {
@@ -56,7 +53,7 @@ class InvitationServiceTest {
     void invite_WhenInvitedUserDoesNotExist_ShouldThrowNotFoundException() {
         // given
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.empty());
 
         // when & then
         NotFoundException nfe = assertThrows(NotFoundException.class, () -> invitationService.invite(createInvitationRequest, "2"));
@@ -67,7 +64,7 @@ class InvitationServiceTest {
     void invite_WhenCompanyDoesNotExist_ShouldThrowNotFoundException() {
         // given
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.empty());
 
         // when & then
@@ -90,7 +87,7 @@ class InvitationServiceTest {
         invitation.setInvitationState(InvitationState.PENDING);
         invitation.setCreationDateTime(fixedClock.instant());
 
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
         Mockito.when(invitationRepository.getInvitationsBySenderCompanyIdAndRecipientUserId(Mockito.any(), Mockito.any())).thenReturn(Optional.of(List.of(invitation)));
         Mockito.when(invitationRepository.save(Mockito.any(Invitation.class))).thenReturn(savedInvitation);
@@ -111,7 +108,7 @@ class InvitationServiceTest {
         company.setOwnerId(ownerId);
         company.setMembers(Set.of("1", ownerId));
 
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
 
         // when & then
@@ -127,7 +124,7 @@ class InvitationServiceTest {
         company.setOwnerId("3");
         company.setMembers(Set.of("2", "3"));
         CreateInvitationRequest createInvitationRequest = new CreateInvitationRequest("1", 1L);
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
 
         // when & then
@@ -144,7 +141,7 @@ class InvitationServiceTest {
         company.setMembers(Set.of(ownerId));
         Invitation invitation = new Invitation();
         invitation.setCreationDateTime(fixedClock.instant());
-        Mockito.when(userService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
+        Mockito.when(keycloakService.getUserRepresentationById(Mockito.any())).thenReturn(Optional.of(new UserRepresentation()));
         Mockito.when(companyService.getCompany(1L)).thenReturn(Optional.of(company));
         Mockito.when(invitationRepository.save(Mockito.any(Invitation.class))).thenReturn(invitation);
 

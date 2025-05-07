@@ -36,7 +36,7 @@ public class AuthConfig {
                                 .requestMatchers("/make/**")
                                 .permitAll()
                                 .requestMatchers("/user")
-                                .hasRole("user")
+                                .hasAnyRole("user", "company")
                                 .requestMatchers("/invitations")
                                 .hasRole("company")
                                 .requestMatchers("/admin")

@@ -35,6 +35,11 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyOwner(companyId));
     }
 
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<List<CompanyDTO>> getCompaniesUserBelongsTo(@PathVariable String userId) {
+        return ResponseEntity.ok(companyService.getCompaniesUserBelongsTo(userId));
+    }
+
     @DeleteMapping("/{companyId}")
     public ResponseEntity<String> deleteCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {
         companyService.deleteCompany(companyId, jwt.getSubject());

@@ -165,27 +165,8 @@ public class AuthServiceImpl implements AuthService{
                 userService.deleteUser(user.getId());
     }
 
-    private boolean doesUserHaveAccountRole(String userId, AccountRole accountRole) {
-        ClientRepresentation client = keycloakAPI.realm(keycloakConfig.getRealm())
-                .clients()
-                .findByClientId(keycloakConfig.getRealm())
-                .getFirst();
-
-        List<RoleRepresentation> roles = keycloakAPI.realm(keycloakConfig.getRealm())
-                .users()
-                .get(userId)
-                .roles()
-                .clientLevel(client.getId())
-                .listAll();
-
-        return roles.stream()
-                .anyMatch(role -> role.getName().equals(accountRole.getName()));
-    }
-
     private boolean doesUserHaveAnyAccountRole(String userId) {
-        for (var accountRole : AccountRole.values())
-            if (doesUserHaveAccountRole(userId, accountRole))
-                return true;
-        return false;
+        List<AccountRole> accountRoles = userService.getAccountRoles(userId);
+        return !accountRoles.isEmpty();
     }
 }

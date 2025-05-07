@@ -108,4 +108,8 @@ public class Company {
     public void addMember(String userId) {
         members.add(userId);
     }
+
+    public void removeMember(String userId) {
+        members.remove(userId);
+    }
 }
