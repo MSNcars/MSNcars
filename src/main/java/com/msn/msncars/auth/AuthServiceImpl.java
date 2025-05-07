@@ -166,7 +166,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     private boolean doesUserHaveAnyAccountRole(String userId) {
-        List<AccountRole> userRoles = userService.getUserRoles(userId);
-        return !userRoles.isEmpty();
+        List<AccountRole> accountRoles = userService.getAccountRoles(userId);
+        return !accountRoles.isEmpty();
     }
 }
