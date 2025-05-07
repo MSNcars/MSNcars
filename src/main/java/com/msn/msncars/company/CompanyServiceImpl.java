@@ -7,6 +7,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -105,6 +106,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @Transactional
     public void cleanupCompaniesOfRemovedUser(String userId) {
         List<Company> userCompanies = companyRepository.findByMembersContaining(userId);
         for (var company: userCompanies) {
@@ -112,7 +114,7 @@ public class CompanyServiceImpl implements CompanyService {
                 companyRepository.deleteById(company.getId());
             } else if (company.hasMember(userId)) {
                 company.removeMember(userId);
-                companyRepository.saveAndFlush(company);
+                companyRepository.save(company);
             }
         }
     }
