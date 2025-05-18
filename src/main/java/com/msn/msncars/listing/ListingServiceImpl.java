@@ -13,6 +13,8 @@ import com.msn.msncars.listing.exception.ListingExpiredException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import com.msn.msncars.listing.exception.ListingRevokedException;
 import jakarta.ws.rs.ForbiddenException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -20,7 +22,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -34,6 +35,8 @@ public class ListingServiceImpl implements ListingService{
 
     private final Clock clock;
 
+    private final Logger logger = LoggerFactory.getLogger(ListingServiceImpl.class);
+
     public ListingServiceImpl(ListingRepository listingRepository, ListingMapper listingMapper, ModelRepository modelRepository, CompanyRepository companyRepository, FeatureRepository featureRepository, Clock clock) {
         this.listingRepository = listingRepository;
         this.listingMapper = listingMapper;
@@ -44,10 +47,14 @@ public class ListingServiceImpl implements ListingService{
     }
 
     public List<ListingResponse> getAllListings(String makeName, String modelName, Fuel fuel, SortAttribute sortAttribute, SortOrder sortOrder) {
+        logger.debug("Entering getAllListings method.");
+
         List<Listing> listings = listingRepository.findAll();
         List<ListingResponse> listingResponses = new ArrayList<>();
 
         Stream<Listing> stream = listings.stream();
+
+        logger.debug("Listings fetched from database, starting filtration by search criteria.");
 
         if (makeName != null) {
             stream = stream.filter(l -> l.getModel().getMake().getName().equalsIgnoreCase(makeName));
@@ -67,24 +74,38 @@ public class ListingServiceImpl implements ListingService{
 
         listings = stream.toList();
 
+        logger.debug("Listings filtered by search criteria retrieved, starting mapping to DTO.");
+
         for (Listing listing : listings) {
             listingResponses.add(listingMapper.toDTO(listing, clock.getZone()));
         }
+
+        logger.debug("Listings mapped to DTOs.");
 
         return listingResponses;
     }
 
     public ListingResponse getListingById(Long listingId) {
-        Optional<Listing> listing = listingRepository.findById(listingId);
+        logger.debug("Entering getListingById method for listing with id {}",  listingId);
 
-        return listingMapper.toDTO(
-            listing.orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId)),
-            clock.getZone()
-        );
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        logger.debug("Listing with id {} found, starting mapping operation.", listingId);
+
+        ListingResponse listingResponse = listingMapper.toDTO(listing, clock.getZone());
+
+        logger.debug("Listing with id {} successfully mapped to ListingResponse.", listingId);
+
+        return listingResponse;
     }
 
     public List<ListingResponse> getAllListingFromUser(String userId) {
+        logger.debug("Entering getAllListingFromUser method for user with id {}", userId);
+
         List<Listing> listings = listingRepository.findAllByOwnerId(userId);
+
+        logger.debug("All listings ({}) found for user with id {}", listings.size(), userId);
 
         List<ListingResponse> listingResponses = new ArrayList<>();
         for (Listing listing : listings) {
@@ -92,76 +113,134 @@ public class ListingServiceImpl implements ListingService{
                 listingResponses.add(listingMapper.toDTO(listing, clock.getZone()));
         }
 
+        logger.debug("Listings successfully mapped to ListingResponses.");
+
         return listingResponses;
     }
 
     public Long createListing(ListingRequest listingRequest, String userId) {
+        logger.debug("Entering createListing method for user with id {}", userId);
         Listing listing = listingMapper.fromDTO(listingRequest);
 
         validateListingOwnership(listing, userId);
+
+        logListingOwnershipValidatedSuccessfully();
+
         fetchEntities(listing, listingRequest);
+
+        logger.debug("Listing model and features fetched successfully.");
 
         listing.setCreatedAt(clock.instant());
         listing.setExpiresAt(listing.getCreatedAt().plus(listingRequest.validityPeriod().getNumberOfDays(), ChronoUnit.DAYS));
+
+        logger.debug("Listing creation and expiration dates set successfully.");
 
         return listingRepository.save(listing).getId();
     }
 
     public ListingResponse updateListing(Long listingId, ListingRequest listingRequest, String userId) {
+        logger.debug("Entering updateListing method for listing with id {} and user with id {}", listingId, userId);
         Listing oldListing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
+        logger.debug("Listing with id {} successfully retrieved from database.", listingId);
+
         validateListingOwnership(oldListing, userId);
+
+        logListingOwnershipValidatedSuccessfully();
+
         validateListingActive(oldListing);
+
+        logger.debug("Listing status successfully validated.");
 
         Listing updatedListing = listingMapper.fromDTO(listingRequest);
         updatedListing.setId(listingId);
         updatedListing.setCreatedAt(oldListing.getCreatedAt());
         updatedListing.setExpiresAt(oldListing.getExpiresAt());
 
+        logger.debug("Updated listing created successfully.");
+
         fetchEntities(updatedListing, listingRequest);
 
-        return listingMapper.toDTO(listingRepository.save(updatedListing), clock.getZone());
+        logger.debug("Updated listing model and features fetched successfully.");
+
+        ListingResponse listingResponse = listingMapper.toDTO(listingRepository.save(updatedListing), clock.getZone());
+
+        logger.debug("Listing updated and mapped successfully.");
+
+        return listingResponse;
     }
 
     public ListingResponse extendExpirationDate(Long listingId, ValidityPeriod validityPeriod, String userId) {
+        logger.debug("Entering extendExpirationDate method for listing with id {} and user with id {}", listingId, userId);
+
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        logListingSuccessfullyFetchedFromDb(listingId);
 
         if(listing.getRevoked()){
             throw new ListingRevokedException("Cannot extend revoked listing.");
         }
 
+        logger.debug("Listing revoked field validated successfully.");
+
         validateListingOwnership(listing, userId);
+
+        logListingOwnershipValidatedSuccessfully();
 
         Instant startingTime = listing.getExpiresAt().isAfter(clock.instant()) ? listing.getExpiresAt() : clock.instant();
         listing.setExpiresAt(startingTime.plus(validityPeriod.getNumberOfDays(), ChronoUnit.DAYS));
 
-        Listing updatedListing = listingRepository.save(listing);
+        logger.debug("Listing expiration date extended successfully.");
 
-        return listingMapper.toDTO(updatedListing, clock.getZone());
+        Listing updatedListing = listingRepository.save(listing);
+        ListingResponse listingResponse = listingMapper.toDTO(updatedListing, clock.getZone());
+
+        logger.debug("Listing updated and mapped to DTO successfully.");
+
+        return listingResponse;
     }
 
     public ListingResponse setListingRevokedStatus(Long listingId, boolean isRevoked, String userId) {
+        logger.debug("Entering setListingRevokedStatus method for listing with id {} and user with id {}", listingId, userId);
+
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
+        logListingSuccessfullyFetchedFromDb(listingId);
+
         validateListingOwnership(listing, userId);
+
+        logListingOwnershipValidatedSuccessfully();
 
         listing.setRevoked(isRevoked);
 
-        Listing updatedListing = listingRepository.save(listing);
+        logger.debug("Listing revoked field set to {}", isRevoked);
 
-        return listingMapper.toDTO(updatedListing, clock.getZone());
+        Listing updatedListing = listingRepository.save(listing);
+        ListingResponse listingResponse = listingMapper.toDTO(updatedListing, clock.getZone());
+
+        logger.debug("Listing updated and mapped to DTO successfully.");
+
+        return listingResponse;
     }
 
     public void deleteListing(Long listingId, String userId) {
+        logger.debug("Entering deleteListing method for listing with id {} and user with id {}", listingId, userId);
+
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 
+        logListingSuccessfullyFetchedFromDb(listingId);
+
         validateListingOwnership(listing, userId);
 
+        logListingOwnershipValidatedSuccessfully();
+
         listingRepository.delete(listing);
+
+        logger.debug("Listing deleted successfully.");
     }
 
     /*
@@ -205,5 +284,13 @@ public class ListingServiceImpl implements ListingService{
         listing.setFeatures(
                 featureRepository.findAllById(listingRequest.featuresIds())
         );
+    }
+
+    private void logListingOwnershipValidatedSuccessfully() {
+        logger.debug("Listing ownership validated successfully.");
+    }
+
+    private void logListingSuccessfullyFetchedFromDb(Long listingId) {
+        logger.debug("Listing with id {} successfully fetched from database.", listingId);
     }
 }

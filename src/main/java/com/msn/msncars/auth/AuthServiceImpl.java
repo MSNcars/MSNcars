@@ -12,12 +12,13 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -28,6 +29,8 @@ public class AuthServiceImpl implements AuthService{
     private final CompanyService companyService;
     private final UserService userService;
 
+    private final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     public AuthServiceImpl(Keycloak keycloakAPI, KeycloakConfig keycloakConfig, CompanyService companyService, UserService userService) {
         this.keycloakAPI = keycloakAPI;
         this.keycloakConfig = keycloakConfig;
@@ -37,23 +40,44 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public String registerUserAndAssignRole(UserRegistrationRequest userRegistrationRequest, AccountRole accountRole) {
+        logger.debug("Entering registerUserAndAssignRole method with role: {}", accountRole);
+
         UserRepresentation userRepresentation = getUserRepresentation(userRegistrationRequest);
+
+        logger.debug("UserRepresentation created out of userRegistrationRequest.");
+
         String userId = createUser(userRepresentation);
+
+        logger.debug("User created out of userRepresentation, userId: {}", userId);
+
         assignRoleToUser(userId, accountRole);
+
+        logger.debug("Role {} assigned to user.", accountRole);
+
         return userId;
     }
 
     @Override
     public CompanyRegistrationResponse registerCompany(CompanyRegistrationRequest companyRegistrationRequest) {
+        logger.debug("Entering registerCompany method.");
+
         String userId = registerUserAndAssignRole(companyRegistrationRequest.userRegistrationRequest(), AccountRole.COMPANY);
+
+        logger.debug("User account created, userId: {}", userId);
+
         Long companyId;
         try {
             CompanyDTO company = companyService.createCompany(companyRegistrationRequest.companyCreationRequest(), userId);
             companyId = company.id();
         } catch (Exception e) {
+            logger.debug("Error while creating company", e);
             userService.deleteUser(userId);
+            logger.debug("User account deleted, userId: {}", userId);
             throw e;
         }
+
+        logger.debug("Company created, companyId: {}", companyId);
+
         return new CompanyRegistrationResponse(userId, companyId);
     }
 

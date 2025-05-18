@@ -47,6 +47,7 @@ public class ImageController {
 
     @ExceptionHandler(NotSupportedFileExtensionException.class)
     public ResponseEntity<String> handleNotSupportedFileExtensionException(NotSupportedFileExtensionException ex) {
+        logger.error("Not supported file extension: {}", ex.getMessage(), ex);
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 }

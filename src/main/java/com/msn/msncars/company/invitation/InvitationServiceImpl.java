@@ -3,9 +3,10 @@ package com.msn.msncars.company.invitation;
 import com.msn.msncars.auth.keycloak.KeycloakService;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyService;
-import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -23,6 +24,8 @@ public class InvitationServiceImpl implements InvitationService {
     private final Clock clock;
     private final KeycloakService keycloakService;
 
+    private final Logger logger = LoggerFactory.getLogger(InvitationServiceImpl.class);
+
     public InvitationServiceImpl(InvitationRepository invitationRepository, CompanyService companyService, InvitationMapper invitationMapper, Clock clock, KeycloakService keycloakService) {
         this.invitationRepository = invitationRepository;
         this.companyService = companyService;
@@ -33,10 +36,21 @@ public class InvitationServiceImpl implements InvitationService {
 
     @Override
     public InvitationDTO invite(CreateInvitationRequest createInvitationRequest, String senderId) {
+        logger.debug("Entering invite method for senderId: {}", senderId);
         Long senderCompanyId = createInvitationRequest.senderCompanyId();
         String recipientId = createInvitationRequest.recipientId();
         validateInvitationCreation(senderCompanyId, recipientId, senderId);
+
+        logger.debug("Invitation creation validated for senderCompanyId: {}, recipientId: {}, senderId: {}",
+            senderCompanyId,
+            recipientId,
+            senderId
+        );
+
         clearCompanyInvitationsToRecipient(senderCompanyId, recipientId);
+
+        logger.debug("Previous invitations for the recipient with id: {} cleared.", recipientId);
+
         Invitation invitation = new Invitation(
             recipientId,
             companyService.getCompany(senderCompanyId).get(),
@@ -44,46 +58,87 @@ public class InvitationServiceImpl implements InvitationService {
             InvitationState.PENDING,
             clock
         );
+
+        logger.debug("Invitation created. Returning mapped invitation.");
+
         return mapInvitationToDTO(invitationRepository.save(invitation));
     }
 
     @Override
     public InvitationDTO acceptInvitation(UUID invitationId, String userId) {
+        logger.debug("Entering acceptInvitation method for invitationId: {}, userId: {}", invitationId, userId);
+
         Invitation invitation = validateAndGetPendingInvitation(invitationId, userId);
+
+        logPendingInvitationValidatedAndRetrieved();
+
         invitation.accept();
+
+        logger.debug("Invitation with id: {} accepted. Returning mapped invitation.", invitationId);
+
         return mapInvitationToDTO(invitationRepository.save(invitation));
     }
 
     @Override
     public InvitationDTO declineInvitation(UUID invitationId, String userId) {
+        logger.debug("Entering declineInvitation method for invitationId: {}, userId: {}", invitationId, userId);
+
         Invitation invitation = validateAndGetPendingInvitation(invitationId, userId);
+
+        logPendingInvitationValidatedAndRetrieved();
+
         invitation.decline();
+
+        logger.debug("Invitation with id: {} declined. Returning mapped invitation.", invitationId);
+
         return mapInvitationToDTO(invitationRepository.save(invitation));
     }
 
     @Override
     public void deleteInvitation(UUID invitationId, String userId) {
+        logger.debug("Entering deleteInvitation method for invitationId: {}, userId: {}", invitationId, userId);
+
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new NotFoundException("Invitation does not exist"));
+
+        logger.debug("Invitation with id: {} fetched from database.", invitationId);
+
         if (!invitation.getSenderCompany().hasOwner(userId))
             throw new ForbiddenException("Only the invitation owner is allowed to delete it.");
+
+        logger.debug("Invitation ownership validated with requesting user.");
+
         invitationRepository.deleteById(invitationId);
+
+        logger.debug("Invitation with id: {} deleted.", invitationId);
     }
 
     @Override
     public List<InvitationDTO> getInvitationsReceivedByUser(String userId) {
+        logger.debug("Entering getInvitationsReceivedByUser method for userId: {}", userId);
+
         List<Invitation> invitations = invitationRepository.getInvitationsByRecipientUserId(userId);
+
+        logger.debug("Invitations ({}) for userId: {} fetched. Returning mapped invitations.", invitations.size(), userId);
+
         return mapInvitationsToDTOs(invitations);
     }
 
     @Override
     public List<InvitationDTO> getInvitationsSentByCompany(Long companyId, String userId) {
+        logger.debug("Entering getInvitationsSentByCompany method for userId: {}, companyId: {}", userId, companyId);
         Optional<Company> companyOptional = companyService.getCompany(companyId);
         if (companyOptional.isEmpty())
             throw new NotFoundException("Company does not exist.");
         if (!companyOptional.get().hasMember(userId))
             throw new ForbiddenException("Only company members are allowed to view invitations sent by the company.");
+
+        logger.debug("Company existence and invitation request validated.");
+
         List<Invitation> invitations = invitationRepository.getInvitationsBySenderCompanyId(companyId);
+
+        logger.debug("Invitations ({}) fetched. Returning mapped invitations.", invitations.size());
+
         return mapInvitationsToDTOs(invitations);
     }
 
@@ -130,5 +185,9 @@ public class InvitationServiceImpl implements InvitationService {
 
     private InvitationDTO mapInvitationToDTO(Invitation invitation) {
         return invitationMapper.toDTO(invitation, clock.getZone());
+    }
+
+    private void logPendingInvitationValidatedAndRetrieved() {
+        logger.debug("Pending invitation validated and retrieved.");
     }
 }

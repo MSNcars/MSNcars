@@ -15,10 +15,11 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final KeycloakService keycloakService;
     private final UserMapper userMapper;
     private final CompanyService companyService;
+
+    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     public UserServiceImpl(KeycloakService keycloakService, UserMapper userMapper, CompanyService companyService) {
         this.keycloakService = keycloakService;
@@ -28,28 +29,55 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserBasicInformationDTO getUserBasicInformation(String userId) {
-        UserRepresentation userRepresentation = keycloakService.getUserRepresentationById(userId)
-                .orElseThrow(() -> new NotFoundException("User does not exist."));
+        logger.debug("Entering getUserBasicInformation with userId: {}", userId);
 
-        return userMapper.toUserBasicInformationDTO(userRepresentation, getAccountRoles(userId));
+        UserRepresentation userRepresentation = keycloakService.getUserRepresentationById(userId)
+                .orElseThrow(() -> {
+                    logger.error("User with id: {} not found in Keycloak.", userId);
+                    return new NotFoundException("User does not exist.");
+                });
+
+        logger.debug("UserRepresentation successfully retrieved from Keycloak for userId: {}", userId);
+
+        UserBasicInformationDTO userBasicInformationDTO = userMapper.toUserBasicInformationDTO(userRepresentation, getAccountRoles(userId));
+
+        logger.debug("UserRepresentation successfully mapped to UserBasicInformationDTO for userId: {}", userId);
+
+        return userBasicInformationDTO;
     }
 
     @Override
     public List<AccountRole> getAccountRoles(String userId) {
-         List<RoleRepresentation> userRoles = keycloakService.getRoles(userId);
+        logger.debug("Entering getAccountRoles with userId: {}", userId);
 
-        return userRoles.stream()
+        List<RoleRepresentation> userRoles = keycloakService.getRoles(userId);
+
+        logger.debug("UserRoles successfully retrieved from Keycloak for userId: {}", userId);
+
+        List<AccountRole> accountRoles = userRoles.stream()
                 .map(userRole -> AccountRole.valueOf(userRole.getName().toUpperCase()))
                 .toList();
+
+        logger.debug("UserRoles successfully mapped to AccountRoles for userId: {}", userId);
+
+        return accountRoles;
     }
 
+    @Override
     public void deleteUser(String userId) {
+        logger.debug("Entering deleteUser with userId: {}", userId);
+
         try(Response response = keycloakService.deleteUser(userId)) {
             if (response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()) {
                 logger.warn("Failed to delete user {}. Status: {}, {}", userId, response.getStatus(), response.getStatusInfo().getReasonPhrase());
                 return;
             }
+
+            logger.debug("User deleted successfully in Keycloak, starting cleanupCompaniesOfRemovedUser for userId: {}", userId);
+
             companyService.cleanupCompaniesOfRemovedUser(userId);
+
+            logger.debug("Completed cleanupCompaniesOfRemovedUser for userId: {}", userId);
         }
     }
 
