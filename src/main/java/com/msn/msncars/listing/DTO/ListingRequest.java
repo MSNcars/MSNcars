@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record ListingRequest(
-        @NotEmpty
         String ownerId,
         @NotNull
         OwnerType ownerType,
