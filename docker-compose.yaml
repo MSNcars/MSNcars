@@ -46,3 +46,12 @@ services:
       - ./src/main/resources/containers/NginxConfig.conf:/etc/nginx/nginx.conf
     depends_on:
       - keycloak
+  elasticsearch:
+    build:
+      context: ./elk-stack/elasticsearch
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
