@@ -65,3 +65,13 @@ services:
       - "5000:5000"
     depends_on:
       - elasticsearch
+  kibana:
+    build:
+      context: ./elk-stack/kibana
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
