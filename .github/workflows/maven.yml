@@ -35,3 +35,9 @@ jobs:
           name: Backend Tests            # Name of the check run which will be created
           path: target/surefire-reports/TEST-*.xml    # Path to test results
           reporter: java-junit        # Format of test results
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-jar
+          path: target/MSNcars-0.0.1-SNAPSHOT.jar
