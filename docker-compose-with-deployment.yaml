@@ -53,6 +53,11 @@ services:
       - '7000:7000'
     environment:
       SERVER_PORT: 7000
+      MINIO_ENDPOINT: http://minio:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8081/realms/MSNcars
+      KEYCLOAK_SERVER_URL: http://keycloak:8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
     depends_on:
       - keycloak
       - postgres
@@ -64,19 +69,32 @@ services:
       - '7001:7001'
     environment:
       SERVER_PORT: 7001
+      MINIO_ENDPOINT: http://minio:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8081/realms/MSNcars
+      KEYCLOAK_SERVER_URL: http://keycloak:8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
     depends_on:
       - keycloak
       - postgres
       - nginx
       - minio
+      - spring-one # To avoid receiving error on concurrent minio bucket create
   spring-three:
     image: 'ghcr.io/msncars/msncars:add-image-building'
     ports:
       - '7002:7002'
     environment:
       SERVER_PORT: 7002
+      MINIO_ENDPOINT: http://minio:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8081/realms/MSNcars
+      KEYCLOAK_SERVER_URL: http://keycloak:8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
     depends_on:
       - keycloak
       - postgres
       - nginx
       - minio
+      - spring-one
+      - spring-two
