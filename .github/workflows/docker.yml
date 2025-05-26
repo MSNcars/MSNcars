@@ -1,7 +1,11 @@
 #
 name: Create and publish a Docker image
 
-on: [push, pull_request]
+on:
+  workflow_run:
+    workflows: ["Build Java"]
+    types:
+      - completed
 
 env:
   REGISTRY: ghcr.io
