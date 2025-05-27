@@ -143,6 +143,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.gatling</groupId>
+			<artifactId>gatling-app</artifactId>
+			<version>3.13.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.gatling.highcharts</groupId>
+			<artifactId>gatling-charts-highcharts</artifactId>
+			<version>3.13.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -159,6 +169,12 @@
 				<configuration>
 					<reportsDirectory>${project.basedir}/target/surefire-reports</reportsDirectory>
 				</configuration>
+			</plugin>
+			<!-- Gatling plugin to run gatling tests -->
+			<plugin>
+				<groupId>io.gatling</groupId>
+				<artifactId>gatling-maven-plugin</artifactId>
+				<version>4.16.0</version>
 			</plugin>
 		</plugins>
 	</build>
