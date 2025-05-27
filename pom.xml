@@ -129,6 +129,12 @@
 			<artifactId>spring-security-core</artifactId>
 			<version>6.5.0</version>
 		</dependency>
+		<!-- override spring-context used by spring-security-core manually to satisfy snyk scans -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>6.2.7</version>
+		</dependency>
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
