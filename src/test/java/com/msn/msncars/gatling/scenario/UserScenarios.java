@@ -1,4 +1,4 @@
-package com.msn.msncars.gatling.simulation;
+package com.msn.msncars.gatling.scenario;
 
 import io.gatling.javaapi.core.ChainBuilder;
 import io.gatling.javaapi.core.CoreDsl;
@@ -15,20 +15,7 @@ public class UserScenarios {
 
     public static final ChainBuilder authenticate =
             feed(loginFeeder)
-                    .exec(authenticateByUsernameAndPassword("#{username}", "#{password}"));
-//                    .exec(
-//                            http("User Login")
-//                                    .post("http://localhost:8081/realms/MSNcars/protocol/openid-connect/token")
-//                                    .header("Content-Type", "application/x-www-form-urlencoded")
-//                                    .formParam("grant_type", "password")
-//                                    .formParam("client_id", "MSNcars")
-//                                    .formParam("username", session -> session.getString("username"))
-//                                    .formParam("password", session -> session.getString("password"))
-//                                    .check(
-//                                            HttpDsl.status().is(200),
-//                                            CoreDsl.jsonPath("$.access_token").saveAs("jwtToken")
-//                                    )
-//                    );
+            .exec(authenticateByUsernameAndPassword("#{username}", "#{password}"));
 
     public static ChainBuilder authenticateByUsernameAndPassword(String username, String password) {
         return exec(
@@ -53,6 +40,15 @@ public class UserScenarios {
                                 .delete("http://localhost:8080/user")
                                 .header("Authorization", "Bearer #{jwtToken}")
                                 .check(HttpDsl.status().is(200))
+        );
+    }
+
+    public static ChainBuilder deleteUser(String jwtToken) {
+        return exec(
+                http("Delete User")
+                        .delete("http://localhost:8080/user")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .check(HttpDsl.status().is(200))
         );
     }
 }

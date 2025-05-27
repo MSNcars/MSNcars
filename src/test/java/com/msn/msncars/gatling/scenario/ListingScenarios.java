@@ -18,7 +18,7 @@ import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.core.CoreDsl.jsonPath;
 import static io.gatling.javaapi.http.HttpDsl.http;
 
-public class ListingCreationScenario {
+public class ListingScenarios {
 
     private static final Random random = new Random();
 
@@ -88,6 +88,13 @@ public class ListingCreationScenario {
                                     .check(CoreDsl.bodyString().saveAs("listingId"))
                     );
 
+    public static final ChainBuilder deleteListing =
+            exec(
+                    http("Delete listing")
+                            .delete("/listings/#{listingId}")
+                            .header("Authorization", "Bearer #{jwtToken}")
+            );
+
     private static Map<String, Object> generateListing() {
         Map<String, Object> listings = new HashMap<>();
         listings.put("ownerType", OwnerType.USER.toString());
@@ -114,7 +121,7 @@ public class ListingCreationScenario {
     }
 
     private static Iterator<Map<String, Object>> listingIterator() {
-        return Stream.generate(ListingCreationScenario::generateListing)
+        return Stream.generate(ListingScenarios::generateListing)
                 .iterator();
     }
 }
