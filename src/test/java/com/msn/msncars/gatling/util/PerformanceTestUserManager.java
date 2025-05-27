@@ -8,21 +8,21 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
-public class TestUserManager {
-    private static final String SERVER_URL = "http://localhost:8081";
-    private static final String REALM = "MSNcars";
-    private static final String CLIENT_ID = "admin-cli";
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
+@Configuration
+public class PerformanceTestUserManager {
+
     private static final String TEST_USER_PREFIX = "performance_test_user__";
     private static final String TEST_USER_PASSWORD = "testPassword123";
     private static final String TEST_USERS_CSV_FILE_PATH = "src/test/resources/gatling/test_users.csv";
@@ -33,15 +33,23 @@ public class TestUserManager {
             return;
         }
 
+        Properties properties = readAppProperties();
+
+        String serverUrl = properties.getProperty("keycloak.server.url");
+        String realmName = properties.getProperty("keycloak.realm");
+        String clientId = "admin-cli";
+        String adminUsername = properties.getProperty("keycloak.credentials.username");
+        String adminPassword = properties.getProperty("keycloak.credentials.password");
+
         try (Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl(SERVER_URL)
+                .serverUrl(serverUrl)
                 .realm("master")
-                .clientId(CLIENT_ID)
-                .username(ADMIN_USERNAME)
-                .password(ADMIN_PASSWORD)
+                .clientId(clientId)
+                .username(adminUsername)
+                .password(adminPassword)
                 .build()) {
 
-            RealmResource realm = keycloak.realm(REALM);
+            RealmResource realm = keycloak.realm(realmName);
 
             switch (args[0].toLowerCase()) {
                 case "create":
@@ -137,5 +145,15 @@ public class TestUserManager {
         System.out.println("In order to use this class to create test users, you must specify parameters of run configuration:");
         System.out.println("create <number> - create test users");
         System.out.println("delete - delete test users");
+    }
+
+    private static Properties readAppProperties() {
+        Properties properties = new Properties();
+        try (InputStream input = Files.newInputStream(Paths.get("src/main/resources/application.properties"))) {
+            properties.load(input);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load properties file", e);
+        }
+        return properties;
     }
 }
