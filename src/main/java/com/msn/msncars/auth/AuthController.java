@@ -1,8 +1,12 @@
 package com.msn.msncars.auth;
 
+import com.msn.msncars.auth.dto.CompanyRegistrationRequest;
+import com.msn.msncars.auth.dto.CompanyRegistrationResponse;
+import com.msn.msncars.auth.dto.UserRegistrationRequest;
 import com.msn.msncars.auth.exception.RegistrationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +32,7 @@ public class AuthController {
 
         logger.info("User account has been successfully registered, accountId: {}", accountId);
 
-        return ResponseEntity.ok(accountId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountId);
     }
 
     @PostMapping("/auth/company/register")
@@ -42,7 +46,7 @@ public class AuthController {
             companyRegistrationResponse.companyId()
         );
 
-        return ResponseEntity.ok(companyRegistrationResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(companyRegistrationResponse);
     }
 
     @ExceptionHandler(RegistrationException.class)
