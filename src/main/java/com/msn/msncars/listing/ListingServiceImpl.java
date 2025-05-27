@@ -122,6 +122,11 @@ public class ListingServiceImpl implements ListingService{
         logger.debug("Entering createListing method for user with id {}", userId);
         Listing listing = listingMapper.fromDTO(listingRequest);
 
+        if (listing.getOwnerType() == OwnerType.USER) {// -> Override ownerId with userId from JWT
+            listing.setOwnerId(userId);
+            logger.debug("OwnerType set to USER, will override listing ownerId using userId from JWT");
+        }
+
         validateListingOwnership(listing, userId);
 
         logListingOwnershipValidatedSuccessfully();
