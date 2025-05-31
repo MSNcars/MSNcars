@@ -48,7 +48,7 @@ services:
       - keycloak
   # Deployment pods
   spring-one:
-    image: 'ghcr.io/msncars/msncars:add-image-building'
+    image: 'ghcr.io/msncars/msncars:master'
     ports:
       - '7000:7000'
     environment:
@@ -64,7 +64,7 @@ services:
       - nginx
       - minio
   spring-two:
-    image: 'ghcr.io/msncars/msncars:add-image-building'
+    image: 'ghcr.io/msncars/msncars:master'
     ports:
       - '7001:7001'
     environment:
@@ -81,7 +81,7 @@ services:
       - minio
       - spring-one # To avoid receiving error on concurrent minio bucket create
   spring-three:
-    image: 'ghcr.io/msncars/msncars:add-image-building'
+    image: 'ghcr.io/msncars/msncars:master'
     ports:
       - '7002:7002'
     environment:

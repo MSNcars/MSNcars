@@ -47,9 +47,9 @@ to send request to them using Round Robin algorithm.
 By default, docker compose will use MSNcars docker image from ghcr.io/msncars/msncars from master branch,
 you can change that by editing docker-compose.with-deployment.yaml.
 
-This will create new keycloak instance, which means that you need to run PerformanceTestUserManager
+This will create new keycloak instance, which means that you need to run PerformanceTestUserManager to create users again.
 
 If you already have MSNcars docker image downloaded locally, you will need to manually pull the image to see the latest changes:
 ```bash
-docker pull ghcr.io/msncars/msncars:add-image-building
+docker pull ghcr.io/msncars/msncars:master
 ```
