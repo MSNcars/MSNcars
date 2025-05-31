@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: app_db
     volumes:
-      - ./src/main/resources/init-scripts:/docker-entrypoint-initdb.d # creates keycloak db
+      - ../../../../../../../../../src/main/resources/init-scripts:/docker-entrypoint-initdb.d # creates keycloak db
   keycloak: # Authorization server
     image: 'bitnami/keycloak'
     ports:
@@ -35,7 +35,7 @@ services:
     depends_on:
       - postgres
     volumes: # Mount configuration file
-      - ./src/main/resources/containers/KeycloakConfig.json:/opt/bitnami/keycloak/data/import/KeycloakConfig.json
+      - ../../../../../../../../../src/main/resources/containers/KeycloakConfig.json:/opt/bitnami/keycloak/data/import/KeycloakConfig.json
   nginx: # Reverse proxy
     image: 'nginx'
     ports:
@@ -43,7 +43,7 @@ services:
     extra_hosts: # needed for ubuntu, to be able to use docker.internal in nginx.conf
       - "host.docker.internal:host-gateway"
     volumes:
-      - ./src/main/resources/containers/NginxConfig.conf:/etc/nginx/nginx.conf
+      - ./NginxConfig.conf:/etc/nginx/nginx.conf
     depends_on:
       - keycloak
   # Deployment pods

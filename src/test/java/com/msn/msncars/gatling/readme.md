@@ -31,3 +31,25 @@ since Gatling cycles through the test user list.
 After executing the test command, you'll be prompted to choose which simulation
 to run by entering its number from the list.
 
+## Running Performance Tests against multiple spring boot containers
+
+Our application is stateless which means that you can run multiple containers with our application
+and configure nginx to send request to whichever container.
+
+In order to do that, stop running application and all containers (to avoid port conflicts) and after that run:
+```bash
+docker compose -p msn-car-gatling -f src/test/java/com/msn/msncars/gatling/prerequisites/optional/docker-compose-with-deployment.yaml up -d
+```
+
+This will run 3 containers that will independently serve http requests and configure nginx
+to send request to them using Round Robin algorithm.
+
+By default, docker compose will use MSNcars docker image from ghcr.io/msncars/msncars from master branch,
+you can change that by editing docker-compose.with-deployment.yaml.
+
+This will create new keycloak instance, which means that you need to run PerformanceTestUserManager
+
+If you already have MSNcars docker image downloaded locally, you will need to manually pull the image to see the latest changes:
+```bash
+docker pull ghcr.io/msncars/msncars:add-image-building
+```
