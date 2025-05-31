@@ -11,7 +11,7 @@
 
 ## Create / Delete Test Users
 
-Use the `PerformanceTestUserManager` class from the `util` package with params:
+Use the `PerformanceTestUserManager` class from the `prerequisites` package with params:
 - create <number_of_users>
 - delete
 
