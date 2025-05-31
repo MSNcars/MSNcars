@@ -15,7 +15,7 @@ import static io.gatling.javaapi.http.HttpDsl.status;
 
 public class CompanyRegistrationScenario {
 
-    private static int companyUserNumber = 1;
+    private static int currentUserNumber = 1;
     private static int companyNumber = 1;
     private static final String COMPANY_TEST_USER_USERNAME_PREFIX = "performance_test_company_user__";
     private static final String COMPANY_NAME_PREFIX = "performance_test_company__";
@@ -25,7 +25,7 @@ public class CompanyRegistrationScenario {
             .feed(CompanyRegistrationScenario::companyCreationRequestIterator)
                     .exec(
                             http("Company Registration")
-                                    .post("http://localhost:8080/auth/company/register")
+                                    .post("http://localhost:80/auth/company/register")
                                     .header("Content-Type", "application/json")
                                     .body(CoreDsl.StringBody("""
                                             {
@@ -52,13 +52,13 @@ public class CompanyRegistrationScenario {
 
     private static Map<String, Object> createUserRegistrationRequest() {
         Map<String, Object> userData = new HashMap<>();
-        String username = COMPANY_TEST_USER_USERNAME_PREFIX + companyUserNumber;
+        String username = COMPANY_TEST_USER_USERNAME_PREFIX + currentUserNumber;
         userData.put("username", username);
         userData.put("password", "testPassword123");
         userData.put("userEmail", username + "@test.com");
         userData.put("firstName", username);
         userData.put("lastName", username);
-        companyUserNumber++;
+        currentUserNumber++;
         return userData;
     }
 
