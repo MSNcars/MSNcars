@@ -1,8 +1,8 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.Fuel;
-import com.msn.msncars.listing.DTO.ListingRequest;
-import com.msn.msncars.listing.DTO.ListingResponse;
+import com.msn.msncars.listing.dto.ListingRequest;
+import com.msn.msncars.listing.dto.ListingResponse;
 
 import java.util.List;
 
