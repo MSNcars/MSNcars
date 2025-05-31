@@ -100,7 +100,7 @@ class ImageControllerTests {
     void testThatAfterAddingListingYouCanSaveAndFetchImageAsUserOwner() throws Exception {
         Long listingId = addSampleUserListing();
 
-        Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
+        Resource jpegPhoto = new ClassPathResource("/images/jpegTestPhoto.jpg");
 
         MockMultipartFile mockJpegPhoto = new MockMultipartFile("image", jpegPhoto.getFilename(), MediaType.IMAGE_JPEG_VALUE,
                 jpegPhoto.getInputStream());
@@ -128,7 +128,7 @@ class ImageControllerTests {
     void testThatAfterAddingListingYouCanSaveAndFetchImageAsCompanyMember() throws Exception {
         Long listingId = addSampleCompanyListing();
 
-        Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
+        Resource jpegPhoto = new ClassPathResource("/images/jpegTestPhoto.jpg");
 
         MockMultipartFile mockJpegPhoto = new MockMultipartFile("image", jpegPhoto.getFilename(), MediaType.IMAGE_JPEG_VALUE,
                 jpegPhoto.getInputStream());
@@ -154,7 +154,7 @@ class ImageControllerTests {
 
     @Test
     void testThatYouCannotSaveFileWithBadExtension() throws Exception{
-        Resource jpegPhoto = new ClassPathResource("bmpTestPhoto.bmp");
+        Resource jpegPhoto = new ClassPathResource("/images/bmpTestPhoto.bmp");
 
         MockMultipartFile mockJpegPhoto = new MockMultipartFile("image", jpegPhoto.getFilename(), "image/bmp",
                 jpegPhoto.getInputStream());
@@ -171,8 +171,8 @@ class ImageControllerTests {
     void testThatYouGetCorrectPathsForListing() throws Exception{
         Long listingId = addSampleUserListing();
 
-        Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
-        Resource pngPhoto = new ClassPathResource("pngTestPhoto.png");
+        Resource jpegPhoto = new ClassPathResource("/images/jpegTestPhoto.jpg");
+        Resource pngPhoto = new ClassPathResource("/images/pngTestPhoto.png");
 
         MockMultipartFile mockJpegPhoto = new MockMultipartFile("image", jpegPhoto.getFilename(), MediaType.IMAGE_JPEG_VALUE,
                 jpegPhoto.getInputStream());
@@ -207,7 +207,7 @@ class ImageControllerTests {
     void testThatYouCannotAddImagesToOtherPeopleListings() throws Exception {
         Long listingId = addSampleUserListing();
 
-        Resource jpegPhoto = new ClassPathResource("jpegTestPhoto.jpg");
+        Resource jpegPhoto = new ClassPathResource("/images/jpegTestPhoto.jpg");
 
         MockMultipartFile mockJpegPhoto = new MockMultipartFile("image", jpegPhoto.getFilename(), MediaType.IMAGE_JPEG_VALUE,
                 jpegPhoto.getInputStream());

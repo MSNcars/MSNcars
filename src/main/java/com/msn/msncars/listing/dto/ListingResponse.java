@@ -1,10 +1,8 @@
-package com.msn.msncars.listing.DTO;
+package com.msn.msncars.listing.dto;
 
 import com.msn.msncars.car.*;
 import com.msn.msncars.car.model.ModelDTO;
-import com.msn.msncars.company.CompanyDTO;
 import com.msn.msncars.listing.OwnerType;
-import com.msn.msncars.user.UserDTO;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;

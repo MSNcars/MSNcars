@@ -1,4 +1,4 @@
-package com.msn.msncars.listing.DTO;
+package com.msn.msncars.listing.dto;
 
 import com.msn.msncars.car.*;
 import com.msn.msncars.listing.OwnerType;
@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 public record ListingRequest(
