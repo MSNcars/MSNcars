@@ -1,4 +1,4 @@
-package com.msn.msncars.gatling.util;
+package com.msn.msncars.gatling.prerequisites;
 
 import jakarta.ws.rs.core.Response;
 import org.jetbrains.annotations.NotNull;
