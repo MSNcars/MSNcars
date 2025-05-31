@@ -20,7 +20,7 @@ public class UserScenarios {
     public static ChainBuilder authenticateByUsernameAndPassword(String username, String password) {
         return exec(
                 http("Get User JwtToken")
-                        .post("http://localhost:8081/realms/MSNcars/protocol/openid-connect/token")
+                        .post("http://localhost:80/auth/login")
                         .header("Content-Type", "application/x-www-form-urlencoded")
                         .formParam("grant_type", "password")
                         .formParam("client_id", "MSNcars")
@@ -37,7 +37,7 @@ public class UserScenarios {
         return exec(authenticateByUsernameAndPassword(username, password))
                 .exec(
                         http("Delete User")
-                                .delete("http://localhost:8080/user")
+                                .delete("http://localhost:80/user")
                                 .header("Authorization", "Bearer #{jwtToken}")
                                 .check(HttpDsl.status().is(200))
         );
@@ -46,7 +46,7 @@ public class UserScenarios {
     public static ChainBuilder deleteUser(String jwtToken) {
         return exec(
                 http("Delete User")
-                        .delete("http://localhost:8080/user")
+                        .delete("http://localhost:80/user")
                         .header("Authorization", "Bearer " + jwtToken)
                         .check(HttpDsl.status().is(200))
         );
