@@ -16,7 +16,7 @@ import static io.gatling.javaapi.http.HttpDsl.status;
 public class CompanyRegistrationScenario {
 
     private static int currentUserNumber = 1;
-    private static int companyNumber = 1;
+    private static int currentCompanyNumber = 1;
     private static final String COMPANY_TEST_USER_USERNAME_PREFIX = "performance_test_company_user__";
     private static final String COMPANY_NAME_PREFIX = "performance_test_company__";
 
@@ -64,12 +64,12 @@ public class CompanyRegistrationScenario {
 
     private static Map<String, Object> createCompanyCreationRequest() {
         Map<String, Object> companyData = new HashMap<>();
-        String companyName = COMPANY_NAME_PREFIX + companyNumber;
+        String companyName = COMPANY_NAME_PREFIX + currentCompanyNumber;
         companyData.put("companyName", companyName);
         companyData.put("address", "Sample Address");
         companyData.put("phone", "123456789");
         companyData.put("companyEmail", companyName + "@test.com");
-        companyNumber++;
+        currentCompanyNumber++;
         return companyData;
     }
 
