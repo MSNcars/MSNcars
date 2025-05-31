@@ -1,5 +1,7 @@
 package com.msn.msncars.image;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ public class ImageController {
         this.imageService = imageService;
     }
 
+    @Operation(summary = "Attach image to the listing", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("images")
     @ResponseStatus(HttpStatus.CREATED)
     public void attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image,
@@ -29,6 +32,7 @@ public class ImageController {
         imageService.attachImage(listingId, image, authenticationPrincipal.getSubject());
     }
 
+    @Operation(summary = "Fetch image by path")
     @GetMapping("images")
     public ResponseEntity<?> fetchImage(@RequestBody ImageRequest imageRequest) {
         logger.info("Fetching image with path: {}", imageRequest.path());
@@ -39,6 +43,7 @@ public class ImageController {
                 .body(image.data());
     }
 
+    @Operation(summary = "Fetch paths of listing images")
     @GetMapping("listings/{id}/images")
     public List<String> fetchListingImagesPaths(@PathVariable("id") Long listingId) {
         logger.info("Getting paths for listingId: {}", listingId);

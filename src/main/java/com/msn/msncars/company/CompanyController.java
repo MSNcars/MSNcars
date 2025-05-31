@@ -1,6 +1,8 @@
 package com.msn.msncars.company;
 
 import com.msn.msncars.user.UserDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ public class CompanyController {
         this.companyService = companyService;
     }
 
+    @Operation(summary = "Get information about company")
     @GetMapping("/{companyId}")
     public ResponseEntity<CompanyDTO> getCompanyInfo(@PathVariable Long companyId) {
         logger.info("Received request to get company info for company with id {}", companyId);
@@ -33,6 +36,7 @@ public class CompanyController {
         return companyDTO.map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
+    @Operation(summary = "Get company members")
     @GetMapping("/{companyId}/members")
     public ResponseEntity<List<UserDTO>> getCompanyMembers(@PathVariable Long companyId) {
         logger.info("Received request to get company members for company with id {}", companyId);
@@ -44,6 +48,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyMembers);
     }
 
+    @Operation(summary = "Get company owner")
     @GetMapping("/{companyId}/owner")
     public ResponseEntity<UserDTO> getCompanyOwner(@PathVariable Long companyId) {
         logger.info("Received request to get company owner for company with id {}", companyId);
@@ -55,6 +60,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyOwner);
     }
 
+    @Operation(summary = "Get companies where the user is a member")
     @GetMapping("/by-user/{userId}")
     public ResponseEntity<List<CompanyDTO>> getCompaniesUserBelongsTo(@PathVariable String userId) {
         logger.info("Received request to get companies user belongs to for user with id {}", userId);
@@ -66,6 +72,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyDTOs);
     }
 
+    @Operation(summary = "Delete company", security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("/{companyId}")
     public ResponseEntity<String> deleteCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();

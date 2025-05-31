@@ -4,6 +4,7 @@ import com.msn.msncars.auth.dto.CompanyRegistrationRequest;
 import com.msn.msncars.auth.dto.CompanyRegistrationResponse;
 import com.msn.msncars.auth.dto.UserRegistrationRequest;
 import com.msn.msncars.auth.exception.RegistrationException;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @Operation(summary = "Register user account")
     @PostMapping("/auth/user/register")
     public ResponseEntity<String> registerUser(@RequestBody UserRegistrationRequest userRegistrationRequest) {
         logger.info("Received request to register a new user account.");
@@ -35,6 +37,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountId);
     }
 
+    @Operation(summary = "Register a company account and create the company")
     @PostMapping("/auth/company/register")
     public ResponseEntity<CompanyRegistrationResponse> registerCompany(@RequestBody CompanyRegistrationRequest companyRegistrationRequest) {
         logger.info("Received request to register a new company account.");

@@ -1,5 +1,6 @@
 package com.msn.msncars.car.make;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ public class MakeController {
         this.makeService = makeService;
     }
 
+    @Operation(summary = "Get information about all makes without their models")
     @GetMapping("/all")
     public List<MakeSlimDTO> getAllMakes(){
         logger.info("Received request to get all makes.");
@@ -31,6 +33,7 @@ public class MakeController {
         return makeSlimDTOs;
     }
 
+    @Operation(summary = "Retrieve all makes along with their models")
     @GetMapping("/all/models")
     public List<MakeDTO> getAllMakesWithAssociatedModels(){
         logger.info("Received request to get all makes with associated models.");
@@ -42,6 +45,7 @@ public class MakeController {
         return makeDTOs;
     }
 
+    @Operation(summary = "Get information about a make by name")
     @GetMapping("/{makeName}")
     public MakeDTO getMakeInformation(@PathVariable String makeName){
         logger.info("Received request to get make information for make {}.", makeName);
