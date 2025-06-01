@@ -1,6 +1,8 @@
 package com.msn.msncars.image;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,10 @@ public class ImageController {
     }
 
     @Operation(summary = "Attach image to the listing", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Image attached successfully"),
+            @ApiResponse(responseCode = "404", description = "Listing not found")
+    })
     @PostMapping("images")
     @ResponseStatus(HttpStatus.CREATED)
     public void attachImage(@RequestParam("listingId") Long listingId, @RequestParam("image") MultipartFile image,
@@ -33,6 +39,9 @@ public class ImageController {
     }
 
     @Operation(summary = "Fetch image by path")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Image fetched successfully"),
+    })
     @GetMapping("images")
     public ResponseEntity<?> fetchImage(@RequestBody ImageRequest imageRequest) {
         logger.info("Fetching image with path: {}", imageRequest.path());
@@ -44,6 +53,9 @@ public class ImageController {
     }
 
     @Operation(summary = "Fetch paths of listing images")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Paths of listing images fetched successfully")
+    })
     @GetMapping("listings/{id}/images")
     public List<String> fetchListingImagesPaths(@PathVariable("id") Long listingId) {
         logger.info("Getting paths for listingId: {}", listingId);
