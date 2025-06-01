@@ -1,6 +1,7 @@
 package com.msn.msncars.company.invitation;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,9 +32,18 @@ public class InvitationController {
     @Operation(summary = "Create a new invitation")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Invitation created successfully"),
-            @ApiResponse(responseCode = "403", description = "Only company owner is allowed to send invitation"),
-            @ApiResponse(responseCode = "404", description = "Sender company or invitation recipient does not exist"),
-            @ApiResponse(responseCode = "409", description = "User already accepted the invitation and cannot be invited again")
+            @ApiResponse(responseCode = "403",
+                    description = "Only company owner is allowed to send invitation",
+                    content = @Content
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "Sender company or invitation recipient does not exist",
+                    content = @Content
+            ),
+            @ApiResponse(responseCode = "409",
+                    description = "User already accepted the invitation and cannot be invited again",
+                    content = @Content
+            )
     })
     @PostMapping
     public ResponseEntity<InvitationDTO> invite(@RequestBody CreateInvitationRequest createInvitationRequest, @AuthenticationPrincipal Jwt jwt) {
@@ -50,9 +60,9 @@ public class InvitationController {
     @Operation(summary = "Accept invitation received by requesting user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Invitation accepted successfully"),
-            @ApiResponse(responseCode = "403", description = "Only the recipient of this invitation can respond to it"),
-            @ApiResponse(responseCode = "404", description = "Invitation does not exist"),
-            @ApiResponse(responseCode = "409", description = "User has already responded to this invitation"),
+            @ApiResponse(responseCode = "403", description = "Only the recipient of this invitation can respond to it", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Invitation does not exist", content = @Content),
+            @ApiResponse(responseCode = "409", description = "User has already responded to this invitation", content = @Content),
     })
     @PostMapping("/{id}/accept")
     public ResponseEntity<InvitationDTO> acceptInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
@@ -69,9 +79,9 @@ public class InvitationController {
     @Operation(summary = "Decline invitation received by requesting user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Invitation declined successfully"),
-            @ApiResponse(responseCode = "403", description = "Only the recipient of this invitation can respond to it"),
-            @ApiResponse(responseCode = "404", description = "Invitation does not exist"),
-            @ApiResponse(responseCode = "409", description = "User has already responded to this invitation"),
+            @ApiResponse(responseCode = "403", description = "Only the recipient of this invitation can respond to it", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Invitation does not exist", content = @Content),
+            @ApiResponse(responseCode = "409", description = "User has already responded to this invitation", content = @Content),
     })
     @PostMapping("/{id}/decline")
     public ResponseEntity<InvitationDTO> declineInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
@@ -88,8 +98,8 @@ public class InvitationController {
     @Operation(summary = "Delete invitation of requesting user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Invitation deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Only the invitation owner is allowed to delete it"),
-            @ApiResponse(responseCode = "404", description = "Invitation does not exist")
+            @ApiResponse(responseCode = "403", description = "Only the invitation owner is allowed to delete it", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Invitation does not exist", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
@@ -122,8 +132,8 @@ public class InvitationController {
     @Operation(summary = "Get invitations sent by company of requesting user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Invitations sent by company returned successfully"),
-            @ApiResponse(responseCode = "403", description = "Only company members are allowed to view invitations sent by the company"),
-            @ApiResponse(responseCode = "404", description = "Company does not exist")
+            @ApiResponse(responseCode = "403", description = "Only company members are allowed to view invitations sent by the company", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Company does not exist", content = @Content)
     })
     @GetMapping("/company/{companyId}/sent")
     public ResponseEntity<List<InvitationDTO>> getInvitationsSentByCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {

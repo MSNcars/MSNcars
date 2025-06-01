@@ -2,6 +2,7 @@ package com.msn.msncars.company;
 
 import com.msn.msncars.user.UserDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,7 +30,11 @@ public class CompanyController {
     @Operation(summary = "Get information about company")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Company information fetched successfully"),
-            @ApiResponse(responseCode = "204", description = "Cannot fetch company information: company not found."),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Cannot fetch company information: company not found.",
+                    content = @Content
+            ),
     })
     @GetMapping("/{companyId}")
     public ResponseEntity<CompanyDTO> getCompanyInfo(@PathVariable Long companyId) {
@@ -45,7 +50,7 @@ public class CompanyController {
     @Operation(summary = "Get company members")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Company members found successfully"),
-            @ApiResponse(responseCode = "404", description = "Company does not exist"),
+            @ApiResponse(responseCode = "404", description = "Company does not exist", content = @Content),
     })
     @GetMapping("/{companyId}/members")
     public ResponseEntity<List<UserDTO>> getCompanyMembers(@PathVariable Long companyId) {
@@ -61,7 +66,7 @@ public class CompanyController {
     @Operation(summary = "Get company owner")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Company owner found successfully"),
-            @ApiResponse(responseCode = "404", description = "Company or owner not found")
+            @ApiResponse(responseCode = "404", description = "Company or owner not found", content = @Content)
     })
     @GetMapping("/{companyId}/owner")
     public ResponseEntity<UserDTO> getCompanyOwner(@PathVariable Long companyId) {
@@ -77,7 +82,7 @@ public class CompanyController {
     @Operation(summary = "Get companies where the user is a member")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Companies found successfully"),
-            @ApiResponse(responseCode = "404", description = "User does not exist")
+            @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content)
     })
     @GetMapping("/by-user/{userId}")
     public ResponseEntity<List<CompanyDTO>> getCompaniesUserBelongsTo(@PathVariable String userId) {
@@ -93,8 +98,11 @@ public class CompanyController {
     @Operation(summary = "Delete company", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Company deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "User is not authorized to delete the company. Only the company owner can delete it."),
-            @ApiResponse(responseCode = "404", description = "Company does not exist")
+            @ApiResponse(responseCode = "403",
+                    description = "User is not authorized to delete the company. Only the company owner can delete it.",
+                    content = @Content
+            ),
+            @ApiResponse(responseCode = "404", description = "Company does not exist", content = @Content)
     })
     @DeleteMapping("/{companyId}")
     public ResponseEntity<String> deleteCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {

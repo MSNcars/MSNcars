@@ -1,6 +1,7 @@
 package com.msn.msncars.user;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,7 +32,7 @@ public class UserController {
     @Operation(summary = "Get basic information about requesting user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User basic information found"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     @GetMapping
     public ResponseEntity<UserBasicInformationDTO> getBasicUserInformation(@AuthenticationPrincipal Jwt jwt) {

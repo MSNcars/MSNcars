@@ -5,6 +5,7 @@ import com.msn.msncars.auth.dto.CompanyRegistrationResponse;
 import com.msn.msncars.auth.dto.UserRegistrationRequest;
 import com.msn.msncars.auth.exception.RegistrationException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
@@ -30,7 +31,11 @@ public class AuthController {
     @Operation(summary = "Register user account")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
-            @ApiResponse(responseCode = "409", description = "A user with this username or email already exists"),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "A user with this username or email already exists",
+                    content = @Content
+            ),
     })
     @PostMapping("/auth/user/register")
     public ResponseEntity<String> registerUser(@RequestBody UserRegistrationRequest userRegistrationRequest) {
@@ -46,7 +51,11 @@ public class AuthController {
     @Operation(summary = "Register a company account and create the company")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Company and account created successfully"),
-            @ApiResponse(responseCode = "409", description = "A user with the given username or email, or a company with the provided name already exists."),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "A user with the given username or email, or a company with the provided name already exists.",
+                    content = @Content
+            ),
     })
     @PostMapping("/auth/company/register")
     public ResponseEntity<CompanyRegistrationResponse> registerCompany(@RequestBody CompanyRegistrationRequest companyRegistrationRequest) {

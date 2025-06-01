@@ -1,6 +1,7 @@
 package com.msn.msncars.car.make;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public class MakeController {
     @Operation(summary = "Get information about a make by name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Make information fetched successfully"),
-            @ApiResponse(responseCode = "404", description = "Make not found")
+            @ApiResponse(responseCode = "404", description = "Make not found", content = @Content)
     })
     @GetMapping("/{makeName}")
     public MakeDTO getMakeInformation(@PathVariable String makeName){

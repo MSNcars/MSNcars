@@ -1,6 +1,7 @@
 package com.msn.msncars.image;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,7 +29,7 @@ public class ImageController {
     @Operation(summary = "Attach image to the listing", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Image attached successfully"),
-            @ApiResponse(responseCode = "404", description = "Listing not found")
+            @ApiResponse(responseCode = "404", description = "Listing not found", content = @Content)
     })
     @PostMapping("images")
     @ResponseStatus(HttpStatus.CREATED)
