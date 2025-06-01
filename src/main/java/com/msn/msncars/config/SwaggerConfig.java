@@ -66,15 +66,16 @@ public class SwaggerConfig {
 
     @Bean
     public OpenApiCustomizer globalResponsesCustomizer() {
-        return openApi -> openApi.getPaths().values().forEach(pathItem -> {
+        return openApi -> openApi.getPaths().values().forEach(pathItem ->
+            pathItem.readOperations().forEach(operation -> {
 
-            for (PathItem.HttpMethod method : pathItem.readOperationsMap().keySet()) {
-                Operation operation = pathItem.readOperationsMap().get(method);
-                ApiResponses responses = operation.getResponses();
+                if (operation.getSecurity() != null && !operation.getSecurity().isEmpty()) {
+                    ApiResponses responses = operation.getResponses();
+                    responses.addApiResponse("401", new ApiResponse()
+                            .description("Authentication required: please provide a valid access token."));
+                }
 
-                responses.addApiResponse("401", new ApiResponse().description("Authentication required: please provide a valid access token."));
-            }
-
-        });
+            })
+        );
     }
 }
