@@ -1,5 +1,10 @@
 package com.msn.msncars.user;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/user")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService userService;
@@ -23,6 +29,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @Operation(summary = "Get basic information about requesting user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User basic information found"),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<UserBasicInformationDTO> getBasicUserInformation(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
@@ -35,6 +46,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userBasicInformationDTO);
     }
 
+    @Operation(summary = "Delete user")
     @DeleteMapping
     public void deleteUser(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
