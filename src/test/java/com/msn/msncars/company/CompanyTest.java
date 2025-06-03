@@ -1,6 +1,7 @@
 package com.msn.msncars.company;
 
 import com.msn.msncars.auth.keycloak.KeycloakService;
+import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.user.UserDTO;
 import com.msn.msncars.user.UserService;
 import jakarta.ws.rs.ForbiddenException;
@@ -61,11 +62,10 @@ class CompanyTest {
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.of(company));
 
         // when
-        Optional<CompanyDTO> optionalCompanyDTO = companyService.getCompanyInfo(1L);
+        CompanyDTO companyDTO = companyService.getCompanyInfo(1L);
 
         // then
-        assertTrue(optionalCompanyDTO.isPresent());
-        CompanyDTO companyDTO = optionalCompanyDTO.get();
+        assertNotNull(companyDTO);
         assertEquals(company.getName(), companyDTO.name());
         assertEquals(company.getAddress(), companyDTO.address());
         assertEquals(company.getPhone(), companyDTO.phone());
@@ -73,15 +73,12 @@ class CompanyTest {
     }
 
     @Test
-    void getCompanyInfo_WhenCompanyNotFound_ShouldReturnEmptyOptional() {
+    void getCompanyInfo_WhenCompanyNotFound_ShouldThrowCompanyNotFoundException() {
         // given
         Mockito.when(companyRepository.findById(Mockito.any())).thenReturn(Optional.empty());
 
-        // when
-        Optional<CompanyDTO> optionalCompanyDTO = companyService.getCompanyInfo(1L);
-
-        // then
-        assertTrue(optionalCompanyDTO.isEmpty());
+        // when & then
+        assertThrows(CompanyNotFoundException.class, () -> companyService.getCompanyInfo(1L));
     }
 
     @Test
