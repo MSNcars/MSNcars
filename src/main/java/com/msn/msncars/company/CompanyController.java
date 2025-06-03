@@ -31,7 +31,7 @@ public class CompanyController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Company information fetched successfully"),
             @ApiResponse(
-                    responseCode = "204",
+                    responseCode = "404",
                     description = "Cannot fetch company information: company not found.",
                     content = @Content
             ),
@@ -40,11 +40,11 @@ public class CompanyController {
     public ResponseEntity<CompanyDTO> getCompanyInfo(@PathVariable Long companyId) {
         logger.info("Received request to get company info for company with id {}", companyId);
 
-        Optional<CompanyDTO> companyDTO = companyService.getCompanyInfo(companyId);
+        CompanyDTO companyDTO = companyService.getCompanyInfo(companyId);
 
         logger.info("Returning company info for company with id {}", companyId);
 
-        return companyDTO.map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
+        return ResponseEntity.ok(companyDTO);
     }
 
     @Operation(summary = "Get company members")
