@@ -3,6 +3,7 @@ package com.msn.msncars.listing;
 import com.msn.msncars.car.Fuel;
 import com.msn.msncars.listing.dto.ListingRequest;
 import com.msn.msncars.listing.dto.ListingResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class ListingController {
         this.listingService = listingService;
     }
 
+    @Operation(summary="Get all existing listings")
     @GetMapping
     public List<ListingResponse> getAllListings(
             @RequestParam(required = false) String makeName,
@@ -43,6 +45,7 @@ public class ListingController {
         return allListingsResponses;
     }
 
+    @Operation(summary = "Get listing with given id")
     @GetMapping("/{listing-id}")
     public ListingResponse getListingById(@PathVariable("listing-id") Long listingId) {
         logger.info("Received request to get listing by id {}.", listingId);
@@ -54,6 +57,7 @@ public class ListingController {
         return listingResponse;
     }
 
+    @Operation(summary = "Get all listings of signed in user")
     @GetMapping("/me")
     public List<ListingResponse> getListingsOfRequestingUser(@AuthenticationPrincipal Jwt principal) {
         String userId = principal.getSubject();
@@ -66,6 +70,7 @@ public class ListingController {
         return allListingsResponses;
     }
 
+    @Operation(summary = "Create a new listing")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Long createListing(@RequestBody @Valid ListingRequest listingRequest, @AuthenticationPrincipal Jwt principal,
@@ -82,6 +87,7 @@ public class ListingController {
         return id;
     }
 
+    @Operation(summary = "Edit listing with given id")
     @PutMapping("/{listing-id}")
     public ListingResponse updateListing(
             @PathVariable("listing-id") Long listingId,
@@ -97,6 +103,7 @@ public class ListingController {
         return listingResponse;
     }
 
+    @Operation(summary = "Extend expiration date of a listing")
     @PatchMapping("/{listing-id}/extend")
     public ListingResponse extendExpirationDate(
             @PathVariable("listing-id") Long listingId,
@@ -112,6 +119,7 @@ public class ListingController {
         return listingResponse;
     }
 
+    @Operation(summary = "Set revoked status of a listing")
     @PatchMapping("/{listing-id}/set-revoked/{is-revoked}")
     public ListingResponse setListingRevokedStatus(
             @PathVariable("listing-id") Long listingId,
@@ -126,6 +134,7 @@ public class ListingController {
         return listingResponse;
     }
 
+    @Operation(summary = "Delete listing with given id")
     @DeleteMapping("/{listing-id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteListing(@PathVariable("listing-id") Long listingId, @AuthenticationPrincipal Jwt principal) {
