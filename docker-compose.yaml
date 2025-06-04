@@ -55,14 +55,15 @@ services:
       - ES_JAVA_OPTS=-Xms256m -Xmx256m
     ports:
       - "9200:9200"
+    volumes:
+      - elasticsearchdata:/usr/share/elasticsearch/data
   logstash:
     image: docker.elastic.co/logstash/logstash:9.0.1
     container_name: logstash
     environment:
       - LS_JAVA_OPTS=-Xms256m -Xmx256m
     volumes:
-      - ./elk-stack/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - esdata:/usr/share/elasticsearch/data
+      - ./src/main/resources/containers/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     ports:
       - "5000:5000"
     depends_on:
@@ -79,7 +80,7 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./src/main/resources/containers/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
   grafana:
@@ -88,4 +89,4 @@ services:
       - "3000:3000"
 
 volumes:
-  esdata:
+  elasticsearchdata:
