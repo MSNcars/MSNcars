@@ -1,0 +1,100 @@
+services:
+  minio: # Object storage
+    image: 'minio/minio'
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+  postgres: # app and keycloak database
+    image: postgres
+    ports:
+      - '5430:5432'
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: app_db
+    volumes:
+      - ../../../../../../../../../src/main/resources/init-scripts:/docker-entrypoint-initdb.d # creates keycloak db
+  keycloak: # Authorization server
+    image: 'bitnami/keycloak'
+    ports:
+      - '8081:8081'
+    environment:
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_USER: admin
+      KEYCLOAK_DATABASE_PASSWORD: admin
+      KEYCLOAK_DATABASE_NAME: keycloak_db
+      KEYCLOAK_HTTP_PORT: 8081
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_DATABASE_HOST: postgres
+      KEYCLOAK_EXTRA_ARGS: --import-realm
+    depends_on:
+      - postgres
+    volumes: # Mount configuration file
+      - ../../../../../../../../../src/main/resources/containers/KeycloakConfig.json:/opt/bitnami/keycloak/data/import/KeycloakConfig.json
+  nginx: # Reverse proxy
+    image: 'nginx'
+    ports:
+      - '80:80'
+    extra_hosts: # needed for ubuntu, to be able to use docker.internal in nginx.conf
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./NginxConfig.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - keycloak
+  # Deployment pods
+  spring-one:
+    image: 'ghcr.io/msncars/msncars:master'
+    ports:
+      - '7000:7000'
+    environment:
+      SERVER_PORT: 7000
+      MINIO_ENDPOINT: http://minio:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8081/realms/MSNcars
+      KEYCLOAK_SERVER_URL: http://keycloak:8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
+    depends_on:
+      - keycloak
+      - postgres
+      - nginx
+      - minio
+  spring-two:
+    image: 'ghcr.io/msncars/msncars:master'
+    ports:
+      - '7001:7001'
+    environment:
+      SERVER_PORT: 7001
+      MINIO_ENDPOINT: http://minio:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8081/realms/MSNcars
+      KEYCLOAK_SERVER_URL: http://keycloak:8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
+    depends_on:
+      - keycloak
+      - postgres
+      - nginx
+      - minio
+      - spring-one # To avoid receiving error on concurrent minio bucket create
+  spring-three:
+    image: 'ghcr.io/msncars/msncars:master'
+    ports:
+      - '7002:7002'
+    environment:
+      SERVER_PORT: 7002
+      MINIO_ENDPOINT: http://minio:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8081/realms/MSNcars
+      KEYCLOAK_SERVER_URL: http://keycloak:8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
+    depends_on:
+      - keycloak
+      - postgres
+      - nginx
+      - minio
+      - spring-one
+      - spring-two

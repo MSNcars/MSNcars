@@ -1,4 +1,5 @@
 package com.msn.msncars.auth;
+import com.msn.msncars.auth.dto.UserRegistrationRequest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -74,7 +75,7 @@ class AuthTest {
         mockMvc.perform(post("/auth/user/register")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userRegistrationRequest)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // Test if you can fetch token
         Response loginResponse =

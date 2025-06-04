@@ -1,4 +1,4 @@
-package com.msn.msncars.auth;
+package com.msn.msncars.auth.dto;
 
 import com.msn.msncars.company.CompanyCreationRequest;
 

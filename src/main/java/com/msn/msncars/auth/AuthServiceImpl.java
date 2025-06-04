@@ -1,5 +1,8 @@
 package com.msn.msncars.auth;
 
+import com.msn.msncars.auth.dto.CompanyRegistrationRequest;
+import com.msn.msncars.auth.dto.CompanyRegistrationResponse;
+import com.msn.msncars.auth.dto.UserRegistrationRequest;
 import com.msn.msncars.auth.exception.RegistrationException;
 import com.msn.msncars.auth.keycloak.KeycloakConfig;
 import com.msn.msncars.company.CompanyDTO;

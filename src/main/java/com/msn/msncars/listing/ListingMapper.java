@@ -1,7 +1,7 @@
 package com.msn.msncars.listing;
 
-import com.msn.msncars.listing.DTO.ListingResponse;
-import com.msn.msncars.listing.DTO.ListingRequest;
+import com.msn.msncars.listing.dto.ListingResponse;
+import com.msn.msncars.listing.dto.ListingRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

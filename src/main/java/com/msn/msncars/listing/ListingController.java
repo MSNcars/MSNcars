@@ -1,8 +1,8 @@
 package com.msn.msncars.listing;
 
 import com.msn.msncars.car.Fuel;
-import com.msn.msncars.listing.DTO.ListingRequest;
-import com.msn.msncars.listing.DTO.ListingResponse;
+import com.msn.msncars.listing.dto.ListingRequest;
+import com.msn.msncars.listing.dto.ListingResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

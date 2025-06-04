@@ -8,7 +8,7 @@ import com.msn.msncars.car.model.Model;
 import com.msn.msncars.car.model.ModelRepository;
 import com.msn.msncars.company.Company;
 import com.msn.msncars.company.CompanyRepository;
-import com.msn.msncars.listing.DTO.ListingRequest;
+import com.msn.msncars.listing.dto.ListingRequest;
 import com.zaxxer.hikari.HikariDataSource;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;

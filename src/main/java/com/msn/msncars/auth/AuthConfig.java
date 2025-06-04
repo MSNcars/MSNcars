@@ -27,7 +27,7 @@ public class AuthConfig {
                         request
                                 .requestMatchers(HttpMethod.GET, "/images", "/listings/{id}/images", "/public")
                                 .permitAll()
-                                .requestMatchers(HttpMethod.GET, "/listings/**")
+                                .requestMatchers(HttpMethod.GET, "/listings/**", "/listings")
                                 .permitAll()
                                 .requestMatchers("/auth/user/register", "/auth/company/register", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()

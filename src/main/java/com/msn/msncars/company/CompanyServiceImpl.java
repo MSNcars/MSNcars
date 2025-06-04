@@ -1,6 +1,7 @@
 package com.msn.msncars.company;
 
 import com.msn.msncars.auth.keycloak.KeycloakService;
+import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.user.UserDTO;
 import com.msn.msncars.user.UserMapper;
 import jakarta.ws.rs.ForbiddenException;
@@ -69,24 +70,15 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public Optional<CompanyDTO> getCompanyInfo(Long companyId) {
+    public CompanyDTO getCompanyInfo(Long companyId) {
         logger.debug("Entering getCompanyInfo with companyId: {}", companyId);
 
-        Optional<Company> companyOptional = companyRepository.findById(companyId);
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyNotFoundException("Company does not exist"));
 
-        logger.debug("Company optional fetched from database.");
+        logger.debug("Company successfully fetched from database.");
 
-        if (companyOptional.isPresent()) {
-            Company company = companyOptional.get();
-
-            logger.debug("Company with id {} exist. Returning mapped Company.", companyId);
-
-            return Optional.of(companyMapper.toDTO(company));
-        }
-
-        logger.debug("Company with id {} does not exist. Returning empty optional.", companyId);
-
-        return Optional.empty();
+        return companyMapper.toDTO(company);
     }
 
     @Override
