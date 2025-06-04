@@ -4,8 +4,13 @@ import com.msn.msncars.car.Fuel;
 import com.msn.msncars.listing.dto.ListingRequest;
 import com.msn.msncars.listing.dto.ListingResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,7 +32,10 @@ public class ListingController {
         this.listingService = listingService;
     }
 
-    @Operation(summary="Get all existing listings")
+    @Operation(summary="Get all existing listings with optional filters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listings fetched successfully")
+    })
     @GetMapping
     public List<ListingResponse> getAllListings(
             @RequestParam(required = false) String makeName,
@@ -46,6 +54,10 @@ public class ListingController {
     }
 
     @Operation(summary = "Get listing with given id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listing fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "Listing not found", content = @Content)
+    })
     @GetMapping("/{listing-id}")
     public ListingResponse getListingById(@PathVariable("listing-id") Long listingId) {
         logger.info("Received request to get listing by id {}.", listingId);
@@ -58,6 +70,10 @@ public class ListingController {
     }
 
     @Operation(summary = "Get all listings of signed in user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listings fetched successfully")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public List<ListingResponse> getListingsOfRequestingUser(@AuthenticationPrincipal Jwt principal) {
         String userId = principal.getSubject();
@@ -71,6 +87,12 @@ public class ListingController {
     }
 
     @Operation(summary = "Create a new listing")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Listing created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Model or company was not found", content = @Content)
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Long createListing(@RequestBody @Valid ListingRequest listingRequest, @AuthenticationPrincipal Jwt principal,
@@ -88,6 +110,13 @@ public class ListingController {
     }
 
     @Operation(summary = "Edit listing with given id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listing edited successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
+            @ApiResponse(responseCode = "403", description = "You are not owner of the listing", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Listing or model was not found", content = @Content),
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{listing-id}")
     public ListingResponse updateListing(
             @PathVariable("listing-id") Long listingId,
@@ -104,6 +133,13 @@ public class ListingController {
     }
 
     @Operation(summary = "Extend expiration date of a listing")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listing extended successfully"),
+            @ApiResponse(responseCode = "400", description = "Listing is revoked", content = @Content),
+            @ApiResponse(responseCode = "403", description = "You are not owner of the listing", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Listing or company was not found", content = @Content),
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{listing-id}/extend")
     public ListingResponse extendExpirationDate(
             @PathVariable("listing-id") Long listingId,
@@ -120,6 +156,12 @@ public class ListingController {
     }
 
     @Operation(summary = "Set revoked status of a listing")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listing revoked status set successfully"),
+            @ApiResponse(responseCode = "403", description = "You are not owner of the listing", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Listing or company was not found", content = @Content),
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{listing-id}/set-revoked/{is-revoked}")
     public ListingResponse setListingRevokedStatus(
             @PathVariable("listing-id") Long listingId,
@@ -135,6 +177,12 @@ public class ListingController {
     }
 
     @Operation(summary = "Delete listing with given id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Listing deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "You are not owner of the listing", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Listing or company was not found", content = @Content),
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{listing-id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteListing(@PathVariable("listing-id") Long listingId, @AuthenticationPrincipal Jwt principal) {
