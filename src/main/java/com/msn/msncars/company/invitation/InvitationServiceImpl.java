@@ -35,7 +35,7 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    public InvitationDTO invite(CreateInvitationRequest createInvitationRequest, String senderId) {
+    public InvitationSentByCompanyDTO invite(CreateInvitationRequest createInvitationRequest, String senderId) {
         logger.debug("Entering invite method for senderId: {}", senderId);
         Long senderCompanyId = createInvitationRequest.senderCompanyId();
         String recipientId = createInvitationRequest.recipientId();
@@ -61,11 +61,11 @@ public class InvitationServiceImpl implements InvitationService {
 
         logger.debug("Invitation created. Returning mapped invitation.");
 
-        return mapInvitationToDTO(invitationRepository.save(invitation));
+        return mapInvitationToSentByCompanyDTO(invitationRepository.save(invitation));
     }
 
     @Override
-    public InvitationDTO acceptInvitation(UUID invitationId, String userId) {
+    public InvitationReceivedByUserDTO acceptInvitation(UUID invitationId, String userId) {
         logger.debug("Entering acceptInvitation method for invitationId: {}, userId: {}", invitationId, userId);
 
         Invitation invitation = validateAndGetPendingInvitation(invitationId, userId);
@@ -76,11 +76,11 @@ public class InvitationServiceImpl implements InvitationService {
 
         logger.debug("Invitation with id: {} accepted. Returning mapped invitation.", invitationId);
 
-        return mapInvitationToDTO(invitationRepository.save(invitation));
+        return mapInvitationToReceivedByUserDTO(invitationRepository.save(invitation));
     }
 
     @Override
-    public InvitationDTO declineInvitation(UUID invitationId, String userId) {
+    public InvitationReceivedByUserDTO declineInvitation(UUID invitationId, String userId) {
         logger.debug("Entering declineInvitation method for invitationId: {}, userId: {}", invitationId, userId);
 
         Invitation invitation = validateAndGetPendingInvitation(invitationId, userId);
@@ -91,7 +91,7 @@ public class InvitationServiceImpl implements InvitationService {
 
         logger.debug("Invitation with id: {} declined. Returning mapped invitation.", invitationId);
 
-        return mapInvitationToDTO(invitationRepository.save(invitation));
+        return mapInvitationToReceivedByUserDTO(invitationRepository.save(invitation));
     }
 
     @Override
@@ -114,18 +114,18 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    public List<InvitationDTO> getInvitationsReceivedByUser(String userId) {
+    public List<InvitationReceivedByUserDTO> getInvitationsReceivedByUser(String userId) {
         logger.debug("Entering getInvitationsReceivedByUser method for userId: {}", userId);
 
         List<Invitation> invitations = invitationRepository.getInvitationsByRecipientUserId(userId);
 
         logger.debug("Invitations ({}) for userId: {} fetched. Returning mapped invitations.", invitations.size(), userId);
 
-        return mapInvitationsToDTOs(invitations);
+        return mapInvitationsToReceivedByUserDTO(invitations);
     }
 
     @Override
-    public List<InvitationDTO> getInvitationsSentByCompany(Long companyId, String userId) {
+    public List<InvitationSentByCompanyDTO> getInvitationsSentByCompany(Long companyId, String userId) {
         logger.debug("Entering getInvitationsSentByCompany method for userId: {}, companyId: {}", userId, companyId);
         Optional<Company> companyOptional = companyService.getCompany(companyId);
         if (companyOptional.isEmpty())
@@ -139,7 +139,7 @@ public class InvitationServiceImpl implements InvitationService {
 
         logger.debug("Invitations ({}) fetched. Returning mapped invitations.", invitations.size());
 
-        return mapInvitationsToDTOs(invitations);
+        return mapInvitationsToSentByCompanyDTO(invitations);
     }
 
     private void validateInvitationCreation(Long senderCompanyId, String recipientId, String senderId) {
@@ -177,14 +177,24 @@ public class InvitationServiceImpl implements InvitationService {
         return invitation;
     }
 
-    private List<InvitationDTO> mapInvitationsToDTOs(List<Invitation> invitations) {
+    private List<InvitationReceivedByUserDTO> mapInvitationsToReceivedByUserDTO(List<Invitation> invitations) {
         return invitations.stream()
-                .map(this::mapInvitationToDTO)
+                .map(this::mapInvitationToReceivedByUserDTO)
                 .toList();
     }
 
-    private InvitationDTO mapInvitationToDTO(Invitation invitation) {
-        return invitationMapper.toDTO(invitation, clock.getZone());
+    private List<InvitationSentByCompanyDTO> mapInvitationsToSentByCompanyDTO(List<Invitation> invitations) {
+        return invitations.stream()
+                .map(this::mapInvitationToSentByCompanyDTO)
+                .toList();
+    }
+
+    private InvitationReceivedByUserDTO mapInvitationToReceivedByUserDTO(Invitation invitation) {
+        return invitationMapper.toInvitationReceivedByUserDTO(invitation, clock.getZone());
+    }
+
+    private InvitationSentByCompanyDTO mapInvitationToSentByCompanyDTO(Invitation invitation) {
+        return invitationMapper.toInvitationSentByCompanyDTO(invitation, clock.getZone());
     }
 
     private void logPendingInvitationValidatedAndRetrieved() {

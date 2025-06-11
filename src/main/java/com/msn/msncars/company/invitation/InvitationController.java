@@ -46,7 +46,7 @@ public class InvitationController {
             )
     })
     @PostMapping
-    public ResponseEntity<InvitationDTO> invite(@RequestBody CreateInvitationRequest createInvitationRequest, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<InvitationSentByCompanyDTO> invite(@RequestBody CreateInvitationRequest createInvitationRequest, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         logger.info("Received request to create invitation by user with id: {}", userId);
 
@@ -65,7 +65,7 @@ public class InvitationController {
             @ApiResponse(responseCode = "409", description = "User has already responded to this invitation", content = @Content),
     })
     @PostMapping("/{id}/accept")
-    public ResponseEntity<InvitationDTO> acceptInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<InvitationReceivedByUserDTO> acceptInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         logger.info("Received request to accept invitation with id {} by user with id: {}", id, userId);
 
@@ -84,7 +84,7 @@ public class InvitationController {
             @ApiResponse(responseCode = "409", description = "User has already responded to this invitation", content = @Content),
     })
     @PostMapping("/{id}/decline")
-    public ResponseEntity<InvitationDTO> declineInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<InvitationReceivedByUserDTO> declineInvitation(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         logger.info("Received request to decline invitation with id {} by user with id: {}", id, userId);
 
@@ -118,7 +118,7 @@ public class InvitationController {
             @ApiResponse(responseCode = "200", description = "Invitations received by user returned successfully"),
     })
     @GetMapping("/user/received")
-    public ResponseEntity<List<InvitationDTO>> getInvitationsReceivedByUser(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<InvitationReceivedByUserDTO>> getInvitationsReceivedByUser(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         logger.info("Received request to get invitations received by user with id: {}", userId);
 
@@ -136,7 +136,7 @@ public class InvitationController {
             @ApiResponse(responseCode = "404", description = "Company does not exist", content = @Content)
     })
     @GetMapping("/company/{companyId}/sent")
-    public ResponseEntity<List<InvitationDTO>> getInvitationsSentByCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<InvitationSentByCompanyDTO>> getInvitationsSentByCompany(@PathVariable Long companyId, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         logger.info("Received request to get invitations sent by company with id: {}. Request sent by user with id {}", companyId, userId);
 

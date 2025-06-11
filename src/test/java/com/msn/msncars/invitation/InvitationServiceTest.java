@@ -309,7 +309,7 @@ class InvitationServiceTest {
         Mockito.when(invitationRepository.getInvitationsByRecipientUserId(Mockito.any())).thenReturn(List.of());
 
         // when
-        List<InvitationDTO> invitations = invitationService.getInvitationsReceivedByUser("1");
+        List<InvitationReceivedByUserDTO> invitations = invitationService.getInvitationsReceivedByUser("1");
 
         // then
         assertTrue(invitations.isEmpty());
@@ -329,13 +329,13 @@ class InvitationServiceTest {
         Mockito.when(invitationRepository.getInvitationsByRecipientUserId(Mockito.any())).thenReturn(invitations);
 
         // when
-        List<InvitationDTO> invitationsDTO = invitationService.getInvitationsReceivedByUser("1");
+        List<InvitationReceivedByUserDTO> invitationsDTO = invitationService.getInvitationsReceivedByUser("1");
 
         // then
         assertEquals(2, invitationsDTO.size());
         assertEquals(invitations.getFirst().getInvitationState(), invitationsDTO.getFirst().invitationState());
         assertEquals(invitations.getLast().getSenderCompany().getId(), invitationsDTO.getLast().senderCompanyId());
-        assertEquals(invitations.getLast().getFormattedDateForUser(fixedClock.getZone()), invitationsDTO.getLast().creationDate());
+        assertEquals(invitations.getLast().getFormattedDateForUser(fixedClock.getZone()), invitationsDTO.getLast().receivedAt());
     }
 
     @Test
@@ -367,7 +367,7 @@ class InvitationServiceTest {
         Mockito.when(invitationRepository.getInvitationsBySenderCompanyId(Mockito.any())).thenReturn(List.of());
 
         // when
-        List<InvitationDTO> invitationDTOS = invitationService.getInvitationsSentByCompany(1L, "1");
+        List<InvitationSentByCompanyDTO> invitationDTOS = invitationService.getInvitationsSentByCompany(1L, "1");
 
         // then
         assertTrue(invitationDTOS.isEmpty());
@@ -388,11 +388,11 @@ class InvitationServiceTest {
         Mockito.when(invitationRepository.getInvitationsBySenderCompanyId(Mockito.any())).thenReturn(invitations);
 
         // when
-        List<InvitationDTO> invitationDTOS = invitationService.getInvitationsSentByCompany(1L, "6");
+        List<InvitationSentByCompanyDTO> invitationDTOS = invitationService.getInvitationsSentByCompany(1L, "6");
 
         // then
         assertEquals(3, invitationDTOS.size());
         assertEquals(invitations.getFirst().getInvitationState(), invitationDTOS.getFirst().invitationState());
-        assertEquals(1L, invitationDTOS.getLast().senderCompanyId());
+        assertEquals("5", invitationDTOS.getLast().recipientUserId());
     }
 }

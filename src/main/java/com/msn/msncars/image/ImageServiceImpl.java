@@ -1,25 +1,20 @@
 package com.msn.msncars.image;
 
-import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.Listing;
 import com.msn.msncars.listing.ListingRepository;
 import com.msn.msncars.listing.ListingService;
-import com.msn.msncars.listing.exception.ListingExpiredException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
-import jakarta.ws.rs.ForbiddenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
