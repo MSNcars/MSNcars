@@ -1,4 +1,4 @@
 package com.msn.msncars.company.invitation;
 
-public class InvitationSentByCompanyDTO {
+public record InvitationSentByCompanyDTO(String id, String recipientUserId, String sentAt, InvitationState invitationState) {
 }

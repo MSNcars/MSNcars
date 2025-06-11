@@ -125,6 +125,8 @@ public class ListingServiceImpl implements ListingService{
         if (listing.getOwnerType() == OwnerType.USER) {// -> Override ownerId with userId from JWT
             listing.setOwnerId(userId);
             logger.debug("OwnerType set to USER, will override listing ownerId using userId from JWT");
+        } else if (listing.getOwnerType() == OwnerType.COMPANY && (listing.getOwnerId() == null || listing.getOwnerId().isEmpty())) {
+            throw new ForbiddenException("ownerId is null or empty");
         }
 
         validateListingOwnership(listing, userId);
@@ -160,6 +162,7 @@ public class ListingServiceImpl implements ListingService{
 
         Listing updatedListing = listingMapper.fromDTO(listingRequest);
         updatedListing.setId(listingId);
+        updatedListing.setOwnerId(oldListing.getOwnerId());
         updatedListing.setCreatedAt(oldListing.getCreatedAt());
         updatedListing.setExpiresAt(oldListing.getExpiresAt());
 

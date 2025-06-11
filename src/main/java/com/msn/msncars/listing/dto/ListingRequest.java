@@ -1,10 +1,12 @@
 package com.msn.msncars.listing.dto;
 
-import com.msn.msncars.car.*;
+import com.msn.msncars.car.CarOperationalStatus;
+import com.msn.msncars.car.CarType;
+import com.msn.msncars.car.CarUsage;
+import com.msn.msncars.car.Fuel;
 import com.msn.msncars.listing.OwnerType;
 import com.msn.msncars.listing.ValidityPeriod;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
