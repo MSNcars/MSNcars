@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String userId) {
         logger.debug("Entering deleteUser with userId: {}", userId);
 
-        try (Response response = keycloakService.deleteUser(userId)) {
+        try(Response response = keycloakService.deleteUser(userId)) {
             if (response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()) {
                 logger.warn("Failed to delete user {}. Status: {}, {}", userId, response.getStatus(), response.getStatusInfo().getReasonPhrase());
                 return;

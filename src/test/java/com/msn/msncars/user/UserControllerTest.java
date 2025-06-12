@@ -18,17 +18,17 @@ class UserControllerTest {
 
     @Test
     void blockingUsersShouldBeAllowedForAdminOnly() throws Exception {
-        mockMvc.perform(patch("/user/123/block")
+        mockMvc.perform(patch("/user/user@mamwdoamwg.com/block")
                         .with(jwt().authorities(() -> "ROLE_user")))
                 .andExpect(status().isForbidden());
 
-        mockMvc.perform(patch("/user/123/block")
+        mockMvc.perform(patch("/user/user@mamwdoamwg.com/block")
                         .with(jwt().authorities(() -> "ROLE_company")))
                 .andExpect(status().isForbidden());
 
-        mockMvc.perform(patch("/user/123/block")
+        mockMvc.perform(patch("/user/user@mamwdoamwg.com/block")
                         .with(jwt().authorities(() -> "ROLE_admin")))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
 }
