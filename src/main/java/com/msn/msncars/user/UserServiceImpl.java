@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -82,11 +83,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void blockUser(String userId) {
-        try {
-            keycloakService.blockUser(userId);
-        }catch (NotFoundException e){
-            throw new UserNotFoundException(String.format("User with userId %s was not found", userId));
-        }
+    public void blockUser(String userEmail) {
+        keycloakService.blockUser(userEmail);
     }
 }

@@ -55,12 +55,12 @@ public class UserController {
     }
 
     @Operation(summary = "Block user")
-    @PatchMapping("/{userId}/block")
-    public void blockUser(@AuthenticationPrincipal Jwt jwt, @PathVariable("userId") String userId) {
-        logger.info("Received request to block user {}, requested by {}", userId, jwt.getSubject());
+    @PatchMapping("/{user-email}/block")
+    public void blockUser(@AuthenticationPrincipal Jwt jwt, @PathVariable("user-email") String userEmail) {
+        logger.info("Received request to block user with email {}, requested by {}", userEmail, jwt.getSubject());
 
-        userService.blockUser(userId);
+        userService.blockUser(userEmail);
 
-        logger.info("User {} successfully blocked.", userId);
+        logger.info("User with email {} successfully blocked.", userEmail);
     }
 }
