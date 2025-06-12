@@ -58,6 +58,7 @@ services:
       KEYCLOAK_SERVER_URL: http://keycloak:8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
       SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
+      CAR_UPLOAD_SUSPEND: false
     depends_on:
       - keycloak
       - postgres
@@ -74,12 +75,12 @@ services:
       KEYCLOAK_SERVER_URL: http://keycloak:8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
       SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
+      CAR_UPLOAD_SUSPEND: true
     depends_on:
       - keycloak
       - postgres
       - nginx
       - minio
-      - spring-one # To avoid receiving error on concurrent minio bucket create
   spring-three:
     image: 'ghcr.io/msncars/msncars:master'
     ports:
@@ -91,10 +92,9 @@ services:
       KEYCLOAK_SERVER_URL: http://keycloak:8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
       SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/app_db
+      CAR_UPLOAD_SUSPEND: true
     depends_on:
       - keycloak
       - postgres
       - nginx
       - minio
-      - spring-one
-      - spring-two
