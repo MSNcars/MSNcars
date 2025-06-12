@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String userId) {
         logger.debug("Entering deleteUser with userId: {}", userId);
 
-        try(Response response = keycloakService.deleteUser(userId)) {
+        try (Response response = keycloakService.deleteUser(userId)) {
             if (response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()) {
                 logger.warn("Failed to delete user {}. Status: {}, {}", userId, response.getStatus(), response.getStatusInfo().getReasonPhrase());
                 return;
@@ -81,4 +81,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void blockUser(String userId) {
+        try {
+            keycloakService.blockUser(userId);
+        }catch (NotFoundException e){
+            throw new UserNotFoundException(String.format("User with userId %s was not found", userId));
+        }
+    }
 }

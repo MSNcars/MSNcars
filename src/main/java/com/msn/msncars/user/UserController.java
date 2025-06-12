@@ -11,10 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -55,5 +52,15 @@ public class UserController {
         userService.deleteUser(userId);
 
         logger.info("User with id {} successfully deleted.", userId);
+    }
+
+    @Operation(summary = "Block user")
+    @PatchMapping("/{userId}/block")
+    public void blockUser(@AuthenticationPrincipal Jwt jwt, @PathVariable("userId") String userId) {
+        logger.info("Received request to block user {}, requested by {}", userId, jwt.getSubject());
+
+        userService.blockUser(userId);
+
+        logger.info("User {} successfully blocked.", userId);
     }
 }

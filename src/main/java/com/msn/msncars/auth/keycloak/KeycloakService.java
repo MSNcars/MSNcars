@@ -52,4 +52,14 @@ public class KeycloakService {
                 .delete(userId);
     }
 
+    public void blockUser(String userId){
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setEnabled(false);
+
+        keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .get(userId)
+                .update(userRepresentation);
+    }
+
 }
