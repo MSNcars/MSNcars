@@ -1,5 +1,6 @@
 package com.msn.msncars.auth.keycloak;
 
+import com.msn.msncars.user.UserNotFoundException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
@@ -9,6 +10,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -50,6 +52,25 @@ public class KeycloakService {
         return keycloak.realm(keycloakConfig.getRealm())
                 .users()
                 .delete(userId);
+    }
+
+    public void blockUser(String userEmail){
+        UserRepresentation userRepresentation;
+        try{
+            userRepresentation = keycloak.realm(keycloakConfig.getRealm())
+                    .users()
+                    .searchByEmail(userEmail, true)
+                    .getFirst();
+        }catch (NoSuchElementException e){
+            throw new UserNotFoundException(String.format("User with userEmail %s was not found", userEmail));
+        }
+
+        userRepresentation.setEnabled(false);
+
+        keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .get(userRepresentation.getId())
+                .update(userRepresentation);
     }
 
 }

@@ -5,6 +5,7 @@ import com.msn.msncars.car.exception.ModelNotFoundException;
 import com.msn.msncars.company.exception.CompanyNotFoundException;
 import com.msn.msncars.listing.exception.ListingNotFoundException;
 import com.msn.msncars.listing.exception.ListingRevokedException;
+import com.msn.msncars.user.UserNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.slf4j.Logger;
@@ -52,6 +53,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ModelNotFoundException.class)
     public ResponseEntity<String> handleModelNotFoundException(ModelNotFoundException e) {
         logger.warn("Model not found exception occurred: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
+        logger.warn("User not found exception occurred: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 

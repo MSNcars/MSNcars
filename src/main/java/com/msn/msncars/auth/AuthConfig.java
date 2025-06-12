@@ -40,7 +40,7 @@ public class AuthConfig {
                                 .hasAnyRole("user", "company")
                                 .requestMatchers("/invitations")
                                 .hasRole("company")
-                                .requestMatchers("/admin")
+                                .requestMatchers("/admin", "/user/*/block")
                                 .hasRole("admin")
                                 .anyRequest()
                                 .authenticated()
