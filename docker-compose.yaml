@@ -91,5 +91,7 @@ services:
       - ./src/main/resources/containers/grafana/dashboard-loader.yaml:/etc/grafana/provisioning/dashboards/dashboard-loader.yaml
       - ./src/main/resources/containers/grafana/prometheus-datasource.yaml:/etc/grafana/provisioning/datasources/prometheus-datasource.yaml
       - ./src/main/resources/containers/grafana/dashboard.json:/etc/grafana/dashboards/dashboard.json
+    depends_on:
+      - prometheus
 volumes:
   elasticsearchdata:
