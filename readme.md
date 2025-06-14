@@ -15,7 +15,8 @@
 - #### Blocking users
 
 ### Containers and workflows overview
-![containers](https://github.com/user-attachments/assets/9763ce8b-ff05-4967-87cd-f59626cfb3b2)
+![containers](https://github.com/user-attachments/assets/02474857-6ef3-477f-ae56-87929fb2f3a0)
+
 
 ### Authentication
 To send authenticated request, you first need to register and login. Login requests are routed to Keycloak through Nginx. After successfull login, you will receive token in response that will be valid for 5 minutes.
